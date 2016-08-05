@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<settings>
+    <setting label="Enable TLS/1.2 [COLOR magenta](WARNING Windows/Linux only)[/COLOR]" type="bool" id="EnableOpenSSL" default="false"/>
+    <setting label="Cache Timeout in hours" type="number" id="Cache-Timeout" default="24 "/> 
+	<setting type="sep"/>
+	<setting label="Enable Adult content" type="bool" id="EnableAdult" default="false"/>
+</settings>

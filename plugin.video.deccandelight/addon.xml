@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<addon id="plugin.video.deccandelight" name="Deccan Delight" version="0.2.0" provider-name="gujal">
+    <requires>
+        <import addon="xbmc.python" version="2.20.0"/>
+        <import addon="script.module.urlresolver" version="1.0.0"/>
+		<import addon="script.module.requests" version="2.4.3"/>
+		<import addon="script.module.beautifulsoup4" version="4.3.0"/>
+        <import addon="script.module.t0mm0.common" version="1.1.0"/>
+        <import addon="script.common.plugin.cache" version="2.5.4"/>
+    </requires>
+    <extension point="xbmc.python.pluginsource" library="default.py">
+        <provides>video</provides>
+    </extension>
+    <extension point="xbmc.addon.metadata">
+        <summary>Entertainment from the Deccan region of India</summary>
+        <description>This addon provides access to entertainment in various Deccan languages such as Tamil, Telugu, Malayalam, Kannada, and Hindi</description>
+        <platform>all</platform>
+    </extension>
+</addon>
