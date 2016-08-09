@@ -1,4 +1,8 @@
 [B]Version 0.2.1 - 7 Aug 2016[/B]
+- Fix parser errors in Android Platform
+- Add MovieFisher Scraper
+
+[B]Version 0.2.1 - 7 Aug 2016[/B]
 - Fix thumbnails in Tamilgun
 - Filmlinks4u Domain change fix
 
