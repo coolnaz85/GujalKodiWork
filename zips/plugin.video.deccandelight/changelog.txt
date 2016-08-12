@@ -1,4 +1,8 @@
-[B]Version 0.2.1 - 7 Aug 2016[/B]
+[B]Version 0.2.3 - 12 Aug 2016[/B]
+- Fix parser errors in RedMovies
+- Add RunTamil Scraper
+
+[B]Version 0.2.2 - 9 Aug 2016[/B]
 - Fix parser errors in Android Platform
 - Add MovieFisher Scraper
 
