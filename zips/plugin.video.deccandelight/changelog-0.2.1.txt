@@ -1,6 +1,0 @@
-[B]Version 0.2.1 - 7 Aug 2016[/B]
-- Fix thumbnails in Tamilgun
-- Filmlinks4u Domain change fix
-
-[B]Version 0.2.0 - 5 Aug 2016[/B]
-- First release
