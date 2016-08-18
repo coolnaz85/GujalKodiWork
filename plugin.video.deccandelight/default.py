@@ -57,6 +57,7 @@ play = _DD.queries.get('play', None)
 RootDir = _DD.get_path()
 dlg = xbmcgui.DialogProgress()
 cwd = _DD.get_path()
+ca_bundle = cwd + '/resources/ca-bundle.crt'
 img_path = cwd + '/resources/images/'
 abcm_img = img_path + 'abcmalayalam.png'
 flinks_img = img_path + 'flinks.png'
@@ -874,7 +875,7 @@ def getMovList_runtamil(runtamilurl):
 
     Dict_movlist = {}
     link = requests.get(runtamilurl, headers=mozagent).text
-    mlink = SoupStrainer(class_='moviefilm')
+    mlink = SoupStrainer(class_='movie-poster')
     Items = BeautifulSoup(link, 'html.parser', parse_only=mlink)
     #soup = BeautifulSoup(link,'html5lib')
     #Items = soup.find_all(class_='moviefilm')
@@ -882,24 +883,29 @@ def getMovList_runtamil(runtamilurl):
 
     for eachItem in Items:
         ItemNum = ItemNum+1
-        movTitle = eachItem.div.a.string
+        #movTitle = eachItem.div.a.string
+        movTitle = eachItem.find('img')['alt']
         movTitle = clean_movtitle(movTitle)
         movPage = eachItem.find('a')['href']
         imgSrc = eachItem.find('img')['src']
         Dict_movlist.update({ItemNum:'mode=individualmovie, url=' + movPage + ', imgLink=' + imgSrc+', MovTitle='+movTitle.decode('utf8')})
 
     #Paginator = soup.find(class_='wp-pagenavi')
-    mlink = SoupStrainer(class_='wp-pagenavi')
+    paginationText = ''
+    mlink = SoupStrainer(class_='navigation keremiya-pagenavi')
     Paginator = BeautifulSoup(link, 'html.parser', parse_only=mlink)
-    if 'larger' in str(Paginator):
-        currPage = Paginator.find('span', { 'class':'current'})
+    paginationText = ''
+    try:
+        currPage = Paginator.find(class_='current')
+    except:
+        currPage = ''
+    if currPage:
         CurrentPage = int(currPage.string)
-        laPage = Paginator.find('span', { 'class':'pages'})
-        lastPage = laPage.string
-        lPage = int(re.findall('of (.*)', lastPage)[0])
+        laPage = Paginator.find(class_='last')
+        lastPage = int(laPage.string)
 
-        if (CurrentPage < lPage):
-            paginationText = '(Currently in ' + lastPage + ')'
+        if (CurrentPage < lastPage):
+            paginationText = "(Currently in Page " + str(CurrentPage) + " of " + str(lastPage) + ")\n"
 
     if 'new-tamil' in runtamilurl:
         subUrl = 'runtamilnew'

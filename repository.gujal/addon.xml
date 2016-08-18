@@ -1,20 +1,15 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="repository.gujal" name="Gujal's Addon Repository" version="1.0" provider-name="Gujal">
+<addon id="repository.gujal" name="Gujal's Addon Repository" version="1.1" provider-name="Gujal">
 	<extension point="xbmc.addon.repository" name="Gujal's Addon Repository">
-    <dir>
-            <info compressed="false">https://raw.github.com/Gujal00/GujalKodiWork/master/addons.xml</info>
-            <checksum>https://raw.github.com/Gujal00/GujalKodiWork/master/addons.xml.md5</checksum>
-            <datadir zip="true">https://raw.github.com/Gujal00/GujalKodiWork/master/zips</datadir>
-    </dir>
-    
-    <info compressed="false">https://raw.github.com/Gujal00/GujalKodiWork/master/addons.xml</info>
-    <checksum>https://raw.github.com/Gujal00/GujalKodiWork/master/addons.xml.md5</checksum>
-    <datadir zip="true">https://raw.github.com/Gujal00/GujalKodiWork/master/zips</datadir>
+   
+    <info compressed="false">https://offshoregit.com/gujal/main/addons.xml</info>
+    <checksum>https://offshoregit.com/gujal/main/addons.xml.md5</checksum>
+    <datadir zip="true">https://offshoregit.com/gujal/main/zips</datadir>
 
 	</extension>
 	<extension point="xbmc.addon.metadata">
 		<summary>Addons for Kodi related to Entertainment from India</summary>
-		<description>Go though the plugins and see what you like</description>
+		<description>Deccan Delight Addon Repository</description>
 		<platform>all</platform>
 	</extension>
 </addon>

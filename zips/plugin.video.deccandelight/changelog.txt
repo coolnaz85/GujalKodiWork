@@ -1,3 +1,6 @@
+[B]Version 0.2.5 - 18 Aug 2016[/B]
+- Fix run tamil parser to account for site changes
+
 [B]Version 0.2.4 - 16 Aug 2016[/B]
 - Fix parsers to account for site changes
 
