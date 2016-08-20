@@ -981,13 +981,14 @@ def getMovList_flinks(flinksurl):
 
     Dict_movlist = {}
     link = requests.get(flinksurl, headers=mozagent, verify=False).text
-    mlink = SoupStrainer(id="masonry-grid")
+    mlink = SoupStrainer(id="main-content")
     lsoup = BeautifulSoup(link, 'html.parser', parse_only=mlink)
     ItemNum = 0
     Items = lsoup.findAll(class_='item-list tie_video')
     #xbmc.log(msg='========== Items: ' + str(Items), level=xbmc.LOGNOTICE)
     for eachItem in Items:
         asoup = eachItem.find(class_='post-content image-caption-format-1')
+        #xbmc.log(msg='========== Item: ' + eachItem.prettify(), level=xbmc.LOGNOTICE)
         movPage = eachItem.find('a')['href']
         try:
             imgSrc = eachItem.find('img')['src']
@@ -1795,39 +1796,53 @@ def getMovLinksForEachMov(url):
     elif 'runtamil.' in url:
 
         link = requests.get(url, headers=mozagent).text
-        mlink = SoupStrainer('iframe')
-        links = BeautifulSoup(link, 'html.parser', parse_only=mlink)
+        mlink = SoupStrainer(class_='video-container')
+        soup = BeautifulSoup(link, 'html.parser', parse_only=mlink)
         sources = []
-
-        for link in links:
+        
+        plinks = soup.find_all('p')
+        for plink in plinks:
+            #xbmc.log(msg='========== plink: ' + plink.prettify().encode('utf-8'), level=xbmc.LOGNOTICE)
             try:
-                vidurl = link.get('src')
-                if (('runtamil' in vidurl) or ('tamildrive' in vidurl)) and ('facebook' not in vidurl):
-                    headers = {'Referer' : url,
-                              'User-Agent': 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3'}
-                    slink = requests.get(vidurl, headers=headers).text
-                    if 'runtamil' in vidurl:
-                        hoster = 'RunTamil '
-                        srclist = re.search('(\[.*?\])', slink).group(1).replace('file', '"file"').replace('label', '"label"')
+                links = plink.find_all('iframe')
+                for link in links:
+                    vidurl = link.get('src')
+                    if (('runtamil' in vidurl) or ('tamildrive' in vidurl)) and ('facebook' not in vidurl):
+                        headers = {'Referer' : url,
+                                  'User-Agent': 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3'}
+                        slink = requests.get(vidurl, headers=headers).text
+                        if 'runtamil' in vidurl:
+                            hoster = 'RunTamil '
+                            srclist = re.search('(\[.*?\])', slink).group(1).replace('file', '"file"').replace('label', '"label"')
+                        else:
+                            hoster = 'TamilDrive '
+                            srclist = re.search('sources: (\[.*?\])', slink).group(1).replace('file', '"file"').replace('label', '"label"')
+                        strlinks = eval(srclist)
+                        for strlink in strlinks:
+                            #xbmc.log(msg='========== link: ' + str(strlink), level=xbmc.LOGNOTICE)
+                            elink = strlink['file']
+                            qual = ''
+                            if 'label' in strlink:
+                                qual = strlink['label']
+                            li = xbmcgui.ListItem(hoster + qual)
+                            li.setArt({ 'fanart': fanarturl })
+                            li.setProperty('IsPlayable', 'true')
+                            xbmcplugin.addDirectoryItem(int(sys.argv[1]), elink, li)
                     else:
-                        hoster = 'TamilDrive '
-                        srclist = re.search('sources: (\[.*?\])', slink).group(1).replace('file', '"file"').replace('label', '"label"')
-                    strlinks = eval(srclist)
-                    for strlink in strlinks:
-                        #xbmc.log(msg='========== link: ' + str(strlink), level=xbmc.LOGNOTICE)
-                        elink = strlink['file']
-                        qual = ''
-                        if 'label' in strlink:
-                            qual = strlink['label']
-                        li = xbmcgui.ListItem(hoster + qual)
-                        li.setArt({ 'fanart': fanarturl })
-                        li.setProperty('IsPlayable', 'true')
-                        xbmcplugin.addDirectoryItem(int(sys.argv[1]), elink, li)
-                else:
-                    resolve_media(vidurl, sources)
-            
+                        resolve_media(vidurl, sources)
+                
             except:
                 print 'Nothing found using method 1!'
+
+            # try:
+                # tlink = plink.text.encode('ascii','ignore')
+                # xbmc.log(msg='========== tlink: ' + tlink, level=xbmc.LOGNOTICE)
+                # vidurl = re.search('mp4=([^=]*)', tlink)
+                # if vidurl:
+                    # resolve_media(vidurl.group(1), sources)
+                
+            # except:
+                # print 'Nothing found using method 2!'
 
         list_media(movTitle, sources, fanarturl)
 

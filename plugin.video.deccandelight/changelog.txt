@@ -1,8 +1,11 @@
+[B]Version 0.2.6- 20 Aug 2016[/B]
+- Fix Filmlinks parser due to site changes
+
 [B]Version 0.2.5 - 18 Aug 2016[/B]
-- Fix run tamil parser to account for site changes
+- Fix run tamil parser due to site changes
 
 [B]Version 0.2.4 - 16 Aug 2016[/B]
-- Fix parsers to account for site changes
+- Fix parsers due to site changes
 
 [B]Version 0.2.3 - 12 Aug 2016[/B]
 - Fix parser errors in RedMovies
