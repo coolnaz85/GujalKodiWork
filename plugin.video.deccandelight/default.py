@@ -16,11 +16,11 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import os, re, sys, urllib, xbmc, xbmcaddon, xbmcgui, xbmcplugin, xbmcvfs
+import os, re, sys, urllib, json, xbmc, xbmcaddon, xbmcgui, xbmcplugin, xbmcvfs
 from t0mm0.common.addon import Addon
 from bs4 import BeautifulSoup
 from bs4 import SoupStrainer
-import urlresolver
+import urlresolver, liveresolver
    
 try:
     import StorageServer
@@ -74,12 +74,14 @@ tgun_img = img_path + 'tamilgun.png'
 runt_img = img_path + 'runt.png'
 ttwist_img = img_path + 'ttwist.png'
 tvcd_img = img_path + 'thiruttuvcd.png'
+tvcds_img = img_path + 'tvcds.png'
+ttvs_img = img_path + 'apkland.png'
 i4m_img = img_path + 'i4m.png'
 ein_img = img_path + 'ein.png'
 next_img = img_path + 'next.png'
 fan_img = img_path + 'cinema.jpg'
-mozagent = {'User-Agent': 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3'}
-
+mozhdr = {'User-Agent': 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3'}
+mozagent = 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3'
 
 def GetSearchQuery(sitename):
     keyboard = xbmc.Keyboard()
@@ -205,7 +207,7 @@ def clean_movtitle(movTitle):
     movTitle = movTitle.replace('HDTV', '')
     movTitle = movTitle.replace('TVRip', '')
     movTitle = movTitle.replace('TS', '')
-    movTitle = movTitle.replace('tamil', '')
+    movTitle = movTitle.replace('tamil ', '')
     movTitle = movTitle.replace('Dubbed', '')
     movTitle = movTitle.replace('Super ', '')
     movTitle = movTitle.replace('Hilarious', '')
@@ -219,8 +221,8 @@ def clean_movtitle(movTitle):
     movTitle = movTitle.replace('Scene', '')
     movTitle = movTitle.replace('Songs', '')
     movTitle = movTitle.replace('songs', '')
-    movTitle = movTitle.replace('Punjabi', '')
-    movTitle = movTitle.replace('punjabi', '')
+    movTitle = movTitle.replace('Punjabi ', '')
+    movTitle = movTitle.replace('punjabi ', '')
     movTitle = movTitle.replace('DVD', '')
     movTitle = movTitle.replace('VDSCR', '')
     movTitle = movTitle.replace('Bluray', '')
@@ -251,7 +253,7 @@ def clean_movtitle(movTitle):
 def resolve_vidurl(url,sources):
     if 'google.' in url:
         url = url.replace('/preview', '/edit')
-        glink = requests.get(url, headers=mozagent, verify=False).text
+        glink = requests.get(url, headers=mozhdr, verify=False).text
         strurl = (re.findall('"fmt_stream_map.*?(http[^|]*)', glink)[0]).replace('\\u0026', '&').replace('\\u003d', '=')
         hmf = 'url : ' + strurl
 
@@ -278,7 +280,7 @@ def resolve_media(vidurl,sources):
                   'watchmoviesonline4u', 'nobuffer.info']
 
     if 'pongomovies' in vidurl:
-        link = requests.get(vidurl, headers=mozagent).text
+        link = requests.get(vidurl, headers=mozhdr).text
         mlink = SoupStrainer(class_='tabs-catch-all')
         links = BeautifulSoup(link, 'html.parser', parse_only=mlink)
         xbmc.log(msg='========== links: ' + str(links), level=xbmc.LOGNOTICE)
@@ -288,7 +290,7 @@ def resolve_media(vidurl,sources):
                 resolve_vidurl(strurl,sources)
        
     elif 'filmshowonline.net/media/' in vidurl:
-        r = requests.get(vidurl, headers=mozagent)
+        r = requests.get(vidurl, headers=mozhdr)
         clink = r.text
         cookies = r.cookies
         eurl = re.findall("url: '([^']*)[\d\D]*nonce :", clink)[0]
@@ -299,7 +301,7 @@ def resolve_media(vidurl,sources):
                   'width' : '848',
                   'height' : '480',
                   'link_id' : evid }
-        headers = {'User-Agent': 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3',
+        headers = {'User-Agent': mozagent,
                    'Referer': vidurl,
                   'X-Requested-With': 'XMLHttpRequest'}
         emurl = requests.post(eurl, data=values, headers=headers, cookies=cookies).text
@@ -307,7 +309,7 @@ def resolve_media(vidurl,sources):
         resolve_vidurl(strurl, sources)
 
     elif 'filmshowonline.net/videos/' in vidurl:
-        clink = requests.get(vidurl, headers=mozagent).text
+        clink = requests.get(vidurl, headers=mozhdr).text
         csoup = BeautifulSoup(clink)
         strurl = csoup.find('iframe')['src']
         if 'http' in strurl:
@@ -315,7 +317,7 @@ def resolve_media(vidurl,sources):
                     
     elif 'tamildbox' in vidurl:
         try:
-            link = requests.get(vidurl, headers=mozagent).text
+            link = requests.get(vidurl, headers=mozhdr).text
             mlink = SoupStrainer(id='player-embed')
             dclass = BeautifulSoup(link, 'html.parser', parse_only=mlink)       
             if 'unescape' in str(dclass):
@@ -332,7 +334,7 @@ def resolve_media(vidurl,sources):
             print 'no embedded urls found using tamildbox method'
 
     elif any([x in vidurl for x in embed_list]):
-        clink = requests.get(vidurl, headers=mozagent).text
+        clink = requests.get(vidurl, headers=mozhdr).text
         csoup = BeautifulSoup(clink)
         try:
             for linksSection in csoup.findAll('iframe'):
@@ -431,7 +433,7 @@ def getMovList_thiruttuvcd(thiruttuvcd_url):
     if 'thiruttumasala' in thiruttuvcd_url:
         url = thiruttuvcd_url      
         base_url = 'http://www.thiruttumasala.com'
-        headers = {'User-Agent': 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3',
+        headers = {'User-Agent': mozagent,
                    'Accept-Encoding': 'deflate'}	
         link = requests.get(url, headers=headers).text
         soup = BeautifulSoup(link)
@@ -464,34 +466,9 @@ def getMovList_thiruttuvcd(thiruttuvcd_url):
         if paginationText:
             Dict_movlist.update({'Paginator':'mode=GetMovies, subUrl=' + subUrl + ', currPage=' + str(CurrentPage + 1) + ',title=Next Page.. ' + paginationText + ',search_text=' + search_text})
 
-    elif '/private/' in thiruttuvcd_url:
-        url = thiruttuvcd_url
-        subUrl = 'thiruttuvcd_adult'
-        link = requests.get(url, headers=mozagent).text
-        soup = BeautifulSoup(link,'html.parser')
-        ItemNum = 0
-        Items = soup.find_all(class_='boxentry')
-        for eachItem in Items:
-            ItemNum = ItemNum+1
-            movPage = eachItem.find('a')['href']
-            imgSrc = eachItem.find('img')['src']
-            movTitle = (eachItem.find('a')['title'])
-            movTitle = clean_movtitle(movTitle)
-            Dict_movlist.update({ItemNum:'mode=individualmovie, url=' + movPage + ', imgLink=' + imgSrc + ', MovTitle=' + movTitle.decode('utf8')})
-
-        CurrentPage = int(re.findall("class='current'>(.*?)<", link)[0])
-        lastPage = int(re.findall("class='pages'>.*?of (.*?)<", link)[0])
-        paginationText = ''
-
-        if (CurrentPage < lastPage):
-            paginationText = '(Currently in Page ' + str(CurrentPage) + ' of ' + str(lastPage) + ')\n'
-            
-        if paginationText:
-            Dict_movlist.update({'Paginator':'mode=GetMovies, subUrl=' + subUrl + ', currPage=' + str(CurrentPage + 1) + ',title=Next Page.. ' + paginationText + ',search_text=' + search_text})
-
     else:
         url = thiruttuvcd_url
-        link = requests.get(url, headers=mozagent).text
+        link = requests.get(url, headers=mozhdr).text
         soup = BeautifulSoup(link)
         ItemNum=0
         for eachItem in soup.findAll('div', { 'class':'postbox' }):
@@ -536,10 +513,59 @@ def getMovList_thiruttuvcd(thiruttuvcd_url):
         
     return Dict_movlist
 
+def getMovList_tvcds(tvcds_url):
+
+    Dict_movlist = {}
+
+    url = tvcds_url
+    link = requests.get(url, headers=mozhdr).text
+    mlink = SoupStrainer(class_='boxentry')
+    Items = BeautifulSoup(link, 'html.parser', parse_only=mlink)
+    ItemNum = 0
+    for eachItem in Items:
+        ItemNum = ItemNum+1
+        movPage = eachItem.find('a')['href']
+        imgSrc = eachItem.find('img')['src']
+        movTitle = eachItem.find('a')['title']
+        movTitle = clean_movtitle(movTitle)
+        Dict_movlist.update({ItemNum:'mode=individualmovie, url=' + movPage + ', imgLink=' + imgSrc + ', MovTitle=' + movTitle.decode('utf8')})
+
+    mlink = SoupStrainer(class_='wp-pagenavi')
+    Paginator = BeautifulSoup(link, 'html.parser', parse_only=mlink)
+    paginationText=''
+    
+    if 'larger' in str(Paginator):
+        currPage = Paginator.find('span', { 'class':'current'})
+        CurrentPage = int(currPage.string)
+        laPage = Paginator.find('span', { 'class':'pages'})
+        lastPage = laPage.string
+        lPage = int(re.findall('of (.*)', lastPage)[0])
+
+        if (CurrentPage < lPage):
+            paginationText = '(Currently in ' + lastPage + ')\n'
+        
+    if 'tamil-movies' in tvcds_url:
+        subUrl = 'tvcds_tamil'
+    elif '/english/' in tvcds_url:
+        subUrl = 'tvcds_english'
+    elif '/telugu/' in tvcds_url:
+        subUrl = 'tvcds_telugu'
+    elif '/hindi/' in tvcds_url:
+        subUrl = 'tvcds_hindi'
+    elif '/private/' in tvcds_url:
+        subUrl = 'tvcds_adult'
+    elif '?s=' in tvcds_url:
+        subUrl = 'tvcds_search'
+        
+    if paginationText:
+        Dict_movlist.update({'Paginator':'mode=GetMovies, subUrl=' + subUrl + ', currPage=' + str(CurrentPage + 1) + ',title=Next Page.. ' + paginationText + ',search_text=' + search_text})
+    
+    return Dict_movlist
+
 def getMovList_rajtamil(rajTamilurl):
 
     Dict_movlist = {}
-    link = requests.get(rajTamilurl, headers=mozagent).text
+    link = requests.get(rajTamilurl, headers=mozhdr).text
     soup = BeautifulSoup(link)
     ItemNum=0
     for eachItem in soup.findAll('li'):
@@ -593,7 +619,7 @@ def getMovList_rajtamil(rajTamilurl):
 
 def getMovList_mersal(mersalurl):
     Dict_movlist = {}
-    link = requests.get(mersalurl, headers=mozagent).text
+    link = requests.get(mersalurl, headers=mozhdr).text
     mlink = SoupStrainer(class_='col-sm-6 col-md-4 col-lg-4')
     Items = BeautifulSoup(link, 'html.parser', parse_only=mlink)
     ItemNum = 0
@@ -645,7 +671,7 @@ def getMovList_mersal(mersalurl):
 
 def getMovList_mrulz(mrulzurl):
     Dict_movlist = {}
-    link = requests.get(mrulzurl, headers=mozagent).text
+    link = requests.get(mrulzurl, headers=mozhdr).text
     mlink = SoupStrainer(class_='cont_display')
     Items = BeautifulSoup(link, 'html.parser', parse_only=mlink)
     ItemNum = 0
@@ -712,7 +738,7 @@ def getMovList_mrulz(mrulzurl):
 
 def getMovList_rmovies(rmoviesurl):
     Dict_movlist = {}
-    link = requests.get(rmoviesurl, headers=mozagent).text
+    link = requests.get(rmoviesurl, headers=mozhdr).text
     soup = BeautifulSoup(link,'html5lib')
     Items = soup.find_all(class_='thumb')
     ItemNum = 0
@@ -769,7 +795,7 @@ def getMovList_rmovies(rmoviesurl):
 
 def getMovList_moviefk(moviefkurl):
     Dict_movlist = {}
-    link = requests.get(moviefkurl, headers=mozagent).text
+    link = requests.get(moviefkurl, headers=mozhdr).text
     mlink = SoupStrainer(class_='post-text')
     Items = BeautifulSoup(link, 'html.parser', parse_only=mlink)
     ItemNum = 0
@@ -824,7 +850,7 @@ def getMovList_moviefk(moviefkurl):
 def getMovList_tamilgun(tamilgunurl):
 
     Dict_movlist = {}
-    link = requests.get(tamilgunurl, headers=mozagent).text
+    link = requests.get(tamilgunurl, headers=mozhdr).text
     soup = BeautifulSoup(link,'html5lib')
     Items = soup.find_all(class_='col-sm-4 col-xs-6 item')
     ItemNum = 0
@@ -874,7 +900,7 @@ def getMovList_tamilgun(tamilgunurl):
 def getMovList_runtamil(runtamilurl):
 
     Dict_movlist = {}
-    link = requests.get(runtamilurl, headers=mozagent).text
+    link = requests.get(runtamilurl, headers=mozhdr).text
     mlink = SoupStrainer(class_='movie-poster')
     Items = BeautifulSoup(link, 'html.parser', parse_only=mlink)
     #soup = BeautifulSoup(link,'html5lib')
@@ -924,7 +950,7 @@ def getMovList_runtamil(runtamilurl):
 def getMovList_ttwist(ttwisturl):
 
     Dict_movlist = {}
-    link = requests.get(ttwisturl, headers=mozagent).text
+    link = requests.get(ttwisturl, headers=mozhdr).text
     mlink = SoupStrainer(class_='listing-videos listing-wall')
     lsoup = BeautifulSoup(link, 'html.parser', parse_only=mlink)
     ItemNum = 0
@@ -980,7 +1006,7 @@ def getMovList_ttwist(ttwisturl):
 def getMovList_flinks(flinksurl):
 
     Dict_movlist = {}
-    link = requests.get(flinksurl, headers=mozagent, verify=False).text
+    link = requests.get(flinksurl, headers=mozhdr, verify=False).text
     mlink = SoupStrainer(id="main-content")
     lsoup = BeautifulSoup(link, 'html.parser', parse_only=mlink)
     ItemNum = 0
@@ -1073,7 +1099,7 @@ def getMovList_hlinks(hlinksurl):
 
     Dict_movlist = {}
     url=hlinksurl
-    link = requests.get(url, headers=mozagent).text
+    link = requests.get(url, headers=mozhdr).text
     soup = BeautifulSoup(link,'html5lib')
     lsoup = soup.find(class_='nag cf')
     ItemNum = 0
@@ -1131,7 +1157,7 @@ def getMovList_hlinks(hlinksurl):
 def getMovList_olangal(olangalurl):
     Dict_movlist = {}
     url=olangalurl
-    link = requests.get(url, headers=mozagent).text
+    link = requests.get(url, headers=mozhdr).text
 
     mlink = SoupStrainer(class_='paginado')
     Paginator = BeautifulSoup(link, 'html.parser', parse_only=mlink)
@@ -1168,7 +1194,7 @@ def getMovList_olangal(olangalurl):
 
 def getMovList_ABCmal(abcmalUrl):
     Dict_movlist = {}
-    link = requests.get(abcmalUrl, headers=mozagent).text
+    link = requests.get(abcmalUrl, headers=mozhdr).text
     base_url = 'http://abcmalayalam.com'
     mlink = SoupStrainer(class_='itemContainer')
     Items = BeautifulSoup(link, 'html.parser', parse_only=mlink)
@@ -1191,9 +1217,42 @@ def getMovList_ABCmal(abcmalUrl):
 
     return Dict_movlist
 
+def getMovList_tamiltv(tamiltvurl):
+    Dict_movlist = {}
+    link = requests.get(tamiltvurl, headers=mozhdr).text
+    mlink = SoupStrainer(class_='pm-li-video')
+    Items = BeautifulSoup(link, 'html.parser', parse_only=mlink)
+    ItemNum=0
+    for Item in Items:
+        ItemNum = ItemNum+1
+        movUrl = Item.a.get('href')
+        movName = Item.a.img.get('alt')
+        imgSrc = Item.a.img.get('src')
+        
+        Dict_movlist.update({ItemNum:'mode=individualmovie, url=' + movUrl + ', imgLink=' + imgSrc + ', MovTitle=' + movName})
+
+    mlink = SoupStrainer(class_='pagination pagination-centered')
+    psoup = BeautifulSoup(link, 'html.parser', parse_only=mlink)
+    #xbmc.log(msg = 'psoup:======>\n' + psoup.prettify().encode('utf8'), level = xbmc.LOGNOTICE)
+    CurrentPage = psoup.find(class_='active')
+    #xbmc.log(msg = 'CurrentPage:======>\n' + CurrentPage.prettify(), level = xbmc.LOGNOTICE)
+    currPage = int(CurrentPage.a.text)
+    pages = psoup.find_all('a')
+    lastPage = 1
+    for page in pages:
+        if page.text.isnumeric():
+            if int(page.text) > lastPage:
+                lastPage = int(page.text)
+
+    if currPage < lastPage:
+        paginationText = '(Currently in Page ' + str(currPage) + ' of ' + str(lastPage) + ' )'
+        Dict_movlist.update({'Paginator':'mode=GetMovies, subUrl=' + subUrl + ', currPage=' + str(currPage + 1) + ',title=Next Page.. ' + paginationText + ',search_text=' + search_text})
+
+    return Dict_movlist
+
 def getMovList_KitMovie(kmovieurl):
     Dict_movlist = {}
-    link = requests.get(kmovieurl, headers=mozagent).text
+    link = requests.get(kmovieurl, headers=mozhdr).text
     soup = BeautifulSoup(link,'html5lib')
     ItemNum=0
     Items = soup.find_all(class_='col-sm-4 col-xs-6 item responsive-height')
@@ -1276,7 +1335,7 @@ def getMovList_KitMovie(kmovieurl):
 
 def getMovList_i4m(i4murl):
     Dict_movlist = {}
-    link = requests.get(i4murl, headers=mozagent).text
+    link = requests.get(i4murl, headers=mozhdr).text
     mlink = SoupStrainer(class_='entry clearfix')
     Items = BeautifulSoup(link, 'html.parser', parse_only=mlink)
     #soup = BeautifulSoup(link)
@@ -1343,7 +1402,7 @@ def getMovList_i4m(i4murl):
 
 def getMovList_mfish(mfishurl):
     Dict_movlist = {}
-    link = requests.get(mfishurl, headers=mozagent).text
+    link = requests.get(mfishurl, headers=mozhdr).text
     soup = BeautifulSoup(link, 'html5lib')
     videoclass = soup.find(class_='loop-content switchable-view list-medium')
     #xbmc.log(msg='========== videoclass: ' + (videoclass.prettify().encode('utf-8')), level=xbmc.LOGNOTICE)
@@ -1403,7 +1462,7 @@ def getMovLinksForEachMov(url):
 
     if 'olangal.' in url:
 
-        link = requests.get(url, headers=mozagent).text
+        link = requests.get(url, headers=mozhdr).text
         mlink = SoupStrainer(class_='entry-content')
         videoclass = BeautifulSoup(link, 'html.parser', parse_only=mlink)
         sources = []
@@ -1444,13 +1503,13 @@ def getMovLinksForEachMov(url):
 
         movid = re.findall('video/([\\d]*)',url)[0]
         xmlurl = 'http://mersalaayitten.co/media/nuevo/econfig.php?key=' + movid
-        headers = {'User-Agent': 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3',
+        headers = {'User-Agent': mozagent,
                    'Referer': 'http://mersalaayitten.co/media/nuevo/player.swf'}
         link = requests.get(xmlurl, headers=headers).text
         soup = BeautifulSoup(link)
 
         try:
-            movfile = soup.html5.text
+            movfile = soup.file.text
             thumb = soup.thumb.text
             li = xbmcgui.ListItem(movTitle, iconImage=thumb)
             li.setArt({ 'fanart': thumb })
@@ -1464,9 +1523,70 @@ def getMovLinksForEachMov(url):
         except:
             print "Nothing found"
 
+    elif 'tamiltvsite.' in url:
+
+        slink = requests.get(url, headers=mozhdr).text
+        mlink = SoupStrainer('div', {'id':'Playerholder'})
+        soup = BeautifulSoup(slink, 'html.parser', parse_only=mlink)
+        movfile=''
+
+        try:
+            tlink = soup.iframe.get('src')
+            if 'tamiltvsite.' in tlink:
+                link = requests.get(tlink, headers=mozhdr).text
+                strdata = re.findall('var act_data = (.*?);', link)[0]
+                act_data = json.loads(strdata)
+                act_url = act_data["url"]
+                new_token = re.findall('new_token = "(.*?)"', link)[0]
+                movfile = act_url
+                if 'wmsauthsign' in act_url.lower():
+                    act_url = act_url.split('?')[0]
+                    movfile = act_url + '?wmsAuthSign=' + new_token
+                    
+            elif ('dacast.' in tlink) or ('streamingasaservice.' in tlink):
+                surl = tlink.split('.com')[1]
+                dheaders = {'User-Agent': mozagent,
+                           'Referer': 'http://iframe.dacast.com/'}
+                link = requests.get('http://json.dacast.com' + surl, headers=dheaders).text
+                act_data = json.loads(link)
+                act_url = act_data["hls"]
+                link = requests.get('https://services.dacast.com/token/i' + surl + '?', headers=dheaders, verify=False).text
+                act_data = json.loads(link)
+                new_token = act_data["token"]
+                movfile = act_url + new_token
+                
+            elif 'youtube.' in tlink:
+                sources = []
+                resolve_media(tlink, sources)
+                list_media(movTitle, sources, fanarturl)
+                
+            else:
+                if liveresolver.find_link(tlink):
+                    movfile = liveresolver.resolve(tlink)
+                else:
+                    xbmc.log(msg = tlink + ' not resolvable by liveresolver.\n', level = xbmc.LOGNOTICE)
+        except:
+            print "no embedded urls found using iframe method"
+
+        try:
+            fvar = soup.embed.get('flashvars')
+            swfUrl = soup.embed.get('src')
+            rtmp = re.findall('file=([^&]*)',fvar)[0]
+            playpath = re.findall('id=([^&]*)',fvar)[0]
+            movfile = rtmp + ' playpath=' + playpath + ' swfUrl=' + swfUrl + ' pageUrl=' + url + ' live=1 timeout=15'
+        
+        except:
+            print "no embedded urls found using embed method"
+            
+        if movfile:
+            li = xbmcgui.ListItem(movTitle)
+            li.setArt({ 'thumb': fanarturl })
+            li.setProperty('IsPlayable', 'true')
+            xbmcplugin.addDirectoryItem(int(sys.argv[1]), movfile, li)
+
     elif 'rajtamil.' in url:
 
-        link = requests.get(url, headers=mozagent).text
+        link = requests.get(url, headers=mozhdr).text
         mlink = SoupStrainer(class_='entry-content')
         videoclass = BeautifulSoup(link, 'html.parser', parse_only=mlink)
         #xbmc.log(msg='========== Videoclass: ' + (videoclass.prettify().encode('utf-8')), level=xbmc.LOGNOTICE)
@@ -1503,13 +1623,13 @@ def getMovLinksForEachMov(url):
             movLink = re.findall("[\d\D]+window.open\('([^']*)", str(videoclass))[0]
             resolve_media(movLink, sources)
         except:
-            print "no embedded urls found using a method"
+            print "no embedded urls found using open method"
 
         list_media(movTitle, sources, fanarturl)
 
     elif 'redmovies.' in url:
 
-        link = requests.get(url, headers=mozagent).text
+        link = requests.get(url, headers=mozhdr).text
         soup = BeautifulSoup(link,'html5lib')
         #lsoup = soup.find(class_='entry-content rich-content')
         lsoup = soup.find(id="content")
@@ -1548,7 +1668,7 @@ def getMovLinksForEachMov(url):
 
     elif 'cinebix.com' in url:
 
-        link = requests.get(url, headers=mozagent).text
+        link = requests.get(url, headers=mozhdr).text
         soup = BeautifulSoup(link)
         sources = []
         
@@ -1577,7 +1697,7 @@ def getMovLinksForEachMov(url):
 
     elif 'tamilgun.' in url:
 
-        link = requests.get(url, headers=mozagent).text
+        link = requests.get(url, headers=mozhdr).text
         soup = BeautifulSoup(link, 'html5lib')
         videoclass = soup.find(class_='videoWrapper player')     
         sources = []
@@ -1622,10 +1742,10 @@ def getMovLinksForEachMov(url):
             jlink = re.findall('sources:.*file":"([^"]*)', link)[0]
             elink = jlink.replace('\\/', '/')
             if ('tamilgun' in elink) or ('m3u8' in elink):
-                li = xbmcgui.ListItem('tamilgun.com', iconImage=fanarturl)
+                li = xbmcgui.ListItem('tamilgun.us', iconImage=fanarturl)
                 li.setArt({ 'fanart': fanarturl })
                 li.setProperty('IsPlayable', 'true')
-                elink += '|Referer=http://tamilgun.com'
+                elink += '|Referer=http://tamilgun.us'
                 xbmcplugin.addDirectoryItem(int(sys.argv[1]), elink, li)
             else:
                 print '    not resolvable by urlresolver!'
@@ -1637,7 +1757,7 @@ def getMovLinksForEachMov(url):
 
     elif 'filmlinks4u.' in url:
 
-        link = requests.get(url, headers=mozagent, verify=False).text
+        link = requests.get(url, headers=mozhdr, verify=False).text
         mlink = SoupStrainer(class_='post-single-content box mark-links')
         lsoup = BeautifulSoup(link, 'html.parser', parse_only=mlink)
         sources = []
@@ -1667,7 +1787,7 @@ def getMovLinksForEachMov(url):
             values = {'action' : 'create_player_box',
                       'post_id' : postid }
             headers = {'Referer' : 'https://www.filmlinks4u.is/',
-                      'User-Agent': 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3',
+                      'User-Agent': mozagent,
                       'X-Requested-With' : 'XMLHttpRequest'}
             playbox = requests.post(blink, data=values, headers=headers, verify=False).text
             mlink2 = SoupStrainer(class_='tabs')
@@ -1721,7 +1841,7 @@ def getMovLinksForEachMov(url):
 
     elif 'hindilinks4u.' in url:
 
-        link = requests.get(url, headers=mozagent).text
+        link = requests.get(url, headers=mozhdr).text
         soup = BeautifulSoup(link, 'html5lib')
         sources = []
 
@@ -1760,7 +1880,7 @@ def getMovLinksForEachMov(url):
 
     elif 'movierulz.' in url:
 
-        link = requests.get(url, headers=mozagent).text
+        link = requests.get(url, headers=mozhdr).text
         mlink = SoupStrainer(class_='entry-content')
         soup = BeautifulSoup(link, 'html.parser', parse_only=mlink)
         sources = []
@@ -1777,7 +1897,7 @@ def getMovLinksForEachMov(url):
 
     elif 'moviefk.' in url:
 
-        link = requests.get(url, headers=mozagent).text
+        link = requests.get(url, headers=mozhdr).text
         mlink = SoupStrainer(class_='post-text')
         soup = BeautifulSoup(link, 'html.parser', parse_only=mlink)
         links = soup.find_all('p')
@@ -1795,7 +1915,7 @@ def getMovLinksForEachMov(url):
 
     elif 'runtamil.' in url:
 
-        link = requests.get(url, headers=mozagent).text
+        link = requests.get(url, headers=mozhdr).text
         mlink = SoupStrainer(class_='video-container')
         soup = BeautifulSoup(link, 'html.parser', parse_only=mlink)
         sources = []
@@ -1809,7 +1929,7 @@ def getMovLinksForEachMov(url):
                     vidurl = link.get('src')
                     if (('runtamil' in vidurl) or ('tamildrive' in vidurl)) and ('facebook' not in vidurl):
                         headers = {'Referer' : url,
-                                  'User-Agent': 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3'}
+                                  'User-Agent': mozagent}
                         slink = requests.get(vidurl, headers=headers).text
                         if 'runtamil' in vidurl:
                             hoster = 'RunTamil '
@@ -1848,7 +1968,7 @@ def getMovLinksForEachMov(url):
 
     elif 'thiruttuvcd.' in url:
 
-        link = requests.get(url, headers=mozagent).text
+        link = requests.get(url, headers=mozhdr).text
         soup = BeautifulSoup(link)
         sources = []
 
@@ -1873,28 +1993,24 @@ def getMovLinksForEachMov(url):
 
     elif 'thiruttuvcds.' in url:
 
-        link = requests.get(url, headers=mozagent).text
-        soup = BeautifulSoup(link,'html.parser')
+        link = requests.get(url, headers=mozhdr).text
+        mlink = SoupStrainer(class_='videosection')
+        linksDiv = BeautifulSoup(link, 'html.parser', parse_only=mlink)
         sources = []
 
         try:
-            linksDiv = soup.find("div", { "class":"videosection" })
             links = linksDiv.find_all('iframe')			
             for link in links:
                 vidurl = link.get('src').strip()
-                hosted_media = urlresolver.HostedMediaFile(vidurl)
-                if urlresolver.HostedMediaFile(vidurl).valid_url():
-                    sources.append(hosted_media)
-                else:
-                    xbmc.log(msg=vidurl + ' is NOT resolvable by urlresolver!', level=xbmc.LOGNOTICE)
+                resolve_media(vidurl, sources)
         except:
-                 print 'Nothing found using youtube method!'
+                 print 'Nothing found using iframe method!'
 
         list_media(movTitle, sources, fanarturl)
 
     elif 'thiruttumasala.' in url:
 
-        headers = {'User-Agent': 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3',
+        headers = {'User-Agent': mozagent,
                    'Accept-Encoding': 'deflate'}
         link = requests.get(url, headers=headers).text
         soup = BeautifulSoup(link)
@@ -1935,7 +2051,7 @@ def getMovLinksForEachMov(url):
                 link=link.replace('config.php', 'playlist.php')
                 #print 'BLAAA found link =' + link
 
-                link = requests.get(link, headers=mozagent).text
+                link = requests.get(link, headers=mozhdr).text
                 soup = BeautifulSoup(link)
 
                 li = xbmcgui.ListItem(movTitle, iconImage=soup.find('thumb').text.strip())
@@ -1956,7 +2072,7 @@ def getMovLinksForEachMov(url):
                 httpurl1 = m.group(1)
                 # #print "("+httpurl1+")"+"\n"
                 httpurl1 = httpurl1.replace('config.php', 'playlist.php')
-                link = requests.get(httpurl1, headers=mozagent).text
+                link = requests.get(httpurl1, headers=mozhdr).text
                 soup = BeautifulSoup(link)
                 li = xbmcgui.ListItem(movTitle, iconImage=soup.find('thumb').text.strip())
                 li.setProperty('IsPlayable', 'true')
@@ -1966,7 +2082,7 @@ def getMovLinksForEachMov(url):
 
     elif 'abcmalayalam.' in url:
 
-        link = requests.get(url, headers=mozagent).text
+        link = requests.get(url, headers=mozhdr).text
         mlink = SoupStrainer(class_='itemFullText')
         linksDiv = BeautifulSoup(link, 'html.parser', parse_only=mlink)
         sources = []
@@ -2000,7 +2116,7 @@ def getMovLinksForEachMov(url):
     elif 'kitmovie.' in url:
        
         sources = []
-        link = requests.get(url, headers=mozagent).text
+        link = requests.get(url, headers=mozhdr).text
         soup = BeautifulSoup(link, 'html5lib')
         
         try:
@@ -2008,7 +2124,7 @@ def getMovLinksForEachMov(url):
             for div in linksDiv:
                 links = div.findAll('a')
                 for a in links:
-                    slink = requests.get(a['href'], headers=mozagent).text
+                    slink = requests.get(a['href'], headers=mozhdr).text
                     try:
                         mlink = SoupStrainer(class_='player player-small embed-responsive embed-responsive-16by9')
                         linksSection = BeautifulSoup(slink, 'html.parser', parse_only=mlink)
@@ -2030,7 +2146,7 @@ def getMovLinksForEachMov(url):
 
     elif 'tamiltwists.' in url:
 
-        link = requests.get(url, headers=mozagent).text
+        link = requests.get(url, headers=mozhdr).text
         sources = []
 
         try:
@@ -2047,7 +2163,7 @@ def getMovLinksForEachMov(url):
 
     elif 'india4movie.' in url:
 
-        link = requests.get(url, headers=mozagent).text
+        link = requests.get(url, headers=mozhdr).text
         mlink = SoupStrainer('p')
         soup = BeautifulSoup(link, 'html.parser', parse_only=mlink)
         sources = []
@@ -2064,7 +2180,7 @@ def getMovLinksForEachMov(url):
 
     elif 'moviefisher.' in url:
         
-        link = requests.get(url, headers=mozagent).text
+        link = requests.get(url, headers=mozhdr).text
         soup = BeautifulSoup(link, 'html5lib')
         Items = soup.find_all('iframe')
         sources = []
@@ -2133,6 +2249,11 @@ elif mode == 'GetMovies':
 
         Dict_res = cache.cacheFunction(getMovList_olangal, olangalurl)
 
+    elif 'tamiltv' in subUrl:
+
+        tamiltvurl = 'http://www.tamiltvsite.com/browse-tamil-live-tv-videos-' + str(currPage) + '-date.html'
+        Dict_res = cache.cacheFunction(getMovList_tamiltv, tamiltvurl)
+
     elif 'thiruttuvcd' in subUrl:
 
         if 'thiruttuvcd_masala' in subUrl:
@@ -2161,6 +2282,27 @@ elif mode == 'GetMovies':
         #cache.delete("%")
         Dict_res = cache.cacheFunction(getMovList_thiruttuvcd, thiruttuvcd_url)
 
+    elif 'tvcds' in subUrl:
+
+        if 'tvcds_english' in subUrl:
+            tvcds_url = 'http://thiruttuvcds.com/my/category/english/page/' + str(currPage) + '/'       
+        elif 'tvcds_adult' in subUrl:
+            tvcds_url = 'http://thiruttuvcds.com/private/?paged=' + str(currPage)
+        elif 'tvcds_tamil' in subUrl:
+            tvcds_url = 'http://thiruttuvcds.com/my/category/new-tamil-movies/page/' + str(currPage) + '/'
+        elif 'tvcds_telugu' in subUrl:
+            tvcds_url = 'http://thiruttuvcds.com/my/category/telugu/page/' + str(currPage) + '/'
+        elif 'tvcds_hindi' in subUrl:
+            tvcds_url = 'http://thiruttuvcds.com/my/category/hindi/page/' + str(currPage) + '/'
+        elif 'tvcds_search' in subUrl:
+            if currPage == 1:
+                search_text = GetSearchQuery('Thiruttu VCDs')
+                search_text = search_text.replace(' ', '+')
+            tvcds_url = 'http://thiruttuvcds.com/my/page/' + str(currPage) + '/?s=' + search_text
+
+        #cache.delete("%")
+        Dict_res = cache.cacheFunction(getMovList_tvcds, tvcds_url)
+
     elif 'rajtamil' in subUrl:
             
         if 'rajtamildubbed' in subUrl:
@@ -2186,20 +2328,20 @@ elif mode == 'GetMovies':
     elif 'tamilgun' in subUrl:
 
         if 'tamilgunnew' in subUrl:
-            tamilgunurl = 'http://tamilgun.com/categories/new-movies/page/' + str(currPage) + '/?order=latest'
+            tamilgunurl = 'http://tamilgun.us/categories/new-movies/page/' + str(currPage) + '/?order=latest'
         elif 'tamilgundubbed' in subUrl:
-            tamilgunurl = 'http://tamilgun.com/categories/dubbed-movies/page/' + str(currPage) + '/?order=latest'
+            tamilgunurl = 'http://tamilgun.us/categories/dubbed-movies/page/' + str(currPage) + '/?order=latest'
         elif 'tamilgunhd' in subUrl:
-            tamilgunurl = 'http://tamilgun.com/categories/hd-movies/page/' + str(currPage) + '/?order=latest'
+            tamilgunurl = 'http://tamilgun.us/categories/hd-movies/page/' + str(currPage) + '/?order=latest'
         elif 'tamilguncomedy' in subUrl:
-            tamilgunurl = 'http://tamilgun.com/categories/hd-comedys/page/' + str(currPage) + '/?order=latest'
+            tamilgunurl = 'http://tamilgun.us/categories/hd-comedys/page/' + str(currPage) + '/?order=latest'
         elif 'tamilguntrailer' in subUrl:
-            tamilgunurl = 'http://tamilgun.com/categories/trailers/page/' + str(currPage) + '/?order=latest'
+            tamilgunurl = 'http://tamilgun.us/categories/trailers/page/' + str(currPage) + '/?order=latest'
         elif 'tamilgunsearch' in subUrl:
             if currPage == 1:
                 search_text = GetSearchQuery('TamilGun')
                 search_text = search_text.replace(' ', '+')
-            tamilgunurl = 'http://tamilgun.com/page/' + str(currPage) + '/?s=' + search_text
+            tamilgunurl = 'http://tamilgun.us/page/' + str(currPage) + '/?s=' + search_text
 
         Dict_res = cache.cacheFunction(getMovList_tamilgun, tamilgunurl)
 
@@ -2616,6 +2758,15 @@ elif mode == 'thiruttuvcd':
         _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'thiruttuvcd_masala'}, {'title': 'Thiruttu Masala'}, img=tvcd_img, fanart=fan_img)
         _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'thiruttuvcd_msearch'}, {'title': '[COLOR yellow]** Search Masala **[/COLOR]'}, img=tvcd_img, fanart=fan_img)
     _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'thiruttuvcd_search'}, {'title': '[COLOR yellow]** Search **[/COLOR]'}, img=tvcd_img, fanart=fan_img)
+ 
+elif mode == 'tvcds':
+    _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'tvcds_tamil'}, {'title': 'Tamil Movies'}, img=tvcds_img, fanart=fan_img)
+    _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'tvcds_telugu'}, {'title': 'Telugu Movies'}, img=tvcds_img, fanart=fan_img)
+    _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'tvcds_hindi'}, {'title': 'Hindi Movies'}, img=tvcds_img, fanart=fan_img)
+    _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'tvcds_english'}, {'title': 'English Movies'}, img=tvcds_img, fanart=fan_img)
+    if SETTINGS_ENABLEADULT == 'true':
+        _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'tvcds_adult'}, {'title': 'Adult Movies'}, img=tvcds_img, fanart=fan_img)
+    _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'tvcds_search'}, {'title': '[COLOR yellow]** Search **[/COLOR]'}, img=tvcds_img, fanart=fan_img)
     
 elif mode == 'mersal':
     _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'mersal_Tamil'}, {'title': 'Tamil Movies'}, img=mersal_img, fanart=fan_img)        
@@ -2668,8 +2819,8 @@ elif mode == 'rmovies':
     _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'rmovies_Kannada'}, {'title': 'Kannada Movies'}, img=rmovies_img, fanart=fan_img)
     _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'rmovies_Punjabi'}, {'title': 'Punjabi Movies'}, img=rmovies_img, fanart=fan_img)
     _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'rmovies_Urdu'}, {'title': 'Urdu Movies'}, img=rmovies_img, fanart=fan_img)
-    if SETTINGS_ENABLEADULT == 'true':
-        _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'rmovies_Adult'}, {'title': 'Adult Movies'}, img=rmovies_img, fanart=fan_img)
+    # if SETTINGS_ENABLEADULT == 'true':
+        # _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'rmovies_Adult'}, {'title': 'Adult Movies'}, img=rmovies_img, fanart=fan_img)
     _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'rmovies_search'}, {'title': '[COLOR yellow]** Search **[/COLOR]'}, img=rmovies_img, fanart=fan_img)
 
 elif mode == 'moviefk':
@@ -2711,14 +2862,17 @@ elif mode == 'KitMovie':
     _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'KitMovie_hsearch'}, {'title': '[COLOR yellow]** Search Hindi **[/COLOR]'}, img=kmovie_img, fanart=fan_img)
     
 elif mode == 'main':
-    _DD.add_directory({'mode': 'thiruttuvcd'}, {'title': 'Thiruttu VCD : [COLOR magenta]Various[/COLOR]'}, img=tvcd_img, fanart=fan_img)
     _DD.add_directory({'mode': 'tamilgun'}, {'title': 'Tamil Gun : [COLOR yellow]Tamil[/COLOR]'}, img=tgun_img, fanart=fan_img)
-    _DD.add_directory({'mode': 'runtamil'}, {'title': 'Run Tamil : [COLOR yellow]Tamil[/COLOR]'}, img=runt_img, fanart=fan_img)
     _DD.add_directory({'mode': 'rajTamil'}, {'title': 'Raj Tamil : [COLOR yellow]Tamil[/COLOR]'}, img=rajt_img, fanart=fan_img)
-    _DD.add_directory({'mode': 'mrulz'}, {'title': 'Movie Rulz : [COLOR magenta]Various[/COLOR]'}, img=mrulz_img, fanart=fan_img)
-    _DD.add_directory({'mode': 'hlinks'}, {'title': 'Hindi Links 4U : [COLOR yellow]Hindi[/COLOR]'}, img=hlinks_img, fanart=fan_img)
+    _DD.add_directory({'mode': 'runtamil'}, {'title': 'Run Tamil : [COLOR yellow]Tamil[/COLOR]'}, img=runt_img, fanart=fan_img)
+    _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'tamiltv'}, {'title': 'APKLand TV : [COLOR yellow]Tamil Live TV[/COLOR]'}, img=ttvs_img, fanart=fan_img)
     _DD.add_directory({'mode': 'abcmalayalam'}, {'title': 'ABC Malayalam : [COLOR yellow]Malayalam[/COLOR]'}, img=abcm_img, fanart=fan_img)
     _DD.add_directory({'mode': 'olangal'}, {'title':'Olangal : [COLOR yellow]Malayalam[/COLOR]'}, img=olangal_img, fanart=fan_img)
+    _DD.add_directory({'mode': 'hlinks'}, {'title': 'Hindi Links 4U : [COLOR yellow]Hindi[/COLOR]'}, img=hlinks_img, fanart=fan_img)
+    _DD.add_directory({'mode': 'thiruttuvcd'}, {'title': 'Thiruttu VCD : [COLOR magenta]Various[/COLOR]'}, img=tvcd_img, fanart=fan_img)
+    _DD.add_directory({'mode': 'KitMovie'}, {'title': 'Kit Movie : [COLOR magenta]Various[/COLOR]'}, img=kmovie_img, fanart=fan_img)
+    _DD.add_directory({'mode': 'ttwist'}, {'title': 'Tamil Twists : [COLOR magenta]Various[/COLOR]'}, img=ttwist_img, fanart=fan_img)
+    _DD.add_directory({'mode': 'mrulz'}, {'title': 'Movie Rulz : [COLOR magenta]Various[/COLOR]'}, img=mrulz_img, fanart=fan_img)
     if SETTINGS_ENABLEOPENSSL == 'true':
         _DD.add_directory({'mode': 'flinks'}, {'title': 'Film Links 4U : [COLOR magenta]Various[/COLOR]'}, img=flinks_img, fanart=fan_img)
     _DD.add_directory({'mode': 'moviefk'}, {'title': 'Movie FK : [COLOR magenta]Various[/COLOR]'}, img=moviefk_img, fanart=fan_img)
@@ -2726,8 +2880,8 @@ elif mode == 'main':
     _DD.add_directory({'mode': 'mfish'}, {'title': 'Movie Fisher : [COLOR magenta]Various[/COLOR]'}, img=mfish_img, fanart=fan_img)
     _DD.add_directory({'mode': 'rmovies'}, {'title': 'Red Movies : [COLOR magenta]Various[/COLOR]'}, img=rmovies_img, fanart=fan_img)
     _DD.add_directory({'mode': 'mersal'}, {'title': 'Mersalaayitten : [COLOR magenta]Various[/COLOR]'}, img=mersal_img, fanart=fan_img)
-    _DD.add_directory({'mode': 'KitMovie'}, {'title': 'Kit Movie : [COLOR magenta]Various[/COLOR]'}, img=kmovie_img, fanart=fan_img)
-    _DD.add_directory({'mode': 'ttwist'}, {'title': 'Tamil Twists : [COLOR magenta]Various[/COLOR]'}, img=ttwist_img, fanart=fan_img)
+    _DD.add_directory({'mode': 'tvcds'}, {'title': 'Thiruttu VCDs : [COLOR magenta]Various[/COLOR]'}, img=tvcds_img, fanart=fan_img)
+
 
 if not play:
     _DD.end_of_directory()

@@ -1,4 +1,9 @@
-[B]Version 0.2.6- 20 Aug 2016[/B]
+[B]Version 0.2.7 - 4 Sep 2016[/B]
+- APKLand Tamil Live TV added
+- Tamilgun Domain change
+- New site Thiruttuvcds
+
+[B]Version 0.2.6 - 20 Aug 2016[/B]
 - Fix Filmlinks parser due to site changes
 
 [B]Version 0.2.5 - 18 Aug 2016[/B]
