@@ -57,7 +57,6 @@ play = _DD.queries.get('play', None)
 RootDir = _DD.get_path()
 dlg = xbmcgui.DialogProgress()
 cwd = _DD.get_path()
-ca_bundle = cwd + '/resources/ca-bundle.crt'
 img_path = cwd + '/resources/images/'
 abcm_img = img_path + 'abcmalayalam.png'
 flinks_img = img_path + 'flinks.png'
@@ -76,10 +75,10 @@ ttwist_img = img_path + 'ttwist.png'
 tvcd_img = img_path + 'thiruttuvcd.png'
 tvcds_img = img_path + 'tvcds.png'
 ttvs_img = img_path + 'apkland.png'
+lmtv_img = img_path + 'lmtv.png'
 i4m_img = img_path + 'i4m.png'
-ein_img = img_path + 'ein.png'
 next_img = img_path + 'next.png'
-fan_img = img_path + 'cinema.jpg'
+fan_img = cwd + '/fanart.jpg'
 mozhdr = {'User-Agent': 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3'}
 mozagent = 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3'
 
@@ -1250,6 +1249,37 @@ def getMovList_tamiltv(tamiltvurl):
 
     return Dict_movlist
 
+def getMovList_lmtv(lmtvurl):
+    Dict_movlist = {}
+    link = requests.get(lmtvurl, headers=mozhdr).text
+    mlink = SoupStrainer(class_='moviefilm')
+    Items = BeautifulSoup(link, 'html.parser', parse_only=mlink)
+    ItemNum=0
+    for Item in Items:
+        ItemNum = ItemNum+1
+        movUrl = Item.a.get('href')
+        movName = Item.img.get('alt')
+        imgSrc = Item.img.get('src')
+        
+        Dict_movlist.update({ItemNum:'mode=individualmovie, url=' + movUrl + ', imgLink=' + imgSrc + ', MovTitle=' + movName})
+
+    mlink = SoupStrainer(class_='wp-pagenavi')
+    Paginator = BeautifulSoup(link, 'html.parser', parse_only=mlink)
+    paginationText=''
+    
+    if 'larger' in str(Paginator):
+        currPage = Paginator.find('span', { 'class':'current'})
+        CurrentPage = int(currPage.string)
+        laPage = Paginator.find('span', { 'class':'pages'})
+        lastPage = laPage.string
+        lPage = int(re.findall('of (.*)', lastPage)[0])
+
+        if (CurrentPage < lPage):
+            paginationText = "(Currently in " + lastPage + ")\n"
+            Dict_movlist.update({'Paginator':'mode=GetMovies, subUrl=' + subUrl + ', currPage=' + str(CurrentPage + 1) + ',title=Next Page.. ' + paginationText + ',search_text=' + search_text})
+
+    return Dict_movlist
+
 def getMovList_KitMovie(kmovieurl):
     Dict_movlist = {}
     link = requests.get(kmovieurl, headers=mozhdr).text
@@ -1414,6 +1444,7 @@ def getMovList_mfish(mfishurl):
         movTitle = clean_movtitle(movTitle)
         movPage = eachItem.find('a')['href']
         imgSrc = eachItem.find('img')['src']
+        #xbmc.log(msg='========== Item: \n title: ' + movTitle.decode('utf8') + '\n href= ' + movPage, level=xbmc.LOGNOTICE)
         Dict_movlist.update({ItemNum:'mode=individualmovie, url=' + movPage + ', imgLink=' + imgSrc + ', MovTitle=' + movTitle.decode('utf8')})
 
     mlink = SoupStrainer(class_='wp-pagenavi')
@@ -1577,6 +1608,36 @@ def getMovLinksForEachMov(url):
         
         except:
             print "no embedded urls found using embed method"
+            
+        if movfile:
+            li = xbmcgui.ListItem(movTitle)
+            li.setArt({ 'thumb': fanarturl })
+            li.setProperty('IsPlayable', 'true')
+            xbmcplugin.addDirectoryItem(int(sys.argv[1]), movfile, li)
+
+    elif 'livemalayalamtv.' in url:
+
+        slink = requests.get(url, headers=mozhdr).text
+        mlink = SoupStrainer(class_='filmicerik')
+        soup = BeautifulSoup(slink, 'html.parser', parse_only=mlink)
+        movfile=''
+
+        try:
+            tlink = soup.iframe.get('src')
+            if 'livemalayalamtv.' in tlink:
+                link = requests.get(tlink, headers=mozhdr).text
+                if 'unescape(' in link:
+                    strdata = re.findall("unescape\('(.*?)'", link)[0]
+                    link = urllib.unquote(strdata)
+                movfile = re.findall('stream = "(.*?)"',link)[0] #+ '|User-Agent=' + mozagent
+               
+            else:
+                if liveresolver.find_link(tlink):
+                    movfile = liveresolver.resolve(tlink)
+                else:
+                    xbmc.log(msg = tlink + ' not resolvable by liveresolver.\n', level = xbmc.LOGNOTICE)
+        except:
+            print "no embedded urls found using iframe method"
             
         if movfile:
             li = xbmcgui.ListItem(movTitle)
@@ -2178,7 +2239,7 @@ def getMovLinksForEachMov(url):
 
         list_media(movTitle, sources, fanarturl)
 
-    elif 'moviefisher.' in url:
+    elif 'onlinemovielist.' in url:
         
         link = requests.get(url, headers=mozhdr).text
         soup = BeautifulSoup(link, 'html5lib')
@@ -2253,6 +2314,11 @@ elif mode == 'GetMovies':
 
         tamiltvurl = 'http://www.tamiltvsite.com/browse-tamil-live-tv-videos-' + str(currPage) + '-date.html'
         Dict_res = cache.cacheFunction(getMovList_tamiltv, tamiltvurl)
+
+    elif 'lmtv' in subUrl:
+
+        lmtvurl = 'http://www.livemalayalamtv.com/page/' + str(currPage)
+        Dict_res = cache.cacheFunction(getMovList_lmtv, lmtvurl)
 
     elif 'thiruttuvcd' in subUrl:
 
@@ -2480,26 +2546,26 @@ elif mode == 'GetMovies':
     elif 'mfish' in subUrl:
 
         if 'mfish_Tamil' in subUrl:
-            mfishurl = 'http://moviefisher.org/category/watch-tamil/page/' + str(currPage)
+            mfishurl = 'http://onlinemovielist.com/category/watch-tamil/page/' + str(currPage)
         elif 'mfish_Telugu' in subUrl:
-            mfishurl = 'http://moviefisher.org/category/full-telugu/page/' + str(currPage)
+            mfishurl = 'http://onlinemovielist.com/category/full-telugu/page/' + str(currPage)
         elif 'mfish_Mal' in subUrl:
-            mfishurl = 'http://moviefisher.org/category/watch-malayalam/page/' + str(currPage)
+            mfishurl = 'http://onlinemovielist.com/category/watch-malayalam/page/' + str(currPage)
         elif 'mfish_Hindi' in subUrl:
-            mfishurl = 'http://moviefisher.org/category/hindi/page/' + str(currPage)
+            mfishurl = 'http://onlinemovielist.com/category/hindi/page/' + str(currPage)
         elif 'mfish_English' in subUrl:
-            mfishurl = 'http://moviefisher.org/category/english/page/' + str(currPage)
+            mfishurl = 'http://onlinemovielist.com/category/english/page/' + str(currPage)
         elif 'mfish_Dubbed' in subUrl:
-            mfishurl = 'http://moviefisher.org/category/hindi-dubbed/page/' + str(currPage)
+            mfishurl = 'http://onlinemovielist.com/category/hindi-dubbed/page/' + str(currPage)
         elif 'mfish_SDubbed' in subUrl:
-            mfishurl = 'http://moviefisher.org/category/south-dubbed/page/' + str(currPage)
+            mfishurl = 'http://onlinemovielist.com/category/south-dubbed/page/' + str(currPage)
         elif 'mfish_Punjabi' in subUrl:
-            mfishurl = 'http://moviefisher.org/category/punjabi/page/' + str(currPage)
+            mfishurl = 'http://onlinemovielist.com/category/punjabi/page/' + str(currPage)
         elif 'mfish_search' in subUrl:
             if currPage == 1:
                 search_text = GetSearchQuery('FirstTube')
                 search_text = search_text.replace(' ', '+')
-            mfishurl = 'http://moviefisher.org/page/' + str(currPage) + '?s=' + search_text
+            mfishurl = 'http://onlinemovielist.com/page/' + str(currPage) + '?s=' + search_text
             
         Dict_res = cache.cacheFunction(getMovList_mfish, mfishurl)
 
@@ -2868,6 +2934,7 @@ elif mode == 'main':
     _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'tamiltv'}, {'title': 'APKLand TV : [COLOR yellow]Tamil Live TV[/COLOR]'}, img=ttvs_img, fanart=fan_img)
     _DD.add_directory({'mode': 'abcmalayalam'}, {'title': 'ABC Malayalam : [COLOR yellow]Malayalam[/COLOR]'}, img=abcm_img, fanart=fan_img)
     _DD.add_directory({'mode': 'olangal'}, {'title':'Olangal : [COLOR yellow]Malayalam[/COLOR]'}, img=olangal_img, fanart=fan_img)
+    _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'lmtv'}, {'title': 'Live Malayalam : [COLOR yellow]Malayalam Live TV[/COLOR]'}, img=lmtv_img, fanart=fan_img)
     _DD.add_directory({'mode': 'hlinks'}, {'title': 'Hindi Links 4U : [COLOR yellow]Hindi[/COLOR]'}, img=hlinks_img, fanart=fan_img)
     _DD.add_directory({'mode': 'thiruttuvcd'}, {'title': 'Thiruttu VCD : [COLOR magenta]Various[/COLOR]'}, img=tvcd_img, fanart=fan_img)
     _DD.add_directory({'mode': 'KitMovie'}, {'title': 'Kit Movie : [COLOR magenta]Various[/COLOR]'}, img=kmovie_img, fanart=fan_img)
