@@ -76,7 +76,9 @@ tvcd_img = img_path + 'thiruttuvcd.png'
 tvcds_img = img_path + 'tvcds.png'
 ttvs_img = img_path + 'apkland.png'
 lmtv_img = img_path + 'lmtv.png'
+yamgo_img = img_path + 'yamgo.png'
 i4m_img = img_path + 'i4m.png'
+yd_img = img_path + 'yodesi.png'
 next_img = img_path + 'next.png'
 fan_img = cwd + '/fanart.jpg'
 mozhdr = {'User-Agent': 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3'}
@@ -276,7 +278,7 @@ def resolve_media(vidurl,sources):
     embed_list = ['cineview', 'bollyheaven', 'videolinkz', 'vidzcode',
                   'embedzone', 'embedsr', 'fullmovie-hd', 'adly.biz',
                   'embedscr', 'embedrip', 'movembed', 'power4link.us',
-                  'watchmoviesonline4u', 'nobuffer.info']
+                  'watchmoviesonline4u', 'nobuffer.info', 'yo-desi.com']
 
     if 'pongomovies' in vidurl:
         link = requests.get(vidurl, headers=mozhdr).text
@@ -902,20 +904,16 @@ def getMovList_runtamil(runtamilurl):
     link = requests.get(runtamilurl, headers=mozhdr).text
     mlink = SoupStrainer(class_='movie-poster')
     Items = BeautifulSoup(link, 'html.parser', parse_only=mlink)
-    #soup = BeautifulSoup(link,'html5lib')
-    #Items = soup.find_all(class_='moviefilm')
     ItemNum = 0
 
     for eachItem in Items:
         ItemNum = ItemNum+1
-        #movTitle = eachItem.div.a.string
         movTitle = eachItem.find('img')['alt']
         movTitle = clean_movtitle(movTitle)
         movPage = eachItem.find('a')['href']
         imgSrc = eachItem.find('img')['src']
         Dict_movlist.update({ItemNum:'mode=individualmovie, url=' + movPage + ', imgLink=' + imgSrc+', MovTitle='+movTitle.decode('utf8')})
 
-    #Paginator = soup.find(class_='wp-pagenavi')
     paginationText = ''
     mlink = SoupStrainer(class_='navigation keremiya-pagenavi')
     Paginator = BeautifulSoup(link, 'html.parser', parse_only=mlink)
@@ -1280,6 +1278,31 @@ def getMovList_lmtv(lmtvurl):
 
     return Dict_movlist
 
+def getMovList_yamgo(yamgourl):
+    Dict_movlist = {}
+    link = requests.get(yamgourl, headers=mozhdr).text
+    token = re.findall('access_token=([^&]*)', link)[0]
+    cvar = re.findall('var channels=(.*?);var channel', link)[0]
+    cdata = json.loads(cvar)
+    mlink = SoupStrainer(class_='epg-channel cat-Bollywood')
+    Items = BeautifulSoup(link, 'html.parser', parse_only=mlink)
+    ItemNum=0
+    for Item in Items:
+        ItemNum = ItemNum+1
+        yid = Item.get('id')
+        cid = cdata[yid][0]['channel_id']
+        movUrl = 'https://api2.yamgo.com/channel/%s?access_token=%s&os=desktopv3'%(cid, token)
+        movName = cdata[yid][0]['channel_name']
+        imgSrc = cdata[yid][0]['channel_images_logo_large']
+        if not imgSrc:
+            imgSrc = cdata[yid][0]['channel_images_tn_large']
+        #xbmc.log(msg='========== movurl: ' + movUrl, level=xbmc.LOGNOTICE)
+        #xbmc.log(msg='========== movName: ' + movName, level=xbmc.LOGNOTICE)
+        #xbmc.log(msg='========== imgSrc: ' + imgSrc, level=xbmc.LOGNOTICE)
+        Dict_movlist.update({ItemNum:'mode=individualmovie, url=' + movUrl + ', imgLink=' + imgSrc + ', MovTitle=' + movName})
+
+    return Dict_movlist
+
 def getMovList_KitMovie(kmovieurl):
     Dict_movlist = {}
     link = requests.get(kmovieurl, headers=mozhdr).text
@@ -1430,6 +1453,78 @@ def getMovList_i4m(i4murl):
 
     return Dict_movlist
 
+def getMovList_yd(ydurl):
+    Dict_movlist = {}
+    link = requests.get(ydurl, headers=mozhdr).text
+    mlink = SoupStrainer(class_='latestPost-content')
+    Items = BeautifulSoup(link, 'html.parser', parse_only=mlink)
+    ItemNum = 0
+
+    for eachItem in Items:
+        ItemNum = ItemNum+1
+        try:
+            imgSrc = eachItem.find('img')['src']
+        except:
+            imgSrc = yd_img
+        movPage = eachItem.find('a')['href']
+        movTitle = eachItem.find('a')['title']
+        movTitle = clean_movtitle(movTitle)
+        Dict_movlist.update({ItemNum:'mode=individualmovie, url=' + movPage + ', imgLink=' + imgSrc + ', MovTitle=' + movTitle.decode('utf8')})
+
+    mlink = SoupStrainer(class_='pagination pagination-numeric')
+    Paginator = BeautifulSoup(link, 'html.parser', parse_only=mlink)
+    paginationText=''
+    
+    if 'Last' in str(Paginator):
+        currPage = Paginator.find(class_='current')
+        CurrentPage = int(currPage.text)
+        pages = Paginator.find_all('a')
+        for page in pages:    
+            if 'Last' in page.text:
+                lapage = page.get('href')
+        lastPage = int(re.findall('page/(\d*)', lapage)[0])
+
+        if (CurrentPage < lastPage):
+            paginationText = '(Currently in Page %s of %s)\n'%(CurrentPage,lastPage)
+
+    if '/star-plus' in ydurl:
+        subUrl = 'yd_star'
+    elif '/colors' in ydurl:
+        subUrl = 'yd_colors'
+    elif '/zee-tv' in ydurl:
+        subUrl = 'yd_zee'
+    elif '/sony-tv' in ydurl:
+        subUrl = 'yd_sony'
+    elif '/sab-tv' in ydurl:
+        subUrl = 'yd_sab'
+    elif '/life-ok' in ydurl:
+        subUrl = 'yd_lok'
+    elif '/star-jalsha' in ydurl:
+        subUrl = 'yd_jalsha'
+    elif '/tv/' in ydurl:
+        subUrl = 'yd_and'
+    elif '/star-pravah' in ydurl:
+        subUrl = 'yd_pravah'
+    elif '/mtv-india' in ydurl:
+        subUrl = 'yd_mtv'
+    elif '/bindass-tv' in ydurl:
+        subUrl = 'yd_bind'
+    elif '/channel-v' in ydurl:
+        subUrl = 'yd_chv'
+    elif '/e24' in ydurl:
+        subUrl = 'yd_e24'
+    elif '/promos-section' in ydurl:
+        subUrl = 'yd_prom'
+    elif '/?s=' in ydurl:
+        subUrl = 'yd_search'
+    else:
+        subUrl = 'yd_main'
+        
+    if paginationText:
+        Dict_movlist.update({'Paginator':'mode=GetMovies, subUrl=' + subUrl + ', currPage=' + str(CurrentPage + 1) + ',title=Next Page.. ' + paginationText + ',search_text=' + search_text})
+
+    return Dict_movlist
+
 def getMovList_mfish(mfishurl):
     Dict_movlist = {}
     link = requests.get(mfishurl, headers=mozhdr).text
@@ -1475,7 +1570,7 @@ def getMovList_mfish(mfishurl):
         subUrl = 'mfish_Dubbed'
     elif '/hindi' in mfishurl:
         subUrl = 'mfish_Hindi'
-    elif '/english' in mfishurl:
+    elif '/hollywood' in mfishurl:
         subUrl = 'mfish_English'
     elif '?s=' in mfishurl:
         subUrl = 'mfish_search'
@@ -1609,6 +1704,28 @@ def getMovLinksForEachMov(url):
         except:
             print "no embedded urls found using embed method"
             
+        if movfile:
+            li = xbmcgui.ListItem(movTitle)
+            li.setArt({ 'thumb': fanarturl })
+            li.setProperty('IsPlayable', 'true')
+            xbmcplugin.addDirectoryItem(int(sys.argv[1]), movfile, li)
+
+    elif 'yamgo.' in url:
+        headers = {'Referer' : 'http://yamgo.com/',
+                  'User-Agent': mozagent,
+                  'Origin' : 'http://yamgo.com'}
+        val = requests.get(url, headers=headers, verify=False).text
+        jdata=json.loads(val)
+        movfile=''
+
+        try:
+            tlink = jdata['data']['channel_stream']
+            if 'yamgo.' in tlink:
+                movfile = tlink
+               
+        except:
+            print "no embedded urls found using yamgo method"
+
         if movfile:
             li = xbmcgui.ListItem(movTitle)
             li.setArt({ 'thumb': fanarturl })
@@ -2239,11 +2356,43 @@ def getMovLinksForEachMov(url):
 
         list_media(movTitle, sources, fanarturl)
 
+    elif 'yodesi.' in url:
+
+        link = requests.get(url, headers=mozhdr).text
+        sources = []
+        try:
+            mlink = SoupStrainer('iframe')
+            Items = BeautifulSoup(link, 'html.parser', parse_only=mlink)
+            #xbmc.log(msg='========== Items: ' + str(Items), level=xbmc.LOGNOTICE)
+            for Item in Items:
+                vidurl = Item.get('src')
+                resolve_media(vidurl, sources)
+            
+        except:
+            print 'Nothing found using iframe method!'
+
+        try:
+            mlink = SoupStrainer(class_='thecontent')
+            psoup = BeautifulSoup(link, 'html.parser', parse_only=mlink)
+            Items = psoup.find_all('a')
+            #xbmc.log(msg='========== Items: ' + str(Items), level=xbmc.LOGNOTICE)
+            for Item in Items:
+                vidurl = Item.get('href')
+                if 'yodesi.net/player.php' in vidurl:
+                    vidurl = vidurl.replace('yodesi.net','yo-desi.com')
+                resolve_media(vidurl, sources)
+            
+        except:
+            print 'Nothing found using embed method!'
+            
+        list_media(movTitle, sources, fanarturl)
+
     elif 'onlinemovielist.' in url:
         
         link = requests.get(url, headers=mozhdr).text
         soup = BeautifulSoup(link, 'html5lib')
-        Items = soup.find_all('iframe')
+        lsoup = soup.find(class_='entry-content rich-content')
+        Items = lsoup.find_all('iframe')
         sources = []
         for eachItem in Items:
             try:
@@ -2319,6 +2468,11 @@ elif mode == 'GetMovies':
 
         lmtvurl = 'http://www.livemalayalamtv.com/page/' + str(currPage)
         Dict_res = cache.cacheFunction(getMovList_lmtv, lmtvurl)
+
+    elif 'yamgo' in subUrl:
+
+        yamgourl = 'http://yamgo.com/'
+        Dict_res = cache.cacheFunction(getMovList_yamgo, yamgourl)
 
     elif 'thiruttuvcd' in subUrl:
 
@@ -2554,7 +2708,7 @@ elif mode == 'GetMovies':
         elif 'mfish_Hindi' in subUrl:
             mfishurl = 'http://onlinemovielist.com/category/hindi/page/' + str(currPage)
         elif 'mfish_English' in subUrl:
-            mfishurl = 'http://onlinemovielist.com/category/english/page/' + str(currPage)
+            mfishurl = 'http://onlinemovielist.com/category/hollywood/page/' + str(currPage)
         elif 'mfish_Dubbed' in subUrl:
             mfishurl = 'http://onlinemovielist.com/category/hindi-dubbed/page/' + str(currPage)
         elif 'mfish_SDubbed' in subUrl:
@@ -2734,6 +2888,46 @@ elif mode == 'GetMovies':
             i4murl = 'http://www.india4movie.co/page/' + str(currPage) + '/?s=' + search_text
             
         Dict_res = cache.cacheFunction(getMovList_i4m, i4murl)
+
+    elif 'yd_' in subUrl:
+   
+        if 'main' in subUrl:
+            ydurl = 'http://www.yodesi.net/page/%s/'%(currPage)
+        elif 'star' in subUrl:
+            ydurl = 'http://www.yodesi.net/category/star-plus/page/%s/'%(currPage)
+        elif 'colors' in subUrl:
+            ydurl = 'http://www.yodesi.net/category/colors/page/%s/'%(currPage)
+        elif 'zee' in subUrl:
+            ydurl = 'http://www.yodesi.net/category/zee-tv/page/%s/'%(currPage)
+        elif 'sony' in subUrl:
+            ydurl = 'http://www.yodesi.net/category/sony-tv/page/%s/'%(currPage)
+        elif 'sab' in subUrl:
+            ydurl = 'http://www.yodesi.net/category/sab-tv/page/%s/'%(currPage)
+        elif 'lok' in subUrl:
+            ydurl = 'http://www.yodesi.net/category/life-ok/page/%s/'%(currPage)
+        elif 'jalsha' in subUrl:
+            ydurl = 'http://www.yodesi.net/category/star-jalsha/page/%s/'%(currPage)
+        elif 'and' in subUrl:
+            ydurl = 'http://www.yodesi.net/category/tv/page/%s/'%(currPage)
+        elif 'mtv' in subUrl:
+            ydurl = 'http://www.yodesi.net/category/mtv-india/page/%s/'%(currPage)
+        elif 'pravah' in subUrl:
+            ydurl = 'http://www.yodesi.net/category/star-pravah/page/%s/'%(currPage)
+        elif 'bind' in subUrl:
+            ydurl = 'http://www.yodesi.net/category/bindass-tv/page/%s/'%(currPage)
+        elif 'chv' in subUrl:
+            ydurl = 'http://www.yodesi.net/category/channel-v/page/%s/'%(currPage)
+        elif 'e24' in subUrl:
+            ydurl = 'http://www.yodesi.net/category/e24/page/%s/'%(currPage)
+        elif 'prom' in subUrl:
+            ydurl = 'http://www.yodesi.net/category/promos-section/page/%s/'%(currPage)
+        elif 'search' in subUrl:
+            if currPage == 1:
+                search_text = GetSearchQuery('Yo Desi')
+                search_text = search_text.replace(' ', '+')
+            ydurl = 'http://www.yodesi.net/page/%s/?s=%s'%(currPage,search_text)
+            
+        Dict_res = cache.cacheFunction(getMovList_yd, ydurl)
 
     keylist = Dict_res.keys()
     mov_menu(keylist)        
@@ -2916,6 +3110,24 @@ elif mode == 'i4m':
         _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'i4m_adult'}, {'title': 'Adult Movies'}, img=i4m_img, fanart=fan_img)
     _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'i4m_search'}, {'title': '[COLOR yellow]** Search **[/COLOR]'}, img=i4m_img, fanart=fan_img)
 
+elif mode == 'yodesi':
+    _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'yd_main'}, {'title': 'Recently Added'}, img=yd_img, fanart=fan_img)
+    _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'yd_star'}, {'title': 'Star Plus'}, img=yd_img, fanart=fan_img)
+    _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'yd_colors'}, {'title': 'Colors'}, img=yd_img, fanart=fan_img)
+    _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'yd_zee'}, {'title': 'Zee TV'}, img=yd_img, fanart=fan_img)
+    _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'yd_sony'}, {'title': 'Sony TV'}, img=yd_img, fanart=fan_img)
+    _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'yd_sab'}, {'title': 'SAB TV'}, img=yd_img, fanart=fan_img)
+    _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'yd_lok'}, {'title': 'Life OK'}, img=yd_img, fanart=fan_img)
+    _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'yd_jalsha'}, {'title': 'Star Jalsha'}, img=yd_img, fanart=fan_img)
+    _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'yd_and'}, {'title': '& TV'}, img=yd_img, fanart=fan_img)
+    _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'yd_pravah'}, {'title': 'Star Pravah'}, img=yd_img, fanart=fan_img)
+    _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'yd_mtv'}, {'title': 'MTV'}, img=yd_img, fanart=fan_img)
+    _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'yd_bind'}, {'title': 'Bindass'}, img=yd_img, fanart=fan_img)
+    _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'yd_chv'}, {'title': 'Channel V'}, img=yd_img, fanart=fan_img)
+    _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'yd_e24'}, {'title': 'E 24'}, img=yd_img, fanart=fan_img)
+    _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'yd_prom'}, {'title': 'Promos'}, img=yd_img, fanart=fan_img)
+    _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'yd_search'}, {'title': '[COLOR yellow]** Search **[/COLOR]'}, img=yd_img, fanart=fan_img)
+    
 elif mode == 'KitMovie':
     _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'KitMovie_Tamil'}, {'title': 'Tamil Movies'}, img=kmovie_img, fanart=fan_img) 
     _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'KitMovie_TSongs'}, {'title': 'Tamil Music Videos'}, img=kmovie_img, fanart=fan_img)       
@@ -2936,6 +3148,8 @@ elif mode == 'main':
     _DD.add_directory({'mode': 'olangal'}, {'title':'Olangal : [COLOR yellow]Malayalam[/COLOR]'}, img=olangal_img, fanart=fan_img)
     _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'lmtv'}, {'title': 'Live Malayalam : [COLOR yellow]Malayalam Live TV[/COLOR]'}, img=lmtv_img, fanart=fan_img)
     _DD.add_directory({'mode': 'hlinks'}, {'title': 'Hindi Links 4U : [COLOR yellow]Hindi[/COLOR]'}, img=hlinks_img, fanart=fan_img)
+    #_DD.add_directory({'mode': 'GetMovies', 'subUrl': 'yamgo'}, {'title': 'Yamgo TV : [COLOR yellow]Hindi Live TV[/COLOR]'}, img=yamgo_img, fanart=fan_img)
+    _DD.add_directory({'mode': 'yodesi'}, {'title': 'Yo Desi : [COLOR yellow]Hindi Catchup TV[/COLOR]'}, img=yd_img, fanart=fan_img)
     _DD.add_directory({'mode': 'thiruttuvcd'}, {'title': 'Thiruttu VCD : [COLOR magenta]Various[/COLOR]'}, img=tvcd_img, fanart=fan_img)
     _DD.add_directory({'mode': 'KitMovie'}, {'title': 'Kit Movie : [COLOR magenta]Various[/COLOR]'}, img=kmovie_img, fanart=fan_img)
     _DD.add_directory({'mode': 'ttwist'}, {'title': 'Tamil Twists : [COLOR magenta]Various[/COLOR]'}, img=ttwist_img, fanart=fan_img)

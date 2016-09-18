@@ -1,3 +1,7 @@
+[B]Version 0.2.9 - 18 Sep 2016[/B]
+- YoDesi Catchup TV added
+- Remove bundled html5lib and six
+
 [B]Version 0.2.8 - 6 Sep 2016[/B]
 - Malayalam Live TV added
 - Moviefisher Domain change

@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<addon id="plugin.video.deccandelight" name="Deccan Delight" version="0.2.8" provider-name="gujal">
+<addon id="plugin.video.deccandelight" name="Deccan Delight" version="0.2.9" provider-name="gujal">
     <requires>
         <import addon="xbmc.python" version="2.20.0"/>
         <import addon="script.module.urlresolver" version="1.0.0"/>
 		<import addon="script.module.requests" version="2.4.3"/>
 		<import addon="script.module.beautifulsoup4" version="4.3.0"/>
+        <import addon="script.module.six" version="1.9.0"/>
+        <import addon="script.module.html5lib" version="0.999.0"/>
         <import addon="script.module.t0mm0.common" version="1.1.0"/>
         <import addon="script.common.plugin.cache" version="2.5.4"/>
         <import addon="script.module.liveresolver"  />
