@@ -79,6 +79,7 @@ lmtv_img = img_path + 'lmtv.png'
 yamgo_img = img_path + 'yamgo.png'
 i4m_img = img_path + 'i4m.png'
 yd_img = img_path + 'yodesi.png'
+tts_img = img_path + 'tts.png'
 next_img = img_path + 'next.png'
 fan_img = cwd + '/fanart.jpg'
 mozhdr = {'User-Agent': 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3'}
@@ -1525,6 +1526,74 @@ def getMovList_yd(ydurl):
 
     return Dict_movlist
 
+def getMovList_tts(ttsurl):
+    Dict_movlist = {}
+    link = requests.get(ttsurl, headers=mozhdr).text
+    mlink = SoupStrainer(class_='video')
+    Items = BeautifulSoup(link, 'html.parser', parse_only=mlink)
+    ItemNum = 0
+
+    for eachItem in Items:
+        ItemNum = ItemNum+1
+        try:
+            imgSrc = eachItem.find('img')['src']
+        except:
+            imgSrc = tts_img
+        movPage = eachItem.find('a')['href']
+        movTitle = eachItem.find('img')['alt']
+        movTitle = clean_movtitle(movTitle)
+        Dict_movlist.update({ItemNum:'mode=individualmovie, url=' + movPage + ', imgLink=' + imgSrc + ', MovTitle=' + movTitle.decode('utf8')})
+
+    mlink = SoupStrainer(class_='wp-pagenavi')
+    Paginator = BeautifulSoup(link, 'html.parser', parse_only=mlink)
+    paginationText=''
+    
+    if 'Last' in str(Paginator):
+        currPage = Paginator.find(class_='pages').text
+        CurrentPage = int(re.findall('Page\s?(\d*)', currPage)[0])
+        lastPage = int(re.findall('of\s?(\d*)', currPage)[0])
+
+        if (CurrentPage < lastPage):
+            paginationText = '(Currently in %s)\n'%(currPage)
+
+    if '/sun-tv-serials' in ttsurl:
+        subUrl = 'tts_sunss'
+    elif '/sun-tv-shows' in ttsurl:
+        subUrl = 'tts_sunsh'
+    elif '/vijay-tv-serials' in ttsurl:
+        subUrl = 'tts_vijayss'
+    elif '/vijay-tv-shows' in ttsurl:
+        subUrl = 'tts_vijaysh'
+    elif '/zee-tamil-serials' in ttsurl:
+        subUrl = 'tts_zeess'
+    elif '/zee-tv-shows' in ttsurl:
+        subUrl = 'tts_zeesh'
+    elif '/raj-tv-serials' in ttsurl:
+        subUrl = 'tts_rajss'
+    elif '/raj-tv-shows' in ttsurl:
+        subUrl = 'tts_rajsh'
+    elif '/polimer-tv-serials' in ttsurl:
+        subUrl = 'tts_polimerss'
+    elif '/captain-tv-shows' in ttsurl:
+        subUrl = 'tts_captainss'
+    elif '/jaya-tv-programs' in ttsurl:
+        subUrl = 'tts_jayass'
+    elif '/kalaignar-tv-shows' in ttsurl:
+        subUrl = 'tts_kalaiss'
+    elif '/puthuyugam' in ttsurl:
+        subUrl = 'tts_pyss'
+    elif '/puthiya-thalaimurai-tv-shows' in ttsurl:
+        subUrl = 'tts_ptss'
+    elif '/?s=' in ttsurl:
+        subUrl = 'tts_search'
+    else:
+        subUrl = 'tts_main'
+        
+    if paginationText:
+        Dict_movlist.update({'Paginator':'mode=GetMovies, subUrl=' + subUrl + ', currPage=' + str(CurrentPage + 1) + ',title=Next Page.. ' + paginationText + ',search_text=' + search_text})
+
+    return Dict_movlist
+
 def getMovList_mfish(mfishurl):
     Dict_movlist = {}
     link = requests.get(mfishurl, headers=mozhdr).text
@@ -2387,6 +2456,33 @@ def getMovLinksForEachMov(url):
             
         list_media(movTitle, sources, fanarturl)
 
+    elif 'tamiltvshows.' in url:
+
+        link = requests.get(url, headers=mozhdr).text
+        mlink = SoupStrainer(class_='entry')
+        psoup = BeautifulSoup(link, 'html.parser', parse_only=mlink)
+        sources = []
+        try:
+            Items = psoup.find_all('iframe')
+            for Item in Items:
+                vidurl = Item.get('src')
+                resolve_media(vidurl, sources)
+            
+        except:
+            print 'Nothing found using iframe method!'
+
+        try:
+            Items = psoup.find_all('a')
+            for Item in Items:
+                clkurl = Item.get('onclick')
+                vidurl = re.findall("'(http.*?)'", clkurl)[0]
+                resolve_media(vidurl, sources)
+            
+        except:
+            print 'Nothing found using click method!'
+            
+        list_media(movTitle, sources, fanarturl)
+
     elif 'onlinemovielist.' in url:
         
         link = requests.get(url, headers=mozhdr).text
@@ -2929,6 +3025,46 @@ elif mode == 'GetMovies':
             
         Dict_res = cache.cacheFunction(getMovList_yd, ydurl)
 
+    elif 'tts_' in subUrl:
+   
+        if 'main' in subUrl:
+            ttsurl = 'http://www.tamiltvshows.net/page/%s/'%(currPage)
+        elif 'sunss' in subUrl:
+            ttsurl = 'http://www.tamiltvshows.net/category/sun-tv-serials/page/%s/'%(currPage)
+        elif 'sunsh' in subUrl:
+            ttsurl = 'http://www.tamiltvshows.net/category/sun-tv-shows/page/%s/'%(currPage)
+        elif 'vijayss' in subUrl:
+            ttsurl = 'http://www.tamiltvshows.net/category/vijay-tv-serials/page/%s/'%(currPage)
+        elif 'vijaysh' in subUrl:
+            ttsurl = 'http://www.tamiltvshows.net/category/vijay-tv-shows/page/%s/'%(currPage)
+        elif 'zeess' in subUrl:
+            ttsurl = 'http://www.tamiltvshows.net/category/zee-tamil-serials/page/%s/'%(currPage)
+        elif 'zeesh' in subUrl:
+            ttsurl = 'http://www.tamiltvshows.net/category/zee-tv-shows/page/%s/'%(currPage)
+        elif 'rajss' in subUrl:
+            ttsurl = 'http://www.tamiltvshows.net/category/raj-tv-serials/page/%s/'%(currPage)
+        elif 'rajsh' in subUrl:
+            ttsurl = 'http://www.tamiltvshows.net/category/raj-tv-shows/page/%s/'%(currPage)
+        elif 'polimerss' in subUrl:
+            ttsurl = 'http://www.tamiltvshows.net/category/polimer-tv-serials/page/%s/'%(currPage)
+        elif 'captainss' in subUrl:
+            ttsurl = 'http://www.tamiltvshows.net/category/captain-tv-shows/page/%s/'%(currPage)
+        elif 'jayass' in subUrl:
+            ttsurl = 'http://www.tamiltvshows.net/category/jaya-tv-programs/page/%s/'%(currPage)
+        elif 'kalaiss' in subUrl:
+            ttsurl = 'http://www.tamiltvshows.net/category/kalaignar-tv-shows/page/%s/'%(currPage)
+        elif 'pyss' in subUrl:
+            ttsurl = 'http://www.tamiltvshows.net/category/puthuyugam/page/%s/'%(currPage)
+        elif 'ptss' in subUrl:
+            ttsurl = 'http://www.tamiltvshows.net/category/puthiya-thalaimurai-tv-shows/page/%s/'%(currPage)
+        elif 'search' in subUrl:
+            if currPage == 1:
+                search_text = GetSearchQuery('Tamil TV Shows')
+                search_text = search_text.replace(' ', '+')
+            ttsurl = 'http://www.tamiltvshows.net/page/%s/?s=%s'%(currPage,search_text)
+            
+        Dict_res = cache.cacheFunction(getMovList_tts, ttsurl)
+
     keylist = Dict_res.keys()
     mov_menu(keylist)        
     dlg.close()
@@ -3127,6 +3263,24 @@ elif mode == 'yodesi':
     _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'yd_e24'}, {'title': 'E 24'}, img=yd_img, fanart=fan_img)
     _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'yd_prom'}, {'title': 'Promos'}, img=yd_img, fanart=fan_img)
     _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'yd_search'}, {'title': '[COLOR yellow]** Search **[/COLOR]'}, img=yd_img, fanart=fan_img)
+
+elif mode == 'ttshows':
+    _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'tts_main'}, {'title': 'Recently Added'}, img=tts_img, fanart=fan_img)
+    _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'tts_sunss'}, {'title': 'Sun TV Series'}, img=tts_img, fanart=fan_img)
+    _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'tts_sunsh'}, {'title': 'Sun TV Shows'}, img=tts_img, fanart=fan_img)
+    _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'tts_vijayss'}, {'title': 'Vijay TV Series'}, img=tts_img, fanart=fan_img)
+    _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'tts_vijaysh'}, {'title': 'Vijay TV Shows'}, img=tts_img, fanart=fan_img)
+    _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'tts_zeess'}, {'title': 'Zee Tamil TV Series'}, img=tts_img, fanart=fan_img)
+    _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'tts_zeesh'}, {'title': 'Zee Tamil TV Shows'}, img=tts_img, fanart=fan_img)
+    _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'tts_rajss'}, {'title': 'Raj TV Series'}, img=tts_img, fanart=fan_img)
+    _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'tts_rajsh'}, {'title': 'Raj TV Shows'}, img=tts_img, fanart=fan_img)
+    _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'tts_polimerss'}, {'title': 'Polimer TV Shows'}, img=tts_img, fanart=fan_img)
+    _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'tts_captainss'}, {'title': 'Captain TV Shows'}, img=tts_img, fanart=fan_img)
+    _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'tts_jayass'}, {'title': 'Jaya TV Shows'}, img=tts_img, fanart=fan_img)
+    _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'tts_kalaiss'}, {'title': 'Kalaignar TV Shows'}, img=tts_img, fanart=fan_img)
+    _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'tts_pyss'}, {'title': 'Puthuyugam TV Shows'}, img=tts_img, fanart=fan_img)
+    _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'tts_ptss'}, {'title': 'Puthiya Thalaimurai TV Shows'}, img=tts_img, fanart=fan_img)
+    _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'tts_search'}, {'title': '[COLOR yellow]** Search **[/COLOR]'}, img=tts_img, fanart=fan_img)
     
 elif mode == 'KitMovie':
     _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'KitMovie_Tamil'}, {'title': 'Tamil Movies'}, img=kmovie_img, fanart=fan_img) 
@@ -3144,6 +3298,7 @@ elif mode == 'main':
     _DD.add_directory({'mode': 'rajTamil'}, {'title': 'Raj Tamil : [COLOR yellow]Tamil[/COLOR]'}, img=rajt_img, fanart=fan_img)
     _DD.add_directory({'mode': 'runtamil'}, {'title': 'Run Tamil : [COLOR yellow]Tamil[/COLOR]'}, img=runt_img, fanart=fan_img)
     _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'tamiltv'}, {'title': 'APKLand TV : [COLOR yellow]Tamil Live TV[/COLOR]'}, img=ttvs_img, fanart=fan_img)
+    _DD.add_directory({'mode': 'ttshows'}, {'title': 'Tamil TV Shows : [COLOR yellow]Tamil Catchup TV[/COLOR]'}, img=tts_img, fanart=fan_img)
     _DD.add_directory({'mode': 'abcmalayalam'}, {'title': 'ABC Malayalam : [COLOR yellow]Malayalam[/COLOR]'}, img=abcm_img, fanart=fan_img)
     _DD.add_directory({'mode': 'olangal'}, {'title':'Olangal : [COLOR yellow]Malayalam[/COLOR]'}, img=olangal_img, fanart=fan_img)
     _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'lmtv'}, {'title': 'Live Malayalam : [COLOR yellow]Malayalam Live TV[/COLOR]'}, img=lmtv_img, fanart=fan_img)

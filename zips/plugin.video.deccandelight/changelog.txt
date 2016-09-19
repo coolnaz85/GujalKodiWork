@@ -1,3 +1,6 @@
+[B]Version 0.3.0 - 19 Sep 2016[/B]
+- Tamil Catchup TV added
+
 [B]Version 0.2.9 - 18 Sep 2016[/B]
 - YoDesi Catchup TV added
 - Remove bundled html5lib and six
