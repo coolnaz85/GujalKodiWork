@@ -1,3 +1,11 @@
+[B]Version 0.3.1 - 27 Sep 2016[/B]
+- Option in settings to diable unwanted scrapers
+- TamilYogi, New Scraper
+- Tamil Catchup TV fixes
+- ThiruttuVCD TV Show fixes
+- RunTamil fixes
+- APKLand Live TV fixes
+
 [B]Version 0.3.0 - 19 Sep 2016[/B]
 - Tamil Catchup TV added
 

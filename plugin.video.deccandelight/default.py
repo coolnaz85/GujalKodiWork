@@ -39,8 +39,31 @@ __icon__ = __addon__.getAddonInfo('icon')
 
 # plugin settings
 SETTINGS_CACHE_TIMEOUT = _DD.get_setting('Cache-Timeout')
-SETTINGS_ENABLEADULT = _DD.get_setting('EnableAdult')
+SETTINGS_ADULT = _DD.get_setting('EnableAdult')
 SETTINGS_ENABLEOPENSSL = _DD.get_setting('EnableOpenSSL')
+SETTINGS_TamilGun = _DD.get_setting('TamilGun_enabled')
+SETTINGS_RajTamil = _DD.get_setting('RajTamil_enabled')
+SETTINGS_TamilYogi = _DD.get_setting('TamilYogi_enabled')
+SETTINGS_RunTamil = _DD.get_setting('RunTamil_enabled')
+SETTINGS_APKLand = _DD.get_setting('APKLand_enabled')
+SETTINGS_TamilTVS = _DD.get_setting('TamilTVS_enabled')
+SETTINGS_ABCMal = _DD.get_setting('ABCMal_enabled')
+SETTINGS_Olangal = _DD.get_setting('Olangal_enabled')
+SETTINGS_LiveMal = _DD.get_setting('LiveMal_enabled')
+SETTINGS_HLinks = _DD.get_setting('HLinks_enabled')
+SETTINGS_YoDesi = _DD.get_setting('YoDesi_enabled')
+SETTINGS_TVCD = _DD.get_setting('TVCD_enabled')
+SETTINGS_KitMovie = _DD.get_setting('KitMovie_enabled')
+SETTINGS_TTwists = _DD.get_setting('TTwists_enabled')
+SETTINGS_MRulz = _DD.get_setting('MRulz_enabled')
+SETTINGS_FLinks = _DD.get_setting('FLinks_enabled')
+SETTINGS_MovieFK = _DD.get_setting('MovieFK_enabled')
+SETTINGS_I4M = _DD.get_setting('I4M_enabled')
+SETTINGS_MFish = _DD.get_setting('MFish_enabled')
+SETTINGS_RedM = _DD.get_setting('RedM_enabled')
+SETTINGS_Mersal = _DD.get_setting('Mersal_enabled')
+SETTINGS_TVCDs = _DD.get_setting('TVCDs_enabled')
+
 
 if SETTINGS_ENABLEOPENSSL == 'true':
     from pyOpenSSL import OpenSSL
@@ -80,6 +103,7 @@ yamgo_img = img_path + 'yamgo.png'
 i4m_img = img_path + 'i4m.png'
 yd_img = img_path + 'yodesi.png'
 tts_img = img_path + 'tts.png'
+tyogi_img = img_path + 'tyogi.png'
 next_img = img_path + 'next.png'
 fan_img = cwd + '/fanart.jpg'
 mozhdr = {'User-Agent': 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3'}
@@ -173,7 +197,7 @@ def clean_movtitle(movTitle):
     movTitle = movTitle.replace('Hot ', '')
     movTitle = movTitle.replace('|', '')
     movTitle = movTitle.replace('.', '')
-    movTitle = movTitle.replace('Sex', '')
+    movTitle = movTitle.replace('Sex ', '')
     movTitle = movTitle.replace('Adults', '')
     movTitle = movTitle.replace(' hot ', '')
     movTitle = movTitle.replace('Hindi', '')
@@ -507,6 +531,8 @@ def getMovList_thiruttuvcd(thiruttuvcd_url):
             subUrl = 'thiruttuvcd_hindiMovs'
         elif 'hot-movies' in thiruttuvcd_url:
             subUrl = 'thiruttuvcd_adult'
+        elif '/tv/' in thiruttuvcd_url:
+            subUrl = 'thiruttuvcd_tamiltv'
         elif '/?s=' in thiruttuvcd_url:
             subUrl = 'thiruttuvcd_search'
             
@@ -530,7 +556,7 @@ def getMovList_tvcds(tvcds_url):
         imgSrc = eachItem.find('img')['src']
         movTitle = eachItem.find('a')['title']
         movTitle = clean_movtitle(movTitle)
-        Dict_movlist.update({ItemNum:'mode=individualmovie, url=' + movPage + ', imgLink=' + imgSrc + ', MovTitle=' + movTitle.decode('utf8')})
+        Dict_movlist.update({ItemNum:'mode=individualmovie, url=%s, imgLink=%s, MovTitle=%s'%(movPage,imgSrc,movTitle.decode('utf8'))})
 
     mlink = SoupStrainer(class_='wp-pagenavi')
     Paginator = BeautifulSoup(link, 'html.parser', parse_only=mlink)
@@ -583,7 +609,7 @@ def getMovList_rajtamil(rajTamilurl):
             except:
                 imgSrc = rajt_img
 
-            Dict_movlist.update({ItemNum:'mode=individualmovie, url=' + movPage + ', imgLink=' + imgSrc + ', MovTitle=' + movTitle.decode('utf8')})
+            Dict_movlist.update({ItemNum:'mode=individualmovie, url=%s, imgLink=%s, MovTitle=%s'%(movPage,imgSrc,movTitle.decode('utf8'))})
 
     Paginator = soup.find("div", { "class":"navigation"})
     paginationText=''
@@ -687,7 +713,7 @@ def getMovList_mrulz(mrulzurl):
         except:
             imgSrc = mrulz_img
 
-        Dict_movlist.update({ItemNum:'mode=individualmovie, url=' + movPage + ', imgLink=' + imgSrc + ', MovTitle=' + movTitle.decode('utf8')})
+        Dict_movlist.update({ItemNum:'mode=individualmovie, url=%s, imgLink=%s, MovTitle=%s'%(movPage,imgSrc,movTitle.decode('utf8'))})
 
     mlink = SoupStrainer(class_='nav-older')
     Paginator = BeautifulSoup(link, 'html.parser', parse_only=mlink)
@@ -750,7 +776,7 @@ def getMovList_rmovies(rmoviesurl):
         movPage = eachItem.find('a')['href']
         movTitle = eachItem.find('a')['title']
         movTitle = clean_movtitle(movTitle)
-        Dict_movlist.update({ItemNum:'mode=individualmovie, url=' + movPage + ', imgLink=' + imgSrc + ', MovTitle=' + movTitle.decode('utf8')})
+        Dict_movlist.update({ItemNum:'mode=individualmovie, url=%s, imgLink=%s, MovTitle=%s'%(movPage,imgSrc,movTitle.decode('utf8'))})
 
     Paginator = soup.find(class_='wp-pagenavi')
     paginationText=''
@@ -798,7 +824,7 @@ def getMovList_rmovies(rmoviesurl):
 def getMovList_moviefk(moviefkurl):
     Dict_movlist = {}
     link = requests.get(moviefkurl, headers=mozhdr).text
-    mlink = SoupStrainer(class_='post-text')
+    mlink = SoupStrainer(class_='singlepost')
     Items = BeautifulSoup(link, 'html.parser', parse_only=mlink)
     ItemNum = 0
     for eachItem in Items:
@@ -810,7 +836,7 @@ def getMovList_moviefk(moviefkurl):
         movPage = eachItem.find('a')['href']
         movTitle = eachItem.find('a')['title']
         movTitle = clean_movtitle(movTitle)
-        Dict_movlist.update({ItemNum:'mode=individualmovie, url=' + movPage + ', imgLink=' + imgSrc + ', MovTitle=' + movTitle.decode('utf8')})
+        Dict_movlist.update({ItemNum:'mode=individualmovie, url=%s, imgLink=%s, MovTitle=%s'%(movPage,imgSrc,movTitle.decode('utf8'))})
 
     mlink = SoupStrainer(class_='wp-pagenavi')
     Paginator = BeautifulSoup(link, 'html.parser', parse_only=mlink)
@@ -845,7 +871,7 @@ def getMovList_moviefk(moviefkurl):
         subUrl = 'moviefk_search'
         
     if paginationText:
-        Dict_movlist.update({'Paginator':'mode=GetMovies, subUrl=' + subUrl + ', currPage=' + str(CurrentPage + 1) + ',title=Next Page.. ' + paginationText + ',search_text=' + search_text})
+        Dict_movlist.update({'Paginator':'mode=GetMovies, subUrl=%s, currPage=%s,title=Next Page.. %s,search_text=%s'%(subUrl,CurrentPage+1,paginationText,search_text)})
 
     return Dict_movlist
 
@@ -899,6 +925,57 @@ def getMovList_tamilgun(tamilgunurl):
 
     return Dict_movlist
 
+def getMovList_tyogi(tyogiurl):
+
+    Dict_movlist = {}
+    link = requests.get(tyogiurl, headers=mozhdr).text
+    mlink = SoupStrainer(class_='cover')
+    Items = BeautifulSoup(link, 'html.parser', parse_only=mlink)
+    ItemNum = 0
+
+    for eachItem in Items:
+        ItemNum = ItemNum+1
+        try:
+            imgSrc = eachItem.find('img')['src']
+        except:
+            imgSrc = tyogi_img
+        movPage = eachItem.find('a')['href']
+        movTitle = eachItem.find('img')['alt']
+        movTitle = clean_movtitle(movTitle)
+        Dict_movlist.update({ItemNum:'mode=individualmovie, url=%s, imgLink=%s, MovTitle=%s'%(movPage,imgSrc,movTitle.decode('utf8'))})
+
+    mlink = SoupStrainer(class_='navigation')
+    Paginator = BeautifulSoup(link, 'html.parser', parse_only=mlink)
+    paginationText = ""
+    if 'current' in str(Paginator):
+        currPage = Paginator.find(class_='page-numbers current')
+        CurrentPage = int(currPage.string)
+        lastPage = CurrentPage
+        for eachPage in Paginator.findAll('a', { 'class':'page-numbers' }):
+            if "next" not in str(eachPage) and "prev" not in str(eachPage):
+                lastPage = int(eachPage.string)
+    
+    if (CurrentPage < lastPage):
+        paginationText = "(Currently in Page %s of %s)"%(CurrentPage,lastPage)
+    else:
+        paginationText = ""
+
+    if '-full-movie-' in tyogiurl:
+        subUrl = 'tyogi_new'
+    elif '-dubbed-movies-' in tyogiurl:
+        subUrl = 'tyogi_dubbed'
+    elif '-bluray-movies' in tyogiurl:
+        subUrl = 'tyogi_hd'
+    elif '-dvdrip-movies' in tyogiurl:
+        subUrl = 'tyogi_dvd'
+    elif '/?s=' in tyogiurl:
+        subUrl = 'tyogisearch'
+        
+    if paginationText:
+        Dict_movlist.update({'Paginator':'mode=GetMovies, subUrl=%s, currPage=%s,title=Next Page.. %s,search_text=%s'%(subUrl,CurrentPage+1,paginationText,search_text)})
+
+    return Dict_movlist
+
 def getMovList_runtamil(runtamilurl):
 
     Dict_movlist = {}
@@ -916,27 +993,28 @@ def getMovList_runtamil(runtamilurl):
         Dict_movlist.update({ItemNum:'mode=individualmovie, url=' + movPage + ', imgLink=' + imgSrc+', MovTitle='+movTitle.decode('utf8')})
 
     paginationText = ''
-    mlink = SoupStrainer(class_='navigation keremiya-pagenavi')
+    mlink = SoupStrainer(class_='wp-pagenavi')
     Paginator = BeautifulSoup(link, 'html.parser', parse_only=mlink)
     paginationText = ''
-    try:
-        currPage = Paginator.find(class_='current')
-    except:
-        currPage = ''
-    if currPage:
-        CurrentPage = int(currPage.string)
-        laPage = Paginator.find(class_='last')
-        lastPage = int(laPage.string)
+    
+    if 'larger' in str(Paginator):
+        currPage = Paginator.find(class_='pages').text
+        CurrentPage = int(re.findall('Page\s?(\d*)', currPage)[0])
+        lastPage = int(re.findall('of\s?(\d*)', currPage)[0])
 
         if (CurrentPage < lastPage):
-            paginationText = "(Currently in Page " + str(CurrentPage) + " of " + str(lastPage) + ")\n"
+            paginationText = '(Currently in %s)\n'%(currPage)
 
     if 'new-tamil' in runtamilurl:
         subUrl = 'runtamilnew'
+    elif 'old-tamil' in runtamilurl:
+        subUrl = 'runtamilold'
     elif 'tamil-dubbed' in runtamilurl:
         subUrl = 'runtamildubbed'
     elif 'hd-movies' in runtamilurl:
         subUrl = 'runtamilhd'
+    elif 'dvd-movies' in runtamilurl:
+        subUrl = 'runtamildvd'
     elif '/?s=' in runtamilurl:
         subUrl = 'runtamilsearch'
         
@@ -1028,7 +1106,7 @@ def getMovList_flinks(flinksurl):
         if ('Adult' not in Rating):
             ItemNum = ItemNum+1
             Dict_movlist.update({ItemNum:'mode=individualmovie, url=' + movPage + ', imgLink=' + imgSrc + ', MovTitle=' + movTitle.decode('utf8') })
-        elif SETTINGS_ENABLEADULT == 'true':
+        elif SETTINGS_ADULT == 'true':
             ItemNum = ItemNum+1
             Dict_movlist.update({ItemNum:'mode=individualmovie, url=' + movPage + ', imgLink=' + imgSrc + ', MovTitle=' + movTitle.decode('utf8') })
 
@@ -1116,7 +1194,7 @@ def getMovList_hlinks(hlinksurl):
         if ('Adult' not in movdet) and ('adult' not in hlinksurl):
             ItemNum = ItemNum+1
             Dict_movlist.update({ItemNum:'mode=individualmovie, url=' + movPage + ', imgLink=' + imgSrc + ', MovTitle=' + movTitle.decode('utf8') })
-        elif (SETTINGS_ENABLEADULT == 'true'):
+        elif SETTINGS_ADULT == 'true':
             ItemNum = ItemNum+1
             Dict_movlist.update({ItemNum:'mode=individualmovie, url=' + movPage + ', imgLink=' + imgSrc + ', MovTitle=' + movTitle.decode('utf8') })
 
@@ -1407,7 +1485,7 @@ def getMovList_i4m(i4murl):
         movPage = movdet.find('a')['href']
         movTitle = movdet.find('a').string
         movTitle = clean_movtitle(movTitle)
-        Dict_movlist.update({ItemNum:'mode=individualmovie, url=' + movPage + ', imgLink=' + imgSrc + ', MovTitle=' + movTitle.decode('utf8')})
+        Dict_movlist.update({ItemNum:'mode=individualmovie, url=%s, imgLink=%s, MovTitle=%s'%(movPage,imgSrc,movTitle.decode('utf8'))})
 
     mlink = SoupStrainer(class_='wp-pagenavi')
     Paginator = BeautifulSoup(link, 'html.parser', parse_only=mlink)
@@ -1470,7 +1548,7 @@ def getMovList_yd(ydurl):
         movPage = eachItem.find('a')['href']
         movTitle = eachItem.find('a')['title']
         movTitle = clean_movtitle(movTitle)
-        Dict_movlist.update({ItemNum:'mode=individualmovie, url=' + movPage + ', imgLink=' + imgSrc + ', MovTitle=' + movTitle.decode('utf8')})
+        Dict_movlist.update({ItemNum:'mode=individualmovie, url=%s, imgLink=%s, MovTitle=%s'%(movPage,imgSrc,movTitle.decode('utf8'))})
 
     mlink = SoupStrainer(class_='pagination pagination-numeric')
     Paginator = BeautifulSoup(link, 'html.parser', parse_only=mlink)
@@ -1542,7 +1620,7 @@ def getMovList_tts(ttsurl):
         movPage = eachItem.find('a')['href']
         movTitle = eachItem.find('img')['alt']
         movTitle = clean_movtitle(movTitle)
-        Dict_movlist.update({ItemNum:'mode=individualmovie, url=' + movPage + ', imgLink=' + imgSrc + ', MovTitle=' + movTitle.decode('utf8')})
+        Dict_movlist.update({ItemNum:'mode=individualmovie, url=%s, imgLink=%s, MovTitle=%s'%(movPage,imgSrc,movTitle.decode('utf8'))})
 
     mlink = SoupStrainer(class_='wp-pagenavi')
     Paginator = BeautifulSoup(link, 'html.parser', parse_only=mlink)
@@ -1609,7 +1687,7 @@ def getMovList_mfish(mfishurl):
         movPage = eachItem.find('a')['href']
         imgSrc = eachItem.find('img')['src']
         #xbmc.log(msg='========== Item: \n title: ' + movTitle.decode('utf8') + '\n href= ' + movPage, level=xbmc.LOGNOTICE)
-        Dict_movlist.update({ItemNum:'mode=individualmovie, url=' + movPage + ', imgLink=' + imgSrc + ', MovTitle=' + movTitle.decode('utf8')})
+        Dict_movlist.update({ItemNum:'mode=individualmovie, url=%s, imgLink=%s, MovTitle=%s'%(movPage,imgSrc,movTitle.decode('utf8'))})
 
     mlink = SoupStrainer(class_='wp-pagenavi')
     Paginator = BeautifulSoup(link, 'html.parser', parse_only=mlink)
@@ -1727,16 +1805,22 @@ def getMovLinksForEachMov(url):
 
         try:
             tlink = soup.iframe.get('src')
-            if 'tamiltvsite.' in tlink:
-                link = requests.get(tlink, headers=mozhdr).text
-                strdata = re.findall('var act_data = (.*?);', link)[0]
-                act_data = json.loads(strdata)
-                act_url = act_data["url"]
+            link = requests.get(tlink, headers=mozhdr).text
+            strdata = re.findall('var act_data = (.*?);', link)[0]
+            act_data = json.loads(strdata)
+            act_url = act_data["url"]
+            act_url = 'http://tamiltvsite.com/channels/channel.php?' + act_url.split('?')[1]
+            link = requests.get(act_url, headers=mozhdr).text
+            strdata = re.findall('var act_data = (.*?);', link)[0]
+            act_data = json.loads(strdata)
+            tlink = act_data["url"]
+            
+            if 'embed.' in tlink:
+                movfile = tlink.split('embed')[0] + 'index.m3u8'
+            
+            elif 'wmsAuthSign' in tlink:
                 new_token = re.findall('new_token = "(.*?)"', link)[0]
-                movfile = act_url
-                if 'wmsauthsign' in act_url.lower():
-                    act_url = act_url.split('?')[0]
-                    movfile = act_url + '?wmsAuthSign=' + new_token
+                movfile = tlink.split('?')[0] + '?wmsAuthSign=' + new_token
                     
             elif ('dacast.' in tlink) or ('streamingasaservice.' in tlink):
                 surl = tlink.split('.com')[1]
@@ -1755,6 +1839,9 @@ def getMovLinksForEachMov(url):
                 resolve_media(tlink, sources)
                 list_media(movTitle, sources, fanarturl)
                 
+            elif '.m3u8' in tlink or 'rtmp:' in tlink:
+                movfile = tlink
+                
             else:
                 if liveresolver.find_link(tlink):
                     movfile = liveresolver.resolve(tlink)
@@ -1763,21 +1850,29 @@ def getMovLinksForEachMov(url):
         except:
             print "no embedded urls found using iframe method"
 
-        try:
-            fvar = soup.embed.get('flashvars')
-            swfUrl = soup.embed.get('src')
-            rtmp = re.findall('file=([^&]*)',fvar)[0]
-            playpath = re.findall('id=([^&]*)',fvar)[0]
-            movfile = rtmp + ' playpath=' + playpath + ' swfUrl=' + swfUrl + ' pageUrl=' + url + ' live=1 timeout=15'
-        
-        except:
-            print "no embedded urls found using embed method"
-            
         if movfile:
             li = xbmcgui.ListItem(movTitle)
             li.setArt({ 'thumb': fanarturl })
             li.setProperty('IsPlayable', 'true')
             xbmcplugin.addDirectoryItem(int(sys.argv[1]), movfile, li)
+
+    elif 'tamilyogi.' in url:
+
+        link = requests.get(url, headers=mozhdr).text
+        mlink = SoupStrainer(class_='entry')
+        soup = BeautifulSoup(link, 'html.parser', parse_only=mlink)
+        links = soup.find_all('iframe')
+        sources = []
+
+        for link in links:
+            try:
+                vidurl = link.get('src')
+                resolve_media(vidurl, sources)
+            
+            except:
+                print 'Nothing found using iframe method!'
+
+        list_media(movTitle, sources, fanarturl)
 
     elif 'yamgo.' in url:
         headers = {'Referer' : 'http://yamgo.com/',
@@ -2014,7 +2109,7 @@ def getMovLinksForEachMov(url):
         for eachdetail in itemdetails:
             if 'Adult' in str(eachdetail):
                 cleanmov = False
-        #xbmc.log(msg='==========cleanmov: ' + str(cleanmov) + ' adult setting:' + SETTINGS_ENABLEADULT, level=xbmc.LOGNOTICE)
+        #xbmc.log(msg='==========cleanmov: ' + str(cleanmov) + ' adult setting:' + SETTINGS_ADULT, level=xbmc.LOGNOTICE)
         
         try:
             ilink = lsoup.find("iframe")
@@ -2022,7 +2117,7 @@ def getMovLinksForEachMov(url):
             #xbmc.log(msg='========== vidurl: ' + vidurl, level=xbmc.LOGNOTICE)
             if cleanmov:
                 resolve_media(vidurl, sources)
-            elif SETTINGS_ENABLEADULT == 'true':
+            elif SETTINGS_ADULT == 'true':
                 resolve_media(vidurl, sources)
 
         except:
@@ -2049,7 +2144,7 @@ def getMovLinksForEachMov(url):
                 #xbmc.log(msg='========== vidurl: ' + vidurl, level=xbmc.LOGNOTICE)
                 if cleanmov:
                     resolve_media(vidurl, sources)
-                elif SETTINGS_ENABLEADULT == 'true':
+                elif SETTINGS_ADULT == 'true':
                     resolve_media(vidurl, sources)
 
         except:
@@ -2061,7 +2156,7 @@ def getMovLinksForEachMov(url):
                 vidurl = re.findall('href="(.*?)"', str(plink))[0]
                 if cleanmov:
                     resolve_media(vidurl, sources)
-                elif SETTINGS_ENABLEADULT == 'true':
+                elif SETTINGS_ADULT == 'true':
                     resolve_media(vidurl, sources)
                 
         except:
@@ -2077,7 +2172,7 @@ def getMovLinksForEachMov(url):
                     vidurl = plink.a.get('href')
                     if cleanmov:
                         resolve_media(vidurl, sources)
-                    elif SETTINGS_ENABLEADULT == 'true':
+                    elif SETTINGS_ADULT == 'true':
                         resolve_media(vidurl, sources)
                 except:
                     print " : no embedded urls found using a method"
@@ -2145,7 +2240,7 @@ def getMovLinksForEachMov(url):
     elif 'moviefk.' in url:
 
         link = requests.get(url, headers=mozhdr).text
-        mlink = SoupStrainer(class_='post-text')
+        mlink = SoupStrainer(class_='entry-content clearfix')
         soup = BeautifulSoup(link, 'html.parser', parse_only=mlink)
         links = soup.find_all('p')
         sources = []
@@ -2163,7 +2258,7 @@ def getMovLinksForEachMov(url):
     elif 'runtamil.' in url:
 
         link = requests.get(url, headers=mozhdr).text
-        mlink = SoupStrainer(class_='video-container')
+        mlink = SoupStrainer(class_='video-content')
         soup = BeautifulSoup(link, 'html.parser', parse_only=mlink)
         sources = []
         
@@ -2174,16 +2269,12 @@ def getMovLinksForEachMov(url):
                 links = plink.find_all('iframe')
                 for link in links:
                     vidurl = link.get('src')
-                    if (('runtamil' in vidurl) or ('tamildrive' in vidurl)) and ('facebook' not in vidurl):
+                    if ('runtamil' in vidurl) and ('facebook' not in vidurl):
                         headers = {'Referer' : url,
                                   'User-Agent': mozagent}
                         slink = requests.get(vidurl, headers=headers).text
-                        if 'runtamil' in vidurl:
-                            hoster = 'RunTamil '
-                            srclist = re.search('(\[.*?\])', slink).group(1).replace('file', '"file"').replace('label', '"label"')
-                        else:
-                            hoster = 'TamilDrive '
-                            srclist = re.search('sources: (\[.*?\])', slink).group(1).replace('file', '"file"').replace('label', '"label"')
+                        hoster = 'RunTamil '
+                        srclist = re.search('(\[.*?\])', slink).group(1).replace('file', '"file"').replace('label', '"label"')
                         strlinks = eval(srclist)
                         for strlink in strlinks:
                             #xbmc.log(msg='========== link: ' + str(strlink), level=xbmc.LOGNOTICE)
@@ -2191,6 +2282,8 @@ def getMovLinksForEachMov(url):
                             qual = ''
                             if 'label' in strlink:
                                 qual = strlink['label']
+                            else:
+                                qual = 'HLS'
                             li = xbmcgui.ListItem(hoster + qual)
                             li.setArt({ 'fanart': fanarturl })
                             li.setProperty('IsPlayable', 'true')
@@ -2235,6 +2328,15 @@ def getMovLinksForEachMov(url):
                 resolve_media(vidurl, sources)
         except:
                  print 'Nothing found using method 2!'
+
+        try:
+            linksDiv = soup.find(class_='videosection')
+            links = linksDiv.find_all('iframe')
+            for link in links:
+                vidurl = link.get("src")
+                resolve_media(vidurl, sources)
+        except:
+                 print 'Nothing found using method 3!'
 
         list_media(movTitle, sources, fanarturl)
 
@@ -2459,14 +2561,15 @@ def getMovLinksForEachMov(url):
     elif 'tamiltvshows.' in url:
 
         link = requests.get(url, headers=mozhdr).text
-        mlink = SoupStrainer(class_='entry')
-        psoup = BeautifulSoup(link, 'html.parser', parse_only=mlink)
+        soup = BeautifulSoup(link, 'html5lib')
+        psoup = soup.find(class_='entry')
         sources = []
         try:
             Items = psoup.find_all('iframe')
             for Item in Items:
                 vidurl = Item.get('src')
-                resolve_media(vidurl, sources)
+                if 'http' in vidurl:
+                    resolve_media(vidurl, sources)
             
         except:
             print 'Nothing found using iframe method!'
@@ -2474,9 +2577,10 @@ def getMovLinksForEachMov(url):
         try:
             Items = psoup.find_all('a')
             for Item in Items:
-                clkurl = Item.get('onclick')
-                vidurl = re.findall("'(http.*?)'", clkurl)[0]
-                resolve_media(vidurl, sources)
+                if 'onclick' in str(Item):
+                    clkurl = Item.get('onclick')
+                    vidurl = re.findall("'(http.*?)'", clkurl)[0]
+                    resolve_media(vidurl, sources)
             
         except:
             print 'Nothing found using click method!'
@@ -2537,32 +2641,27 @@ elif mode == 'GetMovies':
             currPage = 0
 
         if subUrl == 'ABCMalayalam-Mal':
-            abcmalUrl = 'http://abcmalayalam.com/movies?start=' + str(currPage)
+            abcmalUrl = 'http://abcmalayalam.com/movies?start=%s'%(currPage)
         elif subUrl == 'ABCMalayalam-shortFilm':
-            abcmalUrl = 'http://abcmalayalam.com/short-film?start=' + str(currPage)
+            abcmalUrl = 'http://abcmalayalam.com/short-film?start=%s'%(currPage)
 
         Dict_res = cache.cacheFunction(getMovList_ABCmal, abcmalUrl)
 
     elif 'olangal' in subUrl:
 
         if 'olangalMovies' in subUrl:
-            olangalurl = 'http://olangal.pro/page/' + str(currPage)
+            olangalurl = 'http://olangal.pro/page/%s'%(currPage)
         elif 'olangalsearch' in subUrl:
             if currPage == 1:
                 search_text = GetSearchQuery('Olangal')
                 search_text = search_text.replace(' ', '+')
-            olangalurl = 'http://olangal.pro/page/' + str(currPage) + '/?s=' + search_text                
+            olangalurl = 'http://olangal.pro/page/%s/?s=%s'%(currPage,search_text)
 
         Dict_res = cache.cacheFunction(getMovList_olangal, olangalurl)
 
-    elif 'tamiltv' in subUrl:
-
-        tamiltvurl = 'http://www.tamiltvsite.com/browse-tamil-live-tv-videos-' + str(currPage) + '-date.html'
-        Dict_res = cache.cacheFunction(getMovList_tamiltv, tamiltvurl)
-
     elif 'lmtv' in subUrl:
 
-        lmtvurl = 'http://www.livemalayalamtv.com/page/' + str(currPage)
+        lmtvurl = 'http://www.livemalayalamtv.com/page/%s'%(currPage)
         Dict_res = cache.cacheFunction(getMovList_lmtv, lmtvurl)
 
     elif 'yamgo' in subUrl:
@@ -2573,27 +2672,29 @@ elif mode == 'GetMovies':
     elif 'thiruttuvcd' in subUrl:
 
         if 'thiruttuvcd_masala' in subUrl:
-            thiruttuvcd_url = 'http://www.thiruttumasala.com/videos?o=mr&page=' + str(currPage)
+            thiruttuvcd_url = 'http://www.thiruttumasala.com/videos?o=mr&page=%s'%(currPage)
         elif 'thiruttuvcd_MalayalamMovs' in subUrl:
-            thiruttuvcd_url = 'http://www.thiruttuvcd.me/category/malayalam/page/' + str(currPage) + '/'       
+            thiruttuvcd_url = 'http://www.thiruttuvcd.me/category/malayalam/page/%s/'%(currPage)     
         elif 'thiruttuvcd_adult' in subUrl:
-            thiruttuvcd_url = 'http://www.thiruttuvcd.me/category/hot-movies/page/' + str(currPage) + '/'
+            thiruttuvcd_url = 'http://www.thiruttuvcd.me/category/hot-movies/page/%s/'%(currPage)
         elif 'thiruttuvcd_tamilMovs' in subUrl:
-            thiruttuvcd_url = 'http://www.thiruttuvcd.me/category/tamil-movies-online/page/' + str(currPage) + '/'
+            thiruttuvcd_url = 'http://www.thiruttuvcd.me/category/tamil-movies-online/page/%s/'%(currPage)
         elif 'thiruttuvcd_teluguMovs' in subUrl:
-            thiruttuvcd_url = 'http://www.thiruttuvcd.me/category/watch-telugu-movie/page/' + str(currPage) + '/'
+            thiruttuvcd_url = 'http://www.thiruttuvcd.me/category/watch-telugu-movie/page/%s/'%(currPage)
         elif 'thiruttuvcd_hindiMovs' in subUrl:
-            thiruttuvcd_url = 'http://www.thiruttuvcd.me/category/hindi-movies-online/page/' + str(currPage) + '/'
+            thiruttuvcd_url = 'http://www.thiruttuvcd.me/category/hindi-movies-online/page/%s/'%(currPage)
+        elif 'thiruttuvcd_tamiltv' in subUrl:
+            thiruttuvcd_url = 'http://www.thiruttuvcd.me/tv/page/%s/'%(currPage)
         elif 'thiruttuvcd_search' in subUrl:
             if currPage == 1:
                 search_text = GetSearchQuery('ThiruttuVCD')
                 search_text = search_text.replace(' ', '+')
-            thiruttuvcd_url = 'http://www.thiruttuvcd.me/page/' + str(currPage) + '/?s=' + search_text
+            thiruttuvcd_url = 'http://www.thiruttuvcd.me/page/%s/?s=%s'%(currPage,search_text)
         elif 'thiruttuvcd_msearch' in subUrl:
             if currPage == 1:
                 search_text = GetSearchQuery('Thiruttu Masala')
                 search_text = search_text.replace(' ', '+')
-            thiruttuvcd_url = 'http://www.thiruttumasala.com/search?search_query=' + search_text + '&search_type=videos&page=' + str(currPage)
+            thiruttuvcd_url = 'http://www.thiruttumasala.com/search?search_query=%s&search_type=videos&page=%s'%(search_text,currPage)
 
         #cache.delete("%")
         Dict_res = cache.cacheFunction(getMovList_thiruttuvcd, thiruttuvcd_url)
@@ -2601,20 +2702,20 @@ elif mode == 'GetMovies':
     elif 'tvcds' in subUrl:
 
         if 'tvcds_english' in subUrl:
-            tvcds_url = 'http://thiruttuvcds.com/my/category/english/page/' + str(currPage) + '/'       
+            tvcds_url = 'http://thiruttuvcds.com/my/category/english/page/%s/'%(currPage)
         elif 'tvcds_adult' in subUrl:
-            tvcds_url = 'http://thiruttuvcds.com/private/?paged=' + str(currPage)
+            tvcds_url = 'http://thiruttuvcds.com/private/?paged=%s'%(currPage)
         elif 'tvcds_tamil' in subUrl:
-            tvcds_url = 'http://thiruttuvcds.com/my/category/new-tamil-movies/page/' + str(currPage) + '/'
+            tvcds_url = 'http://thiruttuvcds.com/my/category/new-tamil-movies/page/%s/'%(currPage)
         elif 'tvcds_telugu' in subUrl:
-            tvcds_url = 'http://thiruttuvcds.com/my/category/telugu/page/' + str(currPage) + '/'
+            tvcds_url = 'http://thiruttuvcds.com/my/category/telugu/page/%s/'%(currPage)
         elif 'tvcds_hindi' in subUrl:
-            tvcds_url = 'http://thiruttuvcds.com/my/category/hindi/page/' + str(currPage) + '/'
+            tvcds_url = 'http://thiruttuvcds.com/my/category/hindi/page/%s/'%(currPage)
         elif 'tvcds_search' in subUrl:
             if currPage == 1:
                 search_text = GetSearchQuery('Thiruttu VCDs')
                 search_text = search_text.replace(' ', '+')
-            tvcds_url = 'http://thiruttuvcds.com/my/page/' + str(currPage) + '/?s=' + search_text
+            tvcds_url = 'http://thiruttuvcds.com/my/page/%s/?s=%s'%(currPage,search_text)
 
         #cache.delete("%")
         Dict_res = cache.cacheFunction(getMovList_tvcds, tvcds_url)
@@ -2622,366 +2723,397 @@ elif mode == 'GetMovies':
     elif 'rajtamil' in subUrl:
             
         if 'rajtamildubbed' in subUrl:
-            rajTamilurl = 'http://www.rajtamil.com/category/tamil-dubbed/page/' + str(currPage) + '/'
+            rajTamilurl = 'http://www.rajtamil.com/category/tamil-dubbed/page/%s/'%(currPage)
         elif 'rajtamilcomedy' in subUrl:
-            rajTamilurl = 'http://www.rajtamil.com/category/comedy/page/' + str(currPage) + '/'
+            rajTamilurl = 'http://www.rajtamil.com/category/comedy/page/%s/'%(currPage)
         elif 'rajtamilsongs' in subUrl:
-            rajTamilurl = 'http://www.rajtamil.com/category/download-songs/page/' + str(currPage) + '/'
+            rajTamilurl = 'http://www.rajtamil.com/category/download-songs/page/%s/'%(currPage)
         elif 'rajtamilTVshowsVijayTV' in subUrl:
-            rajTamilurl = 'http://www.rajtamil.com/category/vijay-tv-shows/page/' + str(currPage) + '/'
+            rajTamilurl = 'http://www.rajtamil.com/category/vijay-tv-shows/page/%s/'%(currPage)
         elif 'rajtamilTVshowsSunTV' in subUrl:
-            rajTamilurl = 'http://www.rajtamil.com/category/sun-tv-show/page/' + str(currPage) + '/'
+            rajTamilurl = 'http://www.rajtamil.com/category/sun-tv-show/page/%s/'%(currPage)
         elif 'rajtamilsearch' in subUrl:
             if currPage == 1:
                 search_text = GetSearchQuery('RajTamil')
                 search_text = search_text.replace(' ', '+')
-            rajTamilurl = 'http://www.rajtamil.com/page/' + str(currPage) + '/?s=' + search_text
+            rajTamilurl = 'http://www.rajtamil.com/page/%s/?s=%s'%(currPage,search_text)
         else:
-            rajTamilurl = 'http://www.rajtamil.com/category/movies/page/' + str(currPage) + '/'
+            rajTamilurl = 'http://www.rajtamil.com/category/movies/page/%s/'%(currPage)
 
         Dict_res = cache.cacheFunction(getMovList_rajtamil, rajTamilurl)
 
     elif 'tamilgun' in subUrl:
 
         if 'tamilgunnew' in subUrl:
-            tamilgunurl = 'http://tamilgun.us/categories/new-movies/page/' + str(currPage) + '/?order=latest'
+            tamilgunurl = 'http://tamilgun.us/categories/new-movies/page/%s/?order=latest'%(currPage)
         elif 'tamilgundubbed' in subUrl:
-            tamilgunurl = 'http://tamilgun.us/categories/dubbed-movies/page/' + str(currPage) + '/?order=latest'
+            tamilgunurl = 'http://tamilgun.us/categories/dubbed-movies/page/%s/?order=latest'%(currPage)
         elif 'tamilgunhd' in subUrl:
-            tamilgunurl = 'http://tamilgun.us/categories/hd-movies/page/' + str(currPage) + '/?order=latest'
+            tamilgunurl = 'http://tamilgun.us/categories/hd-movies/page/%s/?order=latest'%(currPage)
         elif 'tamilguncomedy' in subUrl:
-            tamilgunurl = 'http://tamilgun.us/categories/hd-comedys/page/' + str(currPage) + '/?order=latest'
+            tamilgunurl = 'http://tamilgun.us/categories/hd-comedys/page/%s/?order=latest'%(currPage)
         elif 'tamilguntrailer' in subUrl:
-            tamilgunurl = 'http://tamilgun.us/categories/trailers/page/' + str(currPage) + '/?order=latest'
+            tamilgunurl = 'http://tamilgun.us/categories/trailers/page/%s/?order=latest'%(currPage)
         elif 'tamilgunsearch' in subUrl:
             if currPage == 1:
                 search_text = GetSearchQuery('TamilGun')
                 search_text = search_text.replace(' ', '+')
-            tamilgunurl = 'http://tamilgun.us/page/' + str(currPage) + '/?s=' + search_text
+            tamilgunurl = 'http://tamilgun.us/page/%s/?s=%s'%(currPage,search_text)
 
         Dict_res = cache.cacheFunction(getMovList_tamilgun, tamilgunurl)
+
+    elif 'tyogi' in subUrl:
+
+        if 'new' in subUrl:
+            tyogiurl = 'http://tamilyogi.cc/category/tamilyogi-full-movie-online/page/%s/'%(currPage)
+        elif 'dubbed' in subUrl:
+            tyogiurl = 'http://tamilyogi.cc/category/tamilyogi-dubbed-movies-online/page/%s/'%(currPage)
+        elif 'hd' in subUrl:
+            tyogiurl = 'http://tamilyogi.cc/category/tamilyogi-bluray-movies/page/%s/'%(currPage)
+        elif 'dvd' in subUrl:
+            tyogiurl = 'http://tamilyogi.cc/category/tamilyogi-dvdrip-movies/page/%s/'%(currPage)
+        elif 'songs' in subUrl:
+            tyogi_url = 'http://tamilyogi.cc/tamil-hd-movies-tamilyogi/page/%s/'%(currPage)
+        elif 'trailer' in subUrl:
+            tyogi_url = 'http://tamilyogi.cc/tamil-new-movies-tamilyogi/page/%s/'%(currPage)
+        elif 'search' in subUrl:
+            if currPage == 1:
+                search_text = GetSearchQuery('Search Tamil Yogi')
+                search_text = search_text.replace(' ', '+')
+            tyogi_url = 'http://tamilyogi.cc/page/%s/?s=%s'%(currPage, search_text)
+
+        Dict_res = cache.cacheFunction(getMovList_tyogi, tyogiurl)
 
     elif 'runtamil' in subUrl:
 
         if 'runtamilnew' in subUrl:
-            runtamilurl = 'http://runtamil.me/category/runtamil-new-tamil-movies2/page/' + str(currPage) + '/'
+            runtamilurl = 'http://runtamil.me/category/runtamil-new-tamil-movies2/page/%s/'%(currPage)
         elif 'runtamildubbed' in subUrl:
-            runtamilurl = 'http://runtamil.me/category/runtamil-tamil-dubbed-movies/page/' + str(currPage) + '/'
+            runtamilurl = 'http://runtamil.me/category/runtamil-tamil-dubbed-movies/page/%s/'%(currPage)
         elif 'runtamilhd' in subUrl:
-            runtamilurl = 'http://runtamil.me/category/tamil-hd-movies-online/page/' + str(currPage) + '/'
+            runtamilurl = 'http://runtamil.me/category/tamil-hd-movies-online/page/%s/'%(currPage)
+        elif 'runtamilold' in subUrl:
+            runtamilurl = 'http://runtamil.me/category/mid-movies/old-tamil-movies/page/%s/'%(currPage)
+        elif 'runtamildvd' in subUrl:
+            runtamilurl = 'http://runtamil.me/category/tamil-dvd-movies1/page/%s/'%(currPage)
         elif 'runtamilsearch' in subUrl:
             if currPage == 1:
                 search_text = GetSearchQuery('runtamil')
                 search_text = search_text.replace(' ', '+')
-            runtamilurl = 'http://runtamil.me/page/' + str(currPage) + '/?s=' + search_text
+            runtamilurl = 'http://runtamil.me/page/%s/?s=%s'%(currPage,search_text)
 
         Dict_res = cache.cacheFunction(getMovList_runtamil, runtamilurl)
 
     elif 'ttwist' in subUrl:
 
         if 'ttwistnew' in subUrl:
-            ttwisturl = 'http://www.tamiltwists.com/category/new-movies/page/' + str(currPage) + '/?order=latest'
+            ttwisturl = 'http://www.tamiltwists.com/category/new-movies/page/%s/?order=latest'%(currPage)
         elif 'ttwistdubbed' in subUrl:
-            ttwisturl = 'http://www.tamiltwists.com/category/dubbed-movies/page/' + str(currPage) + '/?order=latest'
+            ttwisturl = 'http://www.tamiltwists.com/category/dubbed-movies/page/%s/?order=latest'%(currPage)
         elif 'ttwisthd' in subUrl:
-            ttwisturl = 'http://www.tamiltwists.com/category/hd-movies/page/' + str(currPage) + '/?order=latest'
+            ttwisturl = 'http://www.tamiltwists.com/category/hd-movies/page/%s/?order=latest'%(currPage)
         elif 'ttwistmal' in subUrl:
-            ttwisturl = 'http://www.tamiltwists.com/category/malayalam-movies/page/' + str(currPage) + '/?order=latest'
+            ttwisturl = 'http://www.tamiltwists.com/category/malayalam-movies/page/%s/?order=latest'%(currPage)
         elif 'ttwisttel' in subUrl:
-            ttwisturl = 'http://www.tamiltwists.com/category/telugu-movies/page/' + str(currPage) + '/?order=latest'
+            ttwisturl = 'http://www.tamiltwists.com/category/telugu-movies/page/%s/?order=latest'%(currPage)
         elif 'ttwisthin' in subUrl:
-            ttwisturl = 'http://www.tamiltwists.com/category/hindi-movies/page/' + str(currPage) + '/?order=latest'
+            ttwisturl = 'http://www.tamiltwists.com/category/hindi-movies/page/%s/?order=latest'%(currPage)
         elif 'ttwistadult' in subUrl:
-            ttwisturl = 'http://www.tamiltwists.com/category/hot-masala/page/' + str(currPage) + '/?order=latest'
+            ttwisturl = 'http://www.tamiltwists.com/category/hot-masala/page/%s/?order=latest'%(currPage)
         elif 'ttwisttrailer' in subUrl:
-            ttwisturl = 'http://www.tamiltwists.com/category/trailers/page/' + str(currPage) + '/?order=latest'
+            ttwisturl = 'http://www.tamiltwists.com/category/trailers/page/%s/?order=latest'%(currPage)
         elif 'ttwistsearch' in subUrl:
             if currPage == 1:
                 search_text = GetSearchQuery('Tamil Twist')
                 search_text = search_text.replace(' ', '+')
-            ttwisturl = 'http://www.tamiltwists.com/page/' + str(currPage) + '/?s=' + search_text
+            ttwisturl = 'http://www.tamiltwists.com/page/%s/?s=%s'%(currPage,search_text)
 
         Dict_res = cache.cacheFunction(getMovList_ttwist, ttwisturl)
 
     elif 'flinks' in subUrl:
 
         if 'flinkstamil' in subUrl:
-            flinksurl = 'https://www.filmlinks4u.is/category/tamil/page/' + str(currPage) + '?orderby=date'
+            flinksurl = 'https://www.filmlinks4u.is/category/tamil/page/%s?orderby=date'
         elif 'flinksmalayalam' in subUrl:
-            flinksurl = 'https://www.filmlinks4u.is/category/malayalam/page/' + str(currPage) + '?orderby=date'
+            flinksurl = 'https://www.filmlinks4u.is/category/malayalam/page/%s?orderby=date'
         elif 'flinkstelugu' in subUrl:
-            flinksurl = 'https://www.filmlinks4u.is/category/telugu/page/' + str(currPage) + '?orderby=date'
+            flinksurl = 'https://www.filmlinks4u.is/category/telugu/page/%s?orderby=date'
         elif 'flinkshindisc' in subUrl:
-            flinksurl = 'https://www.filmlinks4u.is/category/adult-hindi-short-films/page/' + str(currPage) + '?orderby=date'
+            flinksurl = 'https://www.filmlinks4u.is/category/adult-hindi-short-films/page/%s?orderby=date'
         elif 'flinkshindi' in subUrl:
-            flinksurl = 'https://www.filmlinks4u.is/category/hindi/page/' + str(currPage) + '?orderby=date'
+            flinksurl = 'https://www.filmlinks4u.is/category/hindi/page/%s?orderby=date'
         elif 'flinkskannada' in subUrl:
-            flinksurl = 'https://www.filmlinks4u.is/category/kannada/page/' + str(currPage) + '?orderby=date'
+            flinksurl = 'https://www.filmlinks4u.is/category/kannada/page/%s?orderby=date'
         elif 'flinksadult' in subUrl:
-            flinksurl = 'https://www.filmlinks4u.is/category/adult/page/' + str(currPage) + '?orderby=date'
+            flinksurl = 'https://www.filmlinks4u.is/category/adult/page/%s?orderby=date'
         elif 'flinksani' in subUrl:
-            flinksurl = 'https://www.filmlinks4u.is/category/animation/page/' + str(currPage) + '?orderby=date'
+            flinksurl = 'https://www.filmlinks4u.is/category/animation/page/%s?orderby=date'
         elif 'flinksholly' in subUrl:
-            flinksurl = 'https://www.filmlinks4u.is/category/hollywood/page/' + str(currPage) + '?orderby=date'
+            flinksurl = 'https://www.filmlinks4u.is/category/hollywood/page/%s?orderby=date'
         elif 'flinksben' in subUrl:
-            flinksurl = 'https://www.filmlinks4u.is/category/bengali/page/' + str(currPage) + '?orderby=date'
+            flinksurl = 'https://www.filmlinks4u.is/category/bengali/page/%s?orderby=date'
         elif 'flinksbhoj' in subUrl:
-            flinksurl = 'https://www.filmlinks4u.is/category/bhojpuri/page/' + str(currPage) + '?orderby=date'
+            flinksurl = 'https://www.filmlinks4u.is/category/bhojpuri/page/%s?orderby=date'
         elif 'flinksbio' in subUrl:
-            flinksurl = 'https://www.filmlinks4u.is/category/biography/page/' + str(currPage) + '?orderby=date'
+            flinksurl = 'https://www.filmlinks4u.is/category/biography/page/%s?orderby=date'
         elif 'flinksdocu' in subUrl:
-            flinksurl = 'https://www.filmlinks4u.is/category/documentary/page/' + str(currPage) + '?orderby=date'
+            flinksurl = 'https://www.filmlinks4u.is/category/documentary/page/%s?orderby=date'
         elif 'flinksguj' in subUrl:
-            flinksurl = 'https://www.filmlinks4u.is/category/gujarati/page/' + str(currPage) + '?orderby=date'
+            flinksurl = 'https://www.filmlinks4u.is/category/gujarati/page/%s?orderby=date'
         elif 'flinksmar' in subUrl:
-            flinksurl = 'https://www.filmlinks4u.is/category/marathi/page/' + str(currPage) + '?orderby=date'
+            flinksurl = 'https://www.filmlinks4u.is/category/marathi/page/%s?orderby=date'
         elif 'flinksnep' in subUrl:
-            flinksurl = 'https://www.filmlinks4u.is/category/others/nepali/page/' + str(currPage) + '?orderby=date'
+            flinksurl = 'https://www.filmlinks4u.is/category/others/nepali/page/%s?orderby=date'
         elif 'flinksori' in subUrl:
-            flinksurl = 'https://www.filmlinks4u.is/category/others/oriya/page/' + str(currPage) + '?orderby=date'
+            flinksurl = 'https://www.filmlinks4u.is/category/others/oriya/page/%s?orderby=date'
         elif 'flinkspun' in subUrl:
-            flinksurl = 'https://www.filmlinks4u.is/category/punjabi/page/' + str(currPage) + '?orderby=date'
+            flinksurl = 'https://www.filmlinks4u.is/category/punjabi/page/%s?orderby=date'
         elif 'flinksraj' in subUrl:
-            flinksurl = 'https://www.filmlinks4u.is/category/others/rajasthani/page/' + str(currPage) + '?orderby=date'
+            flinksurl = 'https://www.filmlinks4u.is/category/others/rajasthani/page/%s?orderby=date'
         elif 'flinksurdu' in subUrl:
-            flinksurl = 'https://www.filmlinks4u.is/category/others/urdu/page/' + str(currPage) + '?orderby=date'
+            flinksurl = 'https://www.filmlinks4u.is/category/others/urdu/page/%s?orderby=date'
         elif 'flinkssearch' in subUrl:
             if currPage == 1:
                 search_text = GetSearchQuery('FilmLinks4U')
                 search_text = search_text.replace(' ', '+')
-            flinksurl = 'https://www.filmlinks4u.is/page/' + str(currPage) + '/?s=' + search_text
+            flinksurl = 'https://www.filmlinks4u.is/page/%s/?s=%s'%(currPage,search_text)
             
         Dict_res = cache.cacheFunction(getMovList_flinks, flinksurl)
 
     elif 'hlinks' in subUrl:
    
         if 'hlinkshindi' in subUrl:
-            hlinksurl = 'http://www.hindilinks4u.to/category/hindi-movies/page/' + str(currPage) + '?orderby=date'
+            hlinksurl = 'http://www.hindilinks4u.to/category/hindi-movies/page/%s?orderby=date'%(currPage)
         elif 'hlinksdub' in subUrl:
-            hlinksurl = 'http://www.hindilinks4u.to/category/dubbed-movies/page/' + str(currPage) + '?orderby=date'
+            hlinksurl = 'http://www.hindilinks4u.to/category/dubbed-movies/page/%s?orderby=date'%(currPage)
         elif 'hlinksadult' in subUrl:
-            hlinksurl = 'http://www.hindilinks4u.to/category/adult/page/' + str(currPage) + '?orderby=date'
+            hlinksurl = 'http://www.hindilinks4u.to/category/adult/page/%s?orderby=date'%(currPage)
         elif 'hlinksdocu' in subUrl:
-            hlinksurl = 'http://www.hindilinks4u.to/category/documentaries/page/' + str(currPage) + '?orderby=date'
+            hlinksurl = 'http://www.hindilinks4u.to/category/documentaries/page/%s?orderby=date'%(currPage)
         elif 'hlinkssearch' in subUrl:
             if currPage == 1:
                 search_text = GetSearchQuery('HindiLinks4U')
                 search_text = search_text.replace(' ', '+')
-            hlinksurl = 'http://www.hindilinks4u.to/page/' + str(currPage) + '/?s=' + search_text
+            hlinksurl = 'http://www.hindilinks4u.to/page/%s/?s=%s'%(currPage,search_text)
             
         Dict_res = cache.cacheFunction(getMovList_hlinks, hlinksurl)
 
     elif 'mersal' in subUrl:
             
         if 'mersal_Tamil' in subUrl:
-            mersalurl = 'http://mersalaayitten.co/videos?c=1&o=mr&page=' + str(currPage)
+            mersalurl = 'http://mersalaayitten.co/videos?c=1&o=mr&page=%s'%(currPage)
         elif 'mersal_Telugu' in subUrl:
-            mersalurl = 'http://mersalaayitten.co/videos?c=3&o=mr&page=' + str(currPage)
+            mersalurl = 'http://mersalaayitten.co/videos?c=3&o=mr&page=%s'%(currPage)
         elif 'mersal_Hindi' in subUrl:
-            mersalurl = 'http://mersalaayitten.co/videos?c=2&o=mr&page=' + str(currPage)
+            mersalurl = 'http://mersalaayitten.co/videos?c=2&o=mr&page=%s'%(currPage)
         elif 'mersal_Malayalam' in subUrl:
-            mersalurl = 'http://mersalaayitten.co/videos?c=4&o=mr&page=' + str(currPage)
+            mersalurl = 'http://mersalaayitten.co/videos?c=4&o=mr&page=%s'%(currPage)
         elif 'mersal_Dubbed' in subUrl:
-            mersalurl = 'http://mersalaayitten.co/videos?c=6&o=mr&page=' + str(currPage)
+            mersalurl = 'http://mersalaayitten.co/videos?c=6&o=mr&page=%s'%(currPage)
         elif 'mersal_Animation' in subUrl:
-            mersalurl = 'http://mersalaayitten.co/videos?c=5&o=mr&page=' + str(currPage)
+            mersalurl = 'http://mersalaayitten.co/videos?c=5&o=mr&page=%s'%(currPage)
         elif 'mersal_search' in subUrl:
             if currPage == 1:
                 search_text = GetSearchQuery('Mersalaayitten')
                 search_text = search_text.replace(' ', '+')
-            mersalurl = 'http://mersalaayitten.co/search?search_type=videos&search_query=' + search_text + '&page=' + str(currPage)
+            mersalurl = 'http://mersalaayitten.co/search?search_type=videos&search_query=%s&page=%s'%(search_text,currPage)
 
         Dict_res = cache.cacheFunction(getMovList_mersal, mersalurl)
 
     elif 'mfish' in subUrl:
 
         if 'mfish_Tamil' in subUrl:
-            mfishurl = 'http://onlinemovielist.com/category/watch-tamil/page/' + str(currPage)
+            mfishurl = 'http://onlinemovielist.com/category/watch-tamil/page/%s'%(currPage)
         elif 'mfish_Telugu' in subUrl:
-            mfishurl = 'http://onlinemovielist.com/category/full-telugu/page/' + str(currPage)
+            mfishurl = 'http://onlinemovielist.com/category/full-telugu/page/%s'%(currPage)
         elif 'mfish_Mal' in subUrl:
-            mfishurl = 'http://onlinemovielist.com/category/watch-malayalam/page/' + str(currPage)
+            mfishurl = 'http://onlinemovielist.com/category/watch-malayalam/page/%s'%(currPage)
         elif 'mfish_Hindi' in subUrl:
-            mfishurl = 'http://onlinemovielist.com/category/hindi/page/' + str(currPage)
+            mfishurl = 'http://onlinemovielist.com/category/hindi/page/%s'%(currPage)
         elif 'mfish_English' in subUrl:
-            mfishurl = 'http://onlinemovielist.com/category/hollywood/page/' + str(currPage)
+            mfishurl = 'http://onlinemovielist.com/category/hollywood/page/%s'%(currPage)
         elif 'mfish_Dubbed' in subUrl:
-            mfishurl = 'http://onlinemovielist.com/category/hindi-dubbed/page/' + str(currPage)
+            mfishurl = 'http://onlinemovielist.com/category/hindi-dubbed/page/%s'%(currPage)
         elif 'mfish_SDubbed' in subUrl:
-            mfishurl = 'http://onlinemovielist.com/category/south-dubbed/page/' + str(currPage)
+            mfishurl = 'http://onlinemovielist.com/category/south-dubbed/page/%s'%(currPage)
         elif 'mfish_Punjabi' in subUrl:
-            mfishurl = 'http://onlinemovielist.com/category/punjabi/page/' + str(currPage)
+            mfishurl = 'http://onlinemovielist.com/category/punjabi/page/%s'%(currPage)
         elif 'mfish_search' in subUrl:
             if currPage == 1:
                 search_text = GetSearchQuery('FirstTube')
                 search_text = search_text.replace(' ', '+')
-            mfishurl = 'http://onlinemovielist.com/page/' + str(currPage) + '?s=' + search_text
+            mfishurl = 'http://onlinemovielist.com/page/%s/?s=%s'%(currPage,search_text)
             
         Dict_res = cache.cacheFunction(getMovList_mfish, mfishurl)
+
+    elif 'tamiltv' in subUrl:
+
+        tamiltvurl = 'http://www.tamiltvsite.com/browse-tamil-live-tv-videos-%s-date.html'%(currPage)
+        Dict_res = cache.cacheFunction(getMovList_tamiltv, tamiltvurl)
 
     elif 'mrulz' in subUrl:
 
         if 'mrulz_Tamil' in subUrl:
-            mrulzurl = 'http://www.movierulz.is/category/tamil-movie/page/' + str(currPage) + '/'
+            mrulzurl = 'http://www.movierulz.is/category/tamil-movie/page/%s/'%(currPage)
         elif 'mrulz_Telugu' in subUrl:
-            mrulzurl = 'http://www.movierulz.is/category/telugu-movie/page/' + str(currPage) + '/'
+            mrulzurl = 'http://www.movierulz.is/category/telugu-movie/page/%s/'%(currPage)
         elif 'mrulz_Mal' in subUrl:
-            mrulzurl = 'http://www.movierulz.is/category/malayalam-movie/page/' + str(currPage) + '/'
+            mrulzurl = 'http://www.movierulz.is/category/malayalam-movie/page/%s/'%(currPage)
         elif 'mrulz_Kannada' in subUrl:
-            mrulzurl = 'http://www.movierulz.is/category/kannada-movie/page/' + str(currPage) + '/'
+            mrulzurl = 'http://www.movierulz.is/category/kannada-movie/page/%s/'%(currPage)
         elif 'mrulz_h2016' in subUrl:
-            mrulzurl = 'http://www.movierulz.is/category/bollywood-movie-2016/page/' + str(currPage) + '/'
+            mrulzurl = 'http://www.movierulz.is/category/bollywood-movie-2016/page/%s/'%(currPage)
         elif 'mrulz_h2015' in subUrl:
-            mrulzurl = 'http://www.movierulz.is/category/bollywood-movie-2015/page/' + str(currPage) + '/'
+            mrulzurl = 'http://www.movierulz.is/category/bollywood-movie-2015/page/%s/'%(currPage)
         elif 'mrulz_h2014' in subUrl:
-            mrulzurl = 'http://www.movierulz.is/category/bollywood-movie-2014/page/' + str(currPage) + '/'
+            mrulzurl = 'http://www.movierulz.is/category/bollywood-movie-2014/page/%s/'%(currPage)
         elif 'mrulz_e2016' in subUrl:
-            mrulzurl = 'http://www.movierulz.is/category/hollywood-movie-2016/page/' + str(currPage) + '/'
+            mrulzurl = 'http://www.movierulz.is/category/hollywood-movie-2016/page/%s/'%(currPage)
         elif 'mrulz_e2015' in subUrl:
-            mrulzurl = 'http://www.movierulz.is/category/hollywood-movie-2015/page/' + str(currPage) + '/'
+            mrulzurl = 'http://www.movierulz.is/category/hollywood-movie-2015/page/%s/'%(currPage)
         elif 'mrulz_e2014' in subUrl:
-            mrulzurl = 'http://www.movierulz.is/category/hollywood-movie-2014/page/' + str(currPage) + '/'
+            mrulzurl = 'http://www.movierulz.is/category/hollywood-movie-2014/page/%s/'%(currPage)
         elif 'mrulz_hdubbed' in subUrl:
-            mrulzurl = 'http://www.movierulz.is/category/hindi-dubbed-movie/page/' + str(currPage) + '/'
+            mrulzurl = 'http://www.movierulz.is/category/hindi-dubbed-movie/page/%s/'%(currPage)
         elif 'mrulz_tdubbed' in subUrl:
-            mrulzurl = 'http://www.movierulz.is/category/tamil-dubbed-movie-2/page/' + str(currPage) + '/'
+            mrulzurl = 'http://www.movierulz.is/category/tamil-dubbed-movie-2/page/%s/'%(currPage)
         elif 'mrulz_tgdubbed' in subUrl:
-            mrulzurl = 'http://www.movierulz.is/category/telugu-dubbed-movie-2/page/' + str(currPage) + '/'
+            mrulzurl = 'http://www.movierulz.is/category/telugu-dubbed-movie-2/page/%s/'%(currPage)
         elif 'mrulz_Punjabi' in subUrl:
-            mrulzurl = 'http://www.movierulz.is/category/punjabi-movie-2016/page/' + str(currPage) + '/'
+            mrulzurl = 'http://www.movierulz.is/category/punjabi-movie-2016/page/%s/'%(currPage)
         elif 'mrulz_Bengali' in subUrl:
-            mrulzurl = 'http://www.movierulz.is/category/bengali-movie/page/' + str(currPage) + '/'
+            mrulzurl = 'http://www.movierulz.is/category/bengali-movie/page/%s/'%(currPage)
         elif 'mrulz_adult' in subUrl:
-            mrulzurl = 'http://www.movierulz.is/category/adult-movie/page/' + str(currPage) + '/'
+            mrulzurl = 'http://www.movierulz.is/category/adult-movie/page/%s/'%(currPage)
         elif 'mrulz_search' in subUrl:
             if currPage == 1:
                 search_text = GetSearchQuery('Movie Rulz')
                 search_text = search_text.replace(' ', '+')
-            mrulzurl = 'http://www.movierulz.is/page/' + str(currPage) + '/?s=' + search_text
+            mrulzurl = 'http://www.movierulz.is/page/%s/?s=%s'%(currPage,search_text)
             
         Dict_res = cache.cacheFunction(getMovList_mrulz, mrulzurl)
 
     elif 'KitMovie' in subUrl:
 
         if 'KitMovie_Mal' in subUrl:
-            kmovieurl = 'http://www.kitmovie.com/malayalam/categories/movie/page/' + str(currPage)+'/'
+            kmovieurl = 'http://www.kitmovie.com/malayalam/categories/movie/page/%s/'%(currPage)
         elif 'KitMovie_MSongs' in subUrl:
-            kmovieurl = 'http://www.kitmovie.com/malayalam/categories/songs/page/' + str(currPage)+'/'         
+            kmovieurl = 'http://www.kitmovie.com/malayalam/categories/songs/page/%s/'%(currPage)         
         elif 'KitMovie_Tamil' in subUrl:
-            kmovieurl = 'http://www.kitmovie.com/tamil/categories/movie/page/' + str(currPage)+'/'
+            kmovieurl = 'http://www.kitmovie.com/tamil/categories/movie/page/%s/'%(currPage)
         elif 'KitMovie_TSongs' in subUrl:
-            kmovieurl = 'http://www.kitmovie.com/tamil/categories/songs/page/' + str(currPage)+'/'        
+            kmovieurl = 'http://www.kitmovie.com/tamil/categories/songs/page/%s/'%(currPage)       
         elif 'KitMovie_Hindi' in subUrl:
-            kmovieurl = 'http://www.kitmovie.com/hindi/categories/movies/page/' + str(currPage)+'/'
+            kmovieurl = 'http://www.kitmovie.com/hindi/categories/movies/page/%s/'%(currPage)
         elif 'KitMovie_HSongs' in subUrl:
-            kmovieurl = 'http://www.kitmovie.com/hindi/categories/songs/page/' + str(currPage)+'/'           
+            kmovieurl = 'http://www.kitmovie.com/hindi/categories/songs/page/%s/'%(currPage)          
         elif 'KitMovie_tsearch' in subUrl:
             if currPage == 1:
                 search_text = GetSearchQuery('FirstTube')
                 search_text = search_text.replace(' ', '+')
-            kmovieurl = 'http://www.kitmovie.com/tamil/page/' + str(currPage) + '/?s=' + search_text
+            kmovieurl = 'http://www.kitmovie.com/tamil/page/%s/?s=%s'%(currPage,search_text)
         elif 'KitMovie_msearch' in subUrl:
             if currPage == 1:
                 search_text = GetSearchQuery('FirstTube')
                 search_text = search_text.replace(' ', '+')
-            kmovieurl = 'http://www.kitmovie.com/malayalam/page/' + str(currPage) + '/?s=' + search_text
+            kmovieurl = 'http://www.kitmovie.com/malayalam/page/%s/?s=%s'%(currPage,search_text)
         elif 'KitMovie_hsearch' in subUrl:
             if currPage == 1:
                 search_text = GetSearchQuery('FirstTube')
                 search_text = search_text.replace(' ', '+')
-            kmovieurl = 'http://www.kitmovie.com/hindi/page/' + str(currPage) + '/?s=' + search_text
+            kmovieurl = 'http://www.kitmovie.com/hindi/page/%s/?s=%s'%(currPage,search_text)
 
         Dict_res = cache.cacheFunction(getMovList_KitMovie, kmovieurl)
 
     elif 'rmovies' in subUrl:
             
         if 'rmovies_Tamil' in subUrl:
-            rmoviesurl = 'http://redmovies.me/category/tamil/page/' + str(currPage) + '/'
+            rmoviesurl = 'http://redmovies.me/category/tamil/page/%s/'%(currPage)
         elif 'rmovies_Telugu' in subUrl:
-            rmoviesurl = 'http://redmovies.me/category/telugu/page/' + str(currPage) + '/'
+            rmoviesurl = 'http://redmovies.me/category/telugu/page/%s/'%(currPage)
         elif 'rmovies_Malayalam' in subUrl:
-            rmoviesurl = 'http://redmovies.me/category/malayalam/page/' + str(currPage) + '/'
+            rmoviesurl = 'http://redmovies.me/category/malayalam/page/%s/'%(currPage)
         elif 'rmovies_Kannada' in subUrl:
-            rmoviesurl = 'http://redmovies.me/category/kannada-movies/page/' + str(currPage) + '/'
+            rmoviesurl = 'http://redmovies.me/category/kannada-movies/page/%s/'%(currPage)
         elif 'rmovies_Hindi' in subUrl:
-            rmoviesurl = 'http://redmovies.me/category/bollywood-movies/page/' + str(currPage) + '/'
+            rmoviesurl = 'http://redmovies.me/category/bollywood-movies/page/%s/'%(currPage)
         elif 'rmovies_Dubbed' in subUrl:
-            rmoviesurl = 'http://redmovies.me/category/hindi-dubbed/page/' + str(currPage) + '/'
+            rmoviesurl = 'http://redmovies.me/category/hindi-dubbed/page/%s/'%(currPage)
         elif 'rmovies_English' in subUrl:
-            rmoviesurl = 'http://redmovies.me/category/hollywood-movies/page/' + str(currPage) + '/'
+            rmoviesurl = 'http://redmovies.me/category/hollywood-movies/page/%s/'%(currPage)
         elif 'rmovies_Animated' in subUrl:
-            rmoviesurl = 'http://redmovies.me/category/animation/page/' + str(currPage) + '/'
+            rmoviesurl = 'http://redmovies.me/category/animation/page/%s/'%(currPage)
         elif 'rmovies_Punjabi' in subUrl:
-            rmoviesurl = 'http://redmovies.me/category/punjabi-movies/page/' + str(currPage) + '/'
+            rmoviesurl = 'http://redmovies.me/category/punjabi-movies/page/%s/'%(currPage)
         elif 'rmovies_Urdu' in subUrl:
-            rmoviesurl = 'http://redmovies.me/category/pakistan/page/' + str(currPage) + '/'
+            rmoviesurl = 'http://redmovies.me/category/pakistan/page/%s/'%(currPage)
         elif 'rmovies_Adult' in subUrl:
-            rmoviesurl = 'http://redmovies.me/category/adult/page/' + str(currPage) + '/'
+            rmoviesurl = 'http://redmovies.me/category/adult/page/%s/'%(currPage)
         elif 'rmovies_search' in subUrl:
             if currPage == 1:
                 search_text = GetSearchQuery('RedMovies')
                 search_text = search_text.replace(' ', '+')
-            rmoviesurl = 'http://redmovies.me/page/' + str(currPage) + '/?s=' + search_text
+            rmoviesurl = 'http://redmovies.me/page/%s/?s=%s'%(currPage,search_text)
             
         Dict_res = cache.cacheFunction(getMovList_rmovies, rmoviesurl)
 
     elif 'moviefk' in subUrl:
             
         if 'moviefk_Tamil' in subUrl:
-            moviefkurl = 'http://www.moviefk.com/category/tamil-movies/page/' + str(currPage) + '/'
+            moviefkurl = 'http://www.moviefk.com/category/tamil-movies/page/%s/'%(currPage)
         elif 'moviefk_Telugu' in subUrl:
-            moviefkurl = 'http://www.moviefk.com/category/telugu-movies/page/' + str(currPage) + '/'
+            moviefkurl = 'http://www.moviefk.com/category/telugu-movies/page/%s/'%(currPage)
         elif 'moviefk_Marathi' in subUrl:
-            moviefkurl = 'http://www.moviefk.com/category/marathi-movie/page/' + str(currPage) + '/'
+            moviefkurl = 'http://www.moviefk.com/category/marathi-movie/page/%s/'%(currPage)
         elif 'moviefk_Hindi' in subUrl:
-            moviefkurl = 'http://www.moviefk.com/category/hindi-movies/page/' + str(currPage) + '/'
+            moviefkurl = 'http://www.moviefk.com/category/hindi-movies/page/%s/'%(currPage)
         elif 'moviefk_Dubbed' in subUrl:
-            moviefkurl = 'http://www.moviefk.com/category/hindi-dubbed/page/' + str(currPage) + '/'
+            moviefkurl = 'http://www.moviefk.com/category/hindi-dubbed/page/%s/'%(currPage)
         elif 'moviefk_English' in subUrl:
-            moviefkurl = 'http://www.moviefk.com/category/hollywood-movies/page/' + str(currPage) + '/'
+            moviefkurl = 'http://www.moviefk.com/category/hollywood-movies/page/%s/'%(currPage)
         elif 'moviefk_WWE' in subUrl:
-            moviefkurl = 'http://www.moviefk.com/category/wwe/page/' + str(currPage) + '/'
+            moviefkurl = 'http://www.moviefk.com/category/wwe/page/%s/'%(currPage)
         elif 'moviefk_Punjabi' in subUrl:
-            moviefkurl = 'http://www.moviefk.com/category/punjabi-movies/page/' + str(currPage) + '/'
+            moviefkurl = 'http://www.moviefk.com/category/punjabi-movies/page/%s/'%(currPage)
         elif 'moviefk_search' in subUrl:
             if currPage == 1:
                 search_text = GetSearchQuery('Full New Movie')
                 search_text = search_text.replace(' ', '+')
-            moviefkurl = 'http://www.moviefk.com/page/' + str(currPage) + '/?s=' + search_text
+            moviefkurl = 'http://www.moviefk.com/page/%s/?s=%s'%(currPage,search_text)
             
         Dict_res = cache.cacheFunction(getMovList_moviefk, moviefkurl)
 
     elif 'i4m' in subUrl:
             
         if 'i4m_Tamil' in subUrl:
-            i4murl = 'http://www.india4movie.co/category/tamil-movie-list-2016-online-download/page/' + str(currPage) + '/'
+            i4murl = 'http://www.india4movie.net/category/tamil-movie-list-2016-online-download//page/%s/'%(currPage)
         elif 'i4m_Telugu' in subUrl:
-            i4murl = 'http://www.india4movie.co/category/telugu-movies/page/' + str(currPage) + '/'
+            i4murl = 'http://www.india4movie.net/category/telugu-movies/page/%s/'%(currPage)
         elif 'i4m_Marathi' in subUrl:
-            i4murl = 'http://www.india4movie.co/category/marathi/page/' + str(currPage) + '/'
+            i4murl = 'http://www.india4movie.net/category/marathi/page/%s/'%(currPage)
         elif 'i4m_Hindi' in subUrl:
-            i4murl = 'http://www.india4movie.co/category/hindi-movie/page/' + str(currPage) + '/'
+            i4murl = 'http://www.india4movie.net/category/hindi-movie/page/%s/'%(currPage)
         elif 'i4m_Dubbed' in subUrl:
-            i4murl = 'http://www.india4movie.co/category/dubbed-movie/page/' + str(currPage) + '/'
+            i4murl = 'http://www.india4movie.net/category/dubbed-movie/page/%s/'%(currPage)
         elif 'i4m_English' in subUrl:
-            i4murl = 'http://www.india4movie.co/category/hollywood-movie/page/' + str(currPage) + '/'
+            i4murl = 'http://www.india4movie.net/category/hollywood-movie/page/%s/'%(currPage)
         elif 'i4m_Mal' in subUrl:
-            i4murl = 'http://www.india4movie.co/category/malayalam-movie-list/page/' + str(currPage) + '/'
+            i4murl = 'http://www.india4movie.net/category/malayalam-movie-list/page/%s/'%(currPage)
         elif 'i4m_Kan' in subUrl:
-            i4murl = 'http://www.india4movie.co/category/kannada-new-movies-online/page/' + str(currPage) + '/'
+            i4murl = 'http://www.india4movie.net/category/kannada-new-movies-online/page/%s/'%(currPage)
         elif 'i4m_Punjabi' in subUrl:
-            i4murl = 'http://www.india4movie.co/category/punjabi-movies-list/page/' + str(currPage) + '/'
+            i4murl = 'http://www.india4movie.net/category/punjabi-movies-list/page/%s/'%(currPage)
         elif 'i4m_Bengali' in subUrl:
-            i4murl = 'http://www.india4movie.co/category/bengali-new/page/' + str(currPage) + '/'
+            i4murl = 'http://www.india4movie.net/category/bengali-new/page/%s/'%(currPage)
         elif 'i4m_Urdu' in subUrl:
-            i4murl = 'http://www.india4movie.co/category/pakistani-movies/page/' + str(currPage) + '/'
+            i4murl = 'http://www.india4movie.net/category/pakistani-movies/page/%s/'%(currPage)
         elif 'i4m_adult' in subUrl:
-            i4murl = 'http://www.india4movie.co/category/adult-new-movie-xxx/page/' + str(currPage) + '/'
+            i4murl = 'http://www.india4movie.net/category/adult-new-movie-xxx/page/%s/'%(currPage)
         elif 'i4m_search' in subUrl:
             if currPage == 1:
                 search_text = GetSearchQuery('India 4 Movie')
                 search_text = search_text.replace(' ', '+')
-            i4murl = 'http://www.india4movie.co/page/' + str(currPage) + '/?s=' + search_text
+            i4murl = 'http://www.india4movie.net/page/%s/?s=%s'%(currPage,search_text)
             
         Dict_res = cache.cacheFunction(getMovList_i4m, i4murl)
 
@@ -3094,9 +3226,20 @@ elif mode == 'tamilgun':
     _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'tamilguntrailer'}, {'title': 'Tamil Movie Trailers'}, img=tgun_img, fanart=fan_img)
     _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'tamilgunsearch'}, {'title': '[COLOR yellow]** Search **[/COLOR]'}, img=tgun_img, fanart=fan_img)
 
+elif mode == 'tyogi':
+    _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'tyogi_new'}, {'title': 'Tamil New Movies'}, img=tyogi_img, fanart=fan_img)
+    _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'tyogi_hd'}, {'title': 'Tamil HD Movies'}, img=tyogi_img, fanart=fan_img)
+    _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'tyogi_dvd'}, {'title': 'Tamil DVD Movies'}, img=tyogi_img, fanart=fan_img)
+    _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'tyogi_dubbed'}, {'title': 'Tamil Dubbed Movies'}, img=tyogi_img, fanart=fan_img)
+    #_DD.add_directory({'mode': 'GetMovies', 'subUrl': 'tyogi_songs'}, {'title': 'Tamil Movie Video Songs'}, img=tyogi_img, fanart=fan_img)
+    #_DD.add_directory({'mode': 'GetMovies', 'subUrl': 'tyogi_trailer'}, {'title': 'Tamil Movie Trailers'}, img=tyogi_img, fanart=fan_img)
+    _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'tyogi_search'}, {'title': '[COLOR yellow]** Search **[/COLOR]'}, img=tyogi_img, fanart=fan_img)
+
 elif mode == 'runtamil':
     _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'runtamilnew'}, {'title': 'Tamil New Movies'}, img=runt_img, fanart=fan_img)
     _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'runtamilhd'}, {'title': 'Tamil HD Movies'}, img=runt_img, fanart=fan_img)
+    _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'runtamildvd'}, {'title': 'Tamil DVD Movies'}, img=runt_img, fanart=fan_img)
+    _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'runtamilold'}, {'title': 'Tamil Classic Movies'}, img=runt_img, fanart=fan_img)
     _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'runtamildubbed'}, {'title': 'Tamil Dubbed Movies'}, img=runt_img, fanart=fan_img)
     _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'runtamilsearch'}, {'title': '[COLOR yellow]** Search **[/COLOR]'}, img=runt_img, fanart=fan_img)
 
@@ -3108,7 +3251,7 @@ elif mode == 'ttwist':
     _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'ttwistmal'}, {'title': 'Malayalam Movies'}, img=ttwist_img, fanart=fan_img)
     _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'ttwisttel'}, {'title': 'Telugu Movies'}, img=ttwist_img, fanart=fan_img)
     _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'ttwisthin'}, {'title': 'Hindi Movies'}, img=ttwist_img, fanart=fan_img)
-    if SETTINGS_ENABLEADULT == 'true':
+    if SETTINGS_ADULT == 'true':
         _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'ttwistadult'}, {'title': 'Adult Movies'}, img=ttwist_img, fanart=fan_img)
     _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'ttwistsearch'}, {'title': '[COLOR yellow]** Search **[/COLOR]'}, img=ttwist_img, fanart=fan_img)
 
@@ -3131,7 +3274,7 @@ elif mode == 'flinks':
     _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'flinkspun'}, {'title': 'Punjabi Movies'}, img=flinks_img, fanart=fan_img)
     _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'flinksraj'}, {'title': 'Rajasthani Movies'}, img=flinks_img, fanart=fan_img)
     _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'flinksurdu'}, {'title': 'Urdu Movies'}, img=flinks_img, fanart=fan_img)
-    if SETTINGS_ENABLEADULT == 'true':
+    if SETTINGS_ADULT == 'true':
         _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'flinksadult'}, {'title': 'Adult Movies'}, img=flinks_img, fanart=fan_img)
         _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'flinkshindisc'}, {'title': 'Hindi Softcore'}, img=flinks_img, fanart=fan_img)
     _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'flinkssearch'}, {'title': '[COLOR yellow]** Search **[/COLOR]'}, img=flinks_img, fanart=fan_img)
@@ -3140,7 +3283,7 @@ elif mode == 'hlinks':
     _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'hlinkshindi'}, {'title': 'Hindi Movies'}, img=hlinks_img, fanart=fan_img)
     _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'hlinksdub'}, {'title': 'Dubbed Movies'}, img=hlinks_img, fanart=fan_img)
     _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'hlinksdocu'}, {'title': 'Documentary Movies'}, img=hlinks_img, fanart=fan_img)
-    if SETTINGS_ENABLEADULT == 'true':
+    if SETTINGS_ADULT == 'true':
         _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'hlinksadult'}, {'title': 'Adult Movies'}, img=hlinks_img, fanart=fan_img)
     _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'hlinkssearch'}, {'title': '[COLOR yellow]** Search **[/COLOR]'}, img=hlinks_img, fanart=fan_img)
 
@@ -3149,7 +3292,8 @@ elif mode == 'thiruttuvcd':
     _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'thiruttuvcd_MalayalamMovs'}, {'title': 'Malayalam Movies'}, img=tvcd_img, fanart=fan_img)
     _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'thiruttuvcd_teluguMovs'}, {'title': 'Telugu Movies'}, img=tvcd_img, fanart=fan_img)
     _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'thiruttuvcd_hindiMovs'}, {'title': 'Hindi Movies'}, img=tvcd_img, fanart=fan_img)
-    if SETTINGS_ENABLEADULT == 'true':
+    _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'thiruttuvcd_tamiltv'}, {'title': 'Tamil TV Shows'}, img=tvcd_img, fanart=fan_img)
+    if SETTINGS_ADULT == 'true':
         _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'thiruttuvcd_adult'}, {'title': 'Adult Movies'}, img=tvcd_img, fanart=fan_img)
         _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'thiruttuvcd_masala'}, {'title': 'Thiruttu Masala'}, img=tvcd_img, fanart=fan_img)
         _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'thiruttuvcd_msearch'}, {'title': '[COLOR yellow]** Search Masala **[/COLOR]'}, img=tvcd_img, fanart=fan_img)
@@ -3160,7 +3304,7 @@ elif mode == 'tvcds':
     _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'tvcds_telugu'}, {'title': 'Telugu Movies'}, img=tvcds_img, fanart=fan_img)
     _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'tvcds_hindi'}, {'title': 'Hindi Movies'}, img=tvcds_img, fanart=fan_img)
     _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'tvcds_english'}, {'title': 'English Movies'}, img=tvcds_img, fanart=fan_img)
-    if SETTINGS_ENABLEADULT == 'true':
+    if SETTINGS_ADULT == 'true':
         _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'tvcds_adult'}, {'title': 'Adult Movies'}, img=tvcds_img, fanart=fan_img)
     _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'tvcds_search'}, {'title': '[COLOR yellow]** Search **[/COLOR]'}, img=tvcds_img, fanart=fan_img)
     
@@ -3200,7 +3344,7 @@ elif mode == 'mrulz':
     _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'mrulz_hdubbed'}, {'title': 'Hindi Dubbed Movies'}, img=mrulz_img, fanart=fan_img)
     _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'mrulz_Bengali'}, {'title': 'Bengali Movies'}, img=mrulz_img, fanart=fan_img)
     _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'mrulz_Punjabi'}, {'title': 'Punjabi Movies'}, img=mrulz_img, fanart=fan_img)
-    if SETTINGS_ENABLEADULT == 'true':
+    if SETTINGS_ADULT == 'true':
         _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'mrulz_adult'}, {'title': 'Adult Movies'}, img=mrulz_img, fanart=fan_img)
     _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'mrulz_search'}, {'title': '[COLOR yellow]** Search **[/COLOR]'}, img=mrulz_img, fanart=fan_img)
     
@@ -3215,7 +3359,7 @@ elif mode == 'rmovies':
     _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'rmovies_Kannada'}, {'title': 'Kannada Movies'}, img=rmovies_img, fanart=fan_img)
     _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'rmovies_Punjabi'}, {'title': 'Punjabi Movies'}, img=rmovies_img, fanart=fan_img)
     _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'rmovies_Urdu'}, {'title': 'Urdu Movies'}, img=rmovies_img, fanart=fan_img)
-    # if SETTINGS_ENABLEADULT == 'true':
+    # if SETTINGS_ADULT == 'true':
         # _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'rmovies_Adult'}, {'title': 'Adult Movies'}, img=rmovies_img, fanart=fan_img)
     _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'rmovies_search'}, {'title': '[COLOR yellow]** Search **[/COLOR]'}, img=rmovies_img, fanart=fan_img)
 
@@ -3242,7 +3386,7 @@ elif mode == 'i4m':
     _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'i4m_Marathi'}, {'title': 'Marathi Movies'}, img=i4m_img, fanart=fan_img)
     _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'i4m_Bengali'}, {'title': 'Bengali Movies'}, img=i4m_img, fanart=fan_img)
     _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'i4m_Urdu'}, {'title': 'Urdu Movies'}, img=i4m_img, fanart=fan_img)
-    if SETTINGS_ENABLEADULT == 'true':
+    if SETTINGS_ADULT == 'true':
         _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'i4m_adult'}, {'title': 'Adult Movies'}, img=i4m_img, fanart=fan_img)
     _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'i4m_search'}, {'title': '[COLOR yellow]** Search **[/COLOR]'}, img=i4m_img, fanart=fan_img)
 
@@ -3294,29 +3438,51 @@ elif mode == 'KitMovie':
     _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'KitMovie_hsearch'}, {'title': '[COLOR yellow]** Search Hindi **[/COLOR]'}, img=kmovie_img, fanart=fan_img)
     
 elif mode == 'main':
-    _DD.add_directory({'mode': 'tamilgun'}, {'title': 'Tamil Gun : [COLOR yellow]Tamil[/COLOR]'}, img=tgun_img, fanart=fan_img)
-    _DD.add_directory({'mode': 'rajTamil'}, {'title': 'Raj Tamil : [COLOR yellow]Tamil[/COLOR]'}, img=rajt_img, fanart=fan_img)
-    _DD.add_directory({'mode': 'runtamil'}, {'title': 'Run Tamil : [COLOR yellow]Tamil[/COLOR]'}, img=runt_img, fanart=fan_img)
-    _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'tamiltv'}, {'title': 'APKLand TV : [COLOR yellow]Tamil Live TV[/COLOR]'}, img=ttvs_img, fanart=fan_img)
-    _DD.add_directory({'mode': 'ttshows'}, {'title': 'Tamil TV Shows : [COLOR yellow]Tamil Catchup TV[/COLOR]'}, img=tts_img, fanart=fan_img)
-    _DD.add_directory({'mode': 'abcmalayalam'}, {'title': 'ABC Malayalam : [COLOR yellow]Malayalam[/COLOR]'}, img=abcm_img, fanart=fan_img)
-    _DD.add_directory({'mode': 'olangal'}, {'title':'Olangal : [COLOR yellow]Malayalam[/COLOR]'}, img=olangal_img, fanart=fan_img)
-    _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'lmtv'}, {'title': 'Live Malayalam : [COLOR yellow]Malayalam Live TV[/COLOR]'}, img=lmtv_img, fanart=fan_img)
-    _DD.add_directory({'mode': 'hlinks'}, {'title': 'Hindi Links 4U : [COLOR yellow]Hindi[/COLOR]'}, img=hlinks_img, fanart=fan_img)
-    #_DD.add_directory({'mode': 'GetMovies', 'subUrl': 'yamgo'}, {'title': 'Yamgo TV : [COLOR yellow]Hindi Live TV[/COLOR]'}, img=yamgo_img, fanart=fan_img)
-    _DD.add_directory({'mode': 'yodesi'}, {'title': 'Yo Desi : [COLOR yellow]Hindi Catchup TV[/COLOR]'}, img=yd_img, fanart=fan_img)
-    _DD.add_directory({'mode': 'thiruttuvcd'}, {'title': 'Thiruttu VCD : [COLOR magenta]Various[/COLOR]'}, img=tvcd_img, fanart=fan_img)
-    _DD.add_directory({'mode': 'KitMovie'}, {'title': 'Kit Movie : [COLOR magenta]Various[/COLOR]'}, img=kmovie_img, fanart=fan_img)
-    _DD.add_directory({'mode': 'ttwist'}, {'title': 'Tamil Twists : [COLOR magenta]Various[/COLOR]'}, img=ttwist_img, fanart=fan_img)
-    _DD.add_directory({'mode': 'mrulz'}, {'title': 'Movie Rulz : [COLOR magenta]Various[/COLOR]'}, img=mrulz_img, fanart=fan_img)
-    if SETTINGS_ENABLEOPENSSL == 'true':
+    if SETTINGS_TamilGun == 'true':
+        _DD.add_directory({'mode': 'tamilgun'}, {'title': 'Tamil Gun : [COLOR yellow]Tamil[/COLOR]'}, img=tgun_img, fanart=fan_img)
+    if SETTINGS_RajTamil == 'true':    
+        _DD.add_directory({'mode': 'rajTamil'}, {'title': 'Raj Tamil : [COLOR yellow]Tamil[/COLOR]'}, img=rajt_img, fanart=fan_img)
+    if SETTINGS_TamilYogi == 'true':   
+        _DD.add_directory({'mode': 'tyogi'}, {'title': 'Tamil Yogi : [COLOR yellow]Tamil[/COLOR]'}, img=tyogi_img, fanart=fan_img)
+    if SETTINGS_RunTamil == 'true':    
+        _DD.add_directory({'mode': 'runtamil'}, {'title': 'Run Tamil : [COLOR yellow]Tamil[/COLOR]'}, img=runt_img, fanart=fan_img)
+    if SETTINGS_APKLand == 'true':    
+        _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'tamiltv'}, {'title': 'APKLand TV : [COLOR yellow]Tamil Live TV[/COLOR]'}, img=ttvs_img, fanart=fan_img)
+    if SETTINGS_TamilTVS == 'true':
+        _DD.add_directory({'mode': 'ttshows'}, {'title': 'Tamil TV Shows : [COLOR yellow]Tamil Catchup TV[/COLOR]'}, img=tts_img, fanart=fan_img)
+    if SETTINGS_ABCMal == 'true':    
+        _DD.add_directory({'mode': 'abcmalayalam'}, {'title': 'ABC Malayalam : [COLOR yellow]Malayalam[/COLOR]'}, img=abcm_img, fanart=fan_img)
+    if SETTINGS_Olangal == 'true':         
+        _DD.add_directory({'mode': 'olangal'}, {'title':'Olangal : [COLOR yellow]Malayalam[/COLOR]'}, img=olangal_img, fanart=fan_img)
+    if SETTINGS_LiveMal == 'true':         
+        _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'lmtv'}, {'title': 'Live Malayalam : [COLOR yellow]Malayalam Live TV[/COLOR]'}, img=lmtv_img, fanart=fan_img)
+    if SETTINGS_HLinks == 'true':         
+        _DD.add_directory({'mode': 'hlinks'}, {'title': 'Hindi Links 4U : [COLOR yellow]Hindi[/COLOR]'}, img=hlinks_img, fanart=fan_img)
+        #_DD.add_directory({'mode': 'GetMovies', 'subUrl': 'yamgo'}, {'title': 'Yamgo TV : [COLOR yellow]Hindi Live TV[/COLOR]'}, img=yamgo_img, fanart=fan_img)
+    if SETTINGS_YoDesi == 'true':         
+        _DD.add_directory({'mode': 'yodesi'}, {'title': 'Yo Desi : [COLOR yellow]Hindi Catchup TV[/COLOR]'}, img=yd_img, fanart=fan_img)
+    if SETTINGS_TVCD == 'true':         
+        _DD.add_directory({'mode': 'thiruttuvcd'}, {'title': 'Thiruttu VCD : [COLOR magenta]Various[/COLOR]'}, img=tvcd_img, fanart=fan_img)
+    if SETTINGS_KitMovie == 'true':         
+        _DD.add_directory({'mode': 'KitMovie'}, {'title': 'Kit Movie : [COLOR magenta]Various[/COLOR]'}, img=kmovie_img, fanart=fan_img)
+    if SETTINGS_TTwists == 'true':        
+       _DD.add_directory({'mode': 'ttwist'}, {'title': 'Tamil Twists : [COLOR magenta]Various[/COLOR]'}, img=ttwist_img, fanart=fan_img)
+    if SETTINGS_MRulz == 'true':        
+       _DD.add_directory({'mode': 'mrulz'}, {'title': 'Movie Rulz : [COLOR magenta]Various[/COLOR]'}, img=mrulz_img, fanart=fan_img)
+    if SETTINGS_FLinks == 'true':
         _DD.add_directory({'mode': 'flinks'}, {'title': 'Film Links 4U : [COLOR magenta]Various[/COLOR]'}, img=flinks_img, fanart=fan_img)
-    _DD.add_directory({'mode': 'moviefk'}, {'title': 'Movie FK : [COLOR magenta]Various[/COLOR]'}, img=moviefk_img, fanart=fan_img)
-    _DD.add_directory({'mode': 'i4m'}, {'title': 'India 4 Movie : [COLOR magenta]Various[/COLOR]'}, img=i4m_img, fanart=fan_img)
-    _DD.add_directory({'mode': 'mfish'}, {'title': 'Movie Fisher : [COLOR magenta]Various[/COLOR]'}, img=mfish_img, fanart=fan_img)
-    _DD.add_directory({'mode': 'rmovies'}, {'title': 'Red Movies : [COLOR magenta]Various[/COLOR]'}, img=rmovies_img, fanart=fan_img)
-    _DD.add_directory({'mode': 'mersal'}, {'title': 'Mersalaayitten : [COLOR magenta]Various[/COLOR]'}, img=mersal_img, fanart=fan_img)
-    _DD.add_directory({'mode': 'tvcds'}, {'title': 'Thiruttu VCDs : [COLOR magenta]Various[/COLOR]'}, img=tvcds_img, fanart=fan_img)
+    if SETTINGS_MovieFK == 'true':         
+        _DD.add_directory({'mode': 'moviefk'}, {'title': 'Movie FK : [COLOR magenta]Various[/COLOR]'}, img=moviefk_img, fanart=fan_img)
+    if SETTINGS_I4M == 'true':         
+        _DD.add_directory({'mode': 'i4m'}, {'title': 'India 4 Movie : [COLOR magenta]Various[/COLOR]'}, img=i4m_img, fanart=fan_img)
+    if SETTINGS_MFish == 'true':         
+        _DD.add_directory({'mode': 'mfish'}, {'title': 'Movie Fisher : [COLOR magenta]Various[/COLOR]'}, img=mfish_img, fanart=fan_img)
+    if SETTINGS_RedM == 'true':         
+        _DD.add_directory({'mode': 'rmovies'}, {'title': 'Red Movies : [COLOR magenta]Various[/COLOR]'}, img=rmovies_img, fanart=fan_img)
+    if SETTINGS_Mersal == 'true': 
+        _DD.add_directory({'mode': 'mersal'}, {'title': 'Mersalaayitten : [COLOR magenta]Various[/COLOR]'}, img=mersal_img, fanart=fan_img)
+    if SETTINGS_TVCDs == 'true':        
+        _DD.add_directory({'mode': 'tvcds'}, {'title': 'Thiruttu VCDs : [COLOR magenta]Various[/COLOR]'}, img=tvcds_img, fanart=fan_img)
 
 
 if not play:

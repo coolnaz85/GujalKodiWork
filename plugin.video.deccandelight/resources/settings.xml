@@ -1,7 +1,39 @@
 <?xml version="1.0" encoding="utf-8"?>
 <settings>
-    <setting label="Enable TLS/1.2 [COLOR magenta](WARNING Windows/Linux only)[/COLOR]" type="bool" id="EnableOpenSSL" default="false"/>
-    <setting label="Cache Timeout in hours" type="number" id="Cache-Timeout" default="24 "/> 
-	<setting type="sep"/>
-	<setting label="Enable Adult content" type="bool" id="EnableAdult" default="false"/>
+    <category label="Deccan Delight">
+        <setting label="Enable TLS/1.2 [COLOR magenta](WARNING Windows/Linux only)[/COLOR]" type="bool" id="EnableOpenSSL" default="false"/>
+        <setting label="Cache Timeout in hours" type="number" id="Cache-Timeout" default="12"/> 
+        <setting label="Mature Content" type="lsep"/>
+        <setting label="Enable Adult content" type="bool" id="EnableAdult" default="false"/>
+    </category>
+    <category label="Tamil Scrapers">
+        <setting id="TamilGun_enabled" type="bool" label="Tamil Gun" default="true"/>
+        <setting id="RajTamil_enabled" type="bool" label="Raj Tamil" default="true"/>
+        <setting id="TamilYogi_enabled" type="bool" label="Tamil Yogi" default="true"/>
+        <setting id="RunTamil_enabled" type="bool" label="Run Tamil" default="true"/>
+        <setting id="APKLand_enabled" type="bool" label="APK Land" default="true"/>
+        <setting id="TamilTVS_enabled" type="bool" label="Tamil TV Shows" default="true"/>
+    </category>
+    <category label="Malayalam Scrapers">
+        <setting id="ABCMal_enabled" type="bool" label="ABC Malayalam" default="true"/>
+        <setting id="Olangal_enabled" type="bool" label="Olangal" default="true"/>
+        <setting id="LiveMal_enabled" type="bool" label="Live Malayalam" default="true"/>
+    </category> 
+    <category label="Hindi Scrapers">
+        <setting id="HLinks_enabled" type="bool" label="Hindi Links 4 U" default="true"/>
+        <setting id="YoDesi_enabled" type="bool" label="Yo Desi" default="true"/>
+    </category>
+    <category label="Multi Language Scrapers">
+        <setting id="TVCD_enabled" type="bool" label="Thiruttu VCD" default="true"/>
+        <setting id="KitMovie_enabled" type="bool" label="Kit Movie" default="true"/>
+        <setting id="TTwists_enabled" type="bool" label="Tamil Twists" default="true"/>
+        <setting id="MRulz_enabled" type="bool" label="Movie Rulez" default="true"/>
+        <setting id="FLinks_enabled" type="bool" label="Film Links 4 U [COLOR magenta](Needs TLS1.2)[/COLOR]" default="False"/>
+        <setting id="MovieFK_enabled" type="bool" label="Movie FK" default="true"/>
+        <setting id="I4M_enabled" type="bool" label="India 4 Movie" default="true"/>
+        <setting id="MFish_enabled" type="bool" label="Movie Fisher" default="true"/>
+        <setting id="RedM_enabled" type="bool" label="Red Movies" default="true"/>
+        <setting id="Mersal_enabled" type="bool" label="Mersalaayitten" default="true"/>
+        <setting id="TVCDs_enabled" type="bool" label="Thiruttu VCDs" default="true"/>
+    </category>    
 </settings>
