@@ -1,11 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <settings>
-    <category label="Deccan Delight">
-        <setting label="Enable TLS/1.2 [COLOR magenta](WARNING Windows/Linux only)[/COLOR]" type="bool" id="EnableOpenSSL" default="false"/>
-        <setting label="Cache Timeout in hours" type="number" id="Cache-Timeout" default="12"/> 
-        <setting label="Mature Content" type="lsep"/>
-        <setting label="Enable Adult content" type="bool" id="EnableAdult" default="false"/>
-    </category>
     <category label="Tamil Scrapers">
         <setting id="TamilGun_enabled" type="bool" label="Tamil Gun" default="true"/>
         <setting id="RajTamil_enabled" type="bool" label="Raj Tamil" default="true"/>
@@ -28,12 +22,17 @@
         <setting id="KitMovie_enabled" type="bool" label="Kit Movie" default="true"/>
         <setting id="TTwists_enabled" type="bool" label="Tamil Twists" default="true"/>
         <setting id="MRulz_enabled" type="bool" label="Movie Rulez" default="true"/>
-        <setting id="FLinks_enabled" type="bool" label="Film Links 4 U [COLOR magenta](Needs TLS1.2)[/COLOR]" default="False"/>
+        <setting id="FLinks_enabled" type="bool" label="Film Links 4 U [COLOR magenta](Needs minimum Kodi Krypton 17.0)[/COLOR]" default="False"/>
         <setting id="MovieFK_enabled" type="bool" label="Movie FK" default="true"/>
         <setting id="I4M_enabled" type="bool" label="India 4 Movie" default="true"/>
         <setting id="MFish_enabled" type="bool" label="Movie Fisher" default="true"/>
         <setting id="RedM_enabled" type="bool" label="Red Movies" default="true"/>
         <setting id="Mersal_enabled" type="bool" label="Mersalaayitten" default="true"/>
         <setting id="TVCDs_enabled" type="bool" label="Thiruttu VCDs" default="true"/>
+    </category>
+    <category label="Miscellaneous">
+        <setting label="Cache Timeout in hours" type="number" id="Cache-Timeout" default="12"/> 
+        <setting label="Mature Content" type="lsep"/>
+        <setting label="Enable Adult content" type="bool" id="EnableAdult" default="false"/>
     </category>    
 </settings>

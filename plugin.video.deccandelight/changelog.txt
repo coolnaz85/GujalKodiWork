@@ -1,3 +1,9 @@
+[B]Version 0.3.2 - 1 Oct 2016[/B]
+- Fix Olangal Scraper
+- Fix ABCMalayalam Scraper
+- Get ready for Krypton by removing TLS1.2 binary modules
+- Filmlinks4u scraper will now work only on Krypton Beta 2 or above
+
 [B]Version 0.3.1 - 27 Sep 2016[/B]
 - Option in settings to diable unwanted scrapers
 - TamilYogi, New Scraper
