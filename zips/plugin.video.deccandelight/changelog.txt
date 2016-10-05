@@ -1,3 +1,9 @@
+[B]Version 0.3.3 - 5 Oct 2016[/B]
+- Fix MovieFisher Scraper
+- Fix Mersalaayitten Scraper
+- Fix APKLand scraper
+
+
 [B]Version 0.3.2 - 1 Oct 2016[/B]
 - Fix Olangal Scraper
 - Fix ABCMalayalam Scraper

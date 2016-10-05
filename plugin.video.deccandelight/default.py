@@ -1704,17 +1704,17 @@ def getMovList_mfish(mfishurl):
 
     if '-tamil' in mfishurl:
         subUrl = 'mfish_Tamil'
-    elif '-telugu' in mfishurl:
+    elif '/telugu' in mfishurl:
         subUrl = 'mfish_Telugu'
     elif '-malayalam' in mfishurl:
         subUrl = 'mfish_Mal'
     elif '/punjabi' in mfishurl:
         subUrl = 'mfish_Punjabi'
-    elif 'south' in mfishurl:
-        subUrl = 'mfish_SDubbed'
-    elif 'dubbed' in mfishurl:
+    elif '/hindi-dubbed' in mfishurl:
         subUrl = 'mfish_Dubbed'
-    elif '/hindi' in mfishurl:
+    elif '/dubbed' in mfishurl:
+        subUrl = 'mfish_SDubbed'
+    elif '/all-video' in mfishurl:
         subUrl = 'mfish_Hindi'
     elif '/hollywood' in mfishurl:
         subUrl = 'mfish_English'
@@ -1774,9 +1774,9 @@ def getMovLinksForEachMov(url):
     elif 'mersalaayitten.' in url:
 
         movid = re.findall('video/([\\d]*)',url)[0]
-        xmlurl = 'http://mersalaayitten.co/media/nuevo/econfig.php?key=' + movid
+        xmlurl = 'http://mersalaayitten.us/media/nuevo/econfig.php?key=' + movid
         headers = {'User-Agent': mozagent,
-                   'Referer': 'http://mersalaayitten.co/media/nuevo/player.swf'}
+                   'Referer': 'http://mersalaayitten.us/media/nuevo/player.swf'}
         link = requests.get(xmlurl, headers=headers).text
         soup = BeautifulSoup(link)
 
@@ -1808,6 +1808,8 @@ def getMovLinksForEachMov(url):
             strdata = re.findall('var act_data = (.*?);', link)[0]
             act_data = json.loads(strdata)
             act_url = act_data["url"]
+            if '>>>>' in act_url:
+                act_url = act_url.split('>>>>')[0]
             act_url = 'http://tamiltvsite.com/channels/channel.php?' + act_url.split('?')[1]
             link = requests.get(act_url, headers=mozhdr).text
             strdata = re.findall('var act_data = (.*?);', link)[0]
@@ -2583,7 +2585,7 @@ def getMovLinksForEachMov(url):
             
         list_media(movTitle, sources, fanarturl)
 
-    elif 'moviefisher.' in url:
+    elif 'moviefisher' in url:
         
         link = requests.get(url, headers=mozhdr).text
         soup = BeautifulSoup(link, 'html5lib')
@@ -2897,48 +2899,48 @@ elif mode == 'GetMovies':
     elif 'mersal' in subUrl:
             
         if 'mersal_Tamil' in subUrl:
-            mersalurl = 'http://mersalaayitten.co/videos?c=1&o=mr&page=%s'%(currPage)
+            mersalurl = 'http://mersalaayitten.us/videos?c=1&o=mr&page=%s'%(currPage)
         elif 'mersal_Telugu' in subUrl:
-            mersalurl = 'http://mersalaayitten.co/videos?c=3&o=mr&page=%s'%(currPage)
+            mersalurl = 'http://mersalaayitten.us/videos?c=3&o=mr&page=%s'%(currPage)
         elif 'mersal_Hindi' in subUrl:
-            mersalurl = 'http://mersalaayitten.co/videos?c=2&o=mr&page=%s'%(currPage)
+            mersalurl = 'http://mersalaayitten.us/videos?c=2&o=mr&page=%s'%(currPage)
         elif 'mersal_Malayalam' in subUrl:
-            mersalurl = 'http://mersalaayitten.co/videos?c=4&o=mr&page=%s'%(currPage)
+            mersalurl = 'http://mersalaayitten.us/videos?c=4&o=mr&page=%s'%(currPage)
         elif 'mersal_Dubbed' in subUrl:
-            mersalurl = 'http://mersalaayitten.co/videos?c=6&o=mr&page=%s'%(currPage)
+            mersalurl = 'http://mersalaayitten.us/videos?c=6&o=mr&page=%s'%(currPage)
         elif 'mersal_Animation' in subUrl:
-            mersalurl = 'http://mersalaayitten.co/videos?c=5&o=mr&page=%s'%(currPage)
+            mersalurl = 'http://mersalaayitten.us/videos?c=5&o=mr&page=%s'%(currPage)
         elif 'mersal_search' in subUrl:
             if currPage == 1:
                 search_text = GetSearchQuery('Mersalaayitten')
                 search_text = search_text.replace(' ', '+')
-            mersalurl = 'http://mersalaayitten.co/search?search_type=videos&search_query=%s&page=%s'%(search_text,currPage)
+            mersalurl = 'http://mersalaayitten.us/search?search_type=videos&search_query=%s&page=%s'%(search_text,currPage)
 
         Dict_res = cache.cacheFunction(getMovList_mersal, mersalurl)
 
     elif 'mfish' in subUrl:
 
         if 'mfish_Tamil' in subUrl:
-            mfishurl = 'http://moviefisher.org/category/watch-tamil/page/%s'%(currPage)
+            mfishurl = 'http://moviefisherhd.com/category/watch-tamil/page/%s'%(currPage)
         elif 'mfish_Telugu' in subUrl:
-            mfishurl = 'http://moviefisher.org/category/full-telugu/page/%s'%(currPage)
+            mfishurl = 'http://moviefisherhd.com/category/telugu/page/%s'%(currPage)
         elif 'mfish_Mal' in subUrl:
-            mfishurl = 'http://moviefisher.org/category/watch-malayalam/page/%s'%(currPage)
+            mfishurl = 'http://moviefisherhd.com/category/watch-malayalam/page/%s'%(currPage)
         elif 'mfish_Hindi' in subUrl:
-            mfishurl = 'http://moviefisher.org/category/hindi/page/%s'%(currPage)
+            mfishurl = 'http://moviefisherhd.com/category/all-video/page/%s'%(currPage)
         elif 'mfish_English' in subUrl:
-            mfishurl = 'http://moviefisher.org/category/hollywood/page/%s'%(currPage)
+            mfishurl = 'http://moviefisherhd.com/category/hollywood/page/%s'%(currPage)
         elif 'mfish_Dubbed' in subUrl:
-            mfishurl = 'http://moviefisher.org/category/hindi-dubbed/page/%s'%(currPage)
+            mfishurl = 'http://moviefisherhd.com/category/hindi-dubbed/page/%s'%(currPage)
         elif 'mfish_SDubbed' in subUrl:
-            mfishurl = 'http://moviefisher.org/category/south-dubbed/page/%s'%(currPage)
+            mfishurl = 'http://moviefisherhd.com/category/dubbed/page/%s'%(currPage)
         elif 'mfish_Punjabi' in subUrl:
-            mfishurl = 'http://moviefisher.org/category/punjabi/page/%s'%(currPage)
+            mfishurl = 'http://moviefisherhd.com/category/punjabi/page/%s'%(currPage)
         elif 'mfish_search' in subUrl:
             if currPage == 1:
                 search_text = GetSearchQuery('FirstTube')
                 search_text = search_text.replace(' ', '+')
-            mfishurl = 'http://moviefisher.org/page/%s/?s=%s'%(currPage,search_text)
+            mfishurl = 'http://moviefisherhd.com/page/%s/?s=%s'%(currPage,search_text)
             
         Dict_res = cache.cacheFunction(getMovList_mfish, mfishurl)
 
