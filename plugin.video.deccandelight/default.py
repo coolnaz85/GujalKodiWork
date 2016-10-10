@@ -1812,7 +1812,7 @@ def getMovLinksForEachMov(url):
                 act_url = act_url.split('>>>>')[0]
             act_url = 'http://tamiltvsite.com/channels/channel.php?' + act_url.split('?')[1]
             link = requests.get(act_url, headers=mozhdr).text
-            strdata = re.findall('var act_data = (.*?);', link)[0]
+            strdata = re.findall('act_data = ({.*?});', link)[0]
             act_data = json.loads(strdata)
             tlink = act_data["url"]
             

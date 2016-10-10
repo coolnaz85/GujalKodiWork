@@ -1,3 +1,6 @@
+[B]Version 0.3.4 - 10 Oct 2016[/B]
+- Fix APKLand Scraper
+
 [B]Version 0.3.3 - 5 Oct 2016[/B]
 - Fix MovieFisher Scraper
 - Fix Mersalaayitten Scraper
