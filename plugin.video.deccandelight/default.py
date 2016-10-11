@@ -422,7 +422,7 @@ def list_media(movTitle, sources, fanarturl):
             vidhost = re.findall('//(.*?)/', url)[0]
             vidhost = re.findall('(?:.*\.|)(.*\..+)', vidhost)[0]
         li = xbmcgui.ListItem(vidhost)
-        li.setContentLookup(enable=False)
+        #li.setContentLookup(enable=False)
         li.setArt({ 'fanart': fanarturl,
                     'thumb': fanarturl })
         #li.setInfo( type="Video", infoLabels={ "Title": movTitle } )
@@ -927,8 +927,10 @@ def getMovList_tyogi(tyogiurl):
 
     Dict_movlist = {}
     link = requests.get(tyogiurl, headers=mozhdr).text
-    mlink = SoupStrainer(class_='cover')
-    Items = BeautifulSoup(link, 'html.parser', parse_only=mlink)
+    #mlink = SoupStrainer(class_='cover')
+    #Items = BeautifulSoup(link, 'html.parser', parse_only=mlink)
+    soup = BeautifulSoup(link, 'html5lib')
+    Items = soup.find_all(class_='cover')
     ItemNum = 0
 
     for eachItem in Items:
@@ -942,8 +944,9 @@ def getMovList_tyogi(tyogiurl):
         movTitle = clean_movtitle(movTitle)
         Dict_movlist.update({ItemNum:'mode=individualmovie, url=%s, imgLink=%s, MovTitle=%s'%(movPage,imgSrc,movTitle.decode('utf8'))})
 
-    mlink = SoupStrainer(class_='navigation')
-    Paginator = BeautifulSoup(link, 'html.parser', parse_only=mlink)
+    #mlink = SoupStrainer(class_='navigation')
+    #Paginator = BeautifulSoup(link, 'html.parser', parse_only=mlink)
+    Paginator = soup.find(class_='navigation')
     paginationText = ""
     if 'current' in str(Paginator):
         currPage = Paginator.find(class_='page-numbers current')
@@ -1857,9 +1860,11 @@ def getMovLinksForEachMov(url):
     elif 'tamilyogi.' in url:
 
         link = requests.get(url, headers=mozhdr).text
-        mlink = SoupStrainer(class_='entry')
-        soup = BeautifulSoup(link, 'html.parser', parse_only=mlink)
-        links = soup.find_all('iframe')
+        #mlink = SoupStrainer(class_='entry')
+        #soup = BeautifulSoup(link, 'html.parser', parse_only=mlink)
+        soup = BeautifulSoup(link, 'html5lib')
+        lsoup = soup.find(class_='entry')
+        links = lsoup.find_all('iframe')
         sources = []
 
         for link in links:
