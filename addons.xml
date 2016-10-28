@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <addons>
-<addon id="plugin.video.deccandelight" name="Deccan Delight" version="0.3.5" provider-name="gujal">
+<addon id="plugin.video.deccandelight" name="Deccan Delight" version="0.3.6" provider-name="gujal">
     <requires>
         <import addon="xbmc.python" version="2.20.0"/>
-        <import addon="script.module.urlresolver" version="1.0.0"/>
+        <import addon="script.module.urlresolver" version="3.0.0"/>
         <import addon="script.module.requests" version="2.4.3"/>
         <import addon="script.module.beautifulsoup4" version="4.3.0"/>
         <import addon="script.module.six" version="1.9.0"/>
@@ -15,12 +15,10 @@
         <provides>video</provides>
     </extension>
     <extension point="xbmc.addon.metadata">
-        <summary lang="en_gb">Entertainment from the Deccan region of India</summary>
-        <description lang="en_gb">This addon provides access to entertainment in various Deccan languages such as Tamil, Telugu, Malayalam, Kannada, and Hindi</description>
-        <disclaimer lang="en_gb">This addon does not host any content and is only a scraper of sites on the Internet that host content. It is not responsible for the accuracy, compliance, copyright, legality, decency, or any other aspect of the content of streamed to your device. If you have any legal issues please contact the appropriate media file owners or host sites</disclaimer>
+        <summary>Entertainment from the Deccan region of India</summary>
+        <description>This addon provides access to entertainment in various Deccan languages such as Tamil, Telugu, Malayalam, Kannada, and Hindi</description>
         <platform>all</platform>
-        <forum>https://forums.tvaddons.ag/addon-releases/49105-deccan-delight-indian-entertainment.html</forum>
-        <website>https://github.com/Gujal00/GujalKodiWork</website>
+        <website>https://forums.tvaddons.ag/addon-releases/49105-deccan-delight-indian-entertainment.html</website>
     </extension>
 </addon>
 

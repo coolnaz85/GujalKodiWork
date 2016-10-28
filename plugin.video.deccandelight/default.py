@@ -1355,7 +1355,20 @@ def getMovList_lmtv(lmtvurl):
 
         if (CurrentPage < lPage):
             paginationText = "(Currently in " + lastPage + ")\n"
-            Dict_movlist.update({'Paginator':'mode=GetMovies, subUrl=' + subUrl + ', currPage=' + str(CurrentPage + 1) + ',title=Next Page.. ' + paginationText + ',search_text=' + search_text})
+
+    if 'entertainment' in lmtvurl:
+        suburl = 'lmtv_ent'
+    elif 'premium' in lmtvurl:
+        suburl = 'lmtv_prm'
+    elif 'news' in lmtvurl:
+        suburl = 'lmtv_news'
+    elif 'local' in lmtvurl:
+        suburl = 'lmtv_loc'
+    elif 'devotional' in lmtvurl:
+        suburl = 'lmtv_dev'
+        
+    if paginationText:
+        Dict_movlist.update({'Paginator':'mode=GetMovies, subUrl=' + subUrl + ', currPage=' + str(CurrentPage + 1) + ',title=Next Page.. ' + paginationText + ',search_text=' + search_text})
 
     return Dict_movlist
 
@@ -1777,14 +1790,17 @@ def getMovLinksForEachMov(url):
     elif 'mersalaayitten.' in url:
 
         movid = re.findall('video/([\\d]*)',url)[0]
-        xmlurl = 'http://mersalaayitten.us/media/nuevo/econfig.php?key=' + movid
+        xmlurl = 'http://mersalaayitten.us/media/nuevo/econfig.php?key=%s-0-0'%movid
         headers = {'User-Agent': mozagent,
-                   'Referer': 'http://mersalaayitten.us/media/nuevo/player.swf'}
-        link = requests.get(xmlurl, headers=headers).text
+                   'x-flash-version': '23,0,0,185',
+                   'Referer': 'http://mersalaayitten.us/media/nuevo/player.swf?config=%s'%xmlurl}
+        r = requests.get(xmlurl, headers=headers)
+        link = r.text
+        avs = r.cookies['AVS']
         soup = BeautifulSoup(link)
 
         try:
-            movfile = soup.file.text
+            movfile = soup.file.text + '|Cookie=AVS=%s'%avs
             thumb = soup.thumb.text
             li = xbmcgui.ListItem(movTitle, iconImage=thumb)
             li.setArt({ 'fanart': thumb })
@@ -2650,6 +2666,18 @@ elif mode == 'GetMovies':
 
         Dict_res = cache.cacheFunction(getMovList_ABCmal, abcmalUrl)
 
+    elif 'ABC2' in subUrl:
+        currPage = _DD.queries.get('currPage', False)
+        if not currPage:
+            currPage = 0
+
+        if subUrl == 'ABC2-Mal':
+            abcmalUrl = 'http://abcmalayalam.com/movies?start=%s'%(currPage)
+        elif subUrl == 'ABC2-Hot':
+            abcmalUrl = 'http://abcmalayalam.net/year/sizzling-movies/page/%s/'%(currPage)
+
+        Dict_res = cache.cacheFunction(getMovList_ABC2, abc2url)
+        
     elif 'olangal' in subUrl:
 
         if 'olangalMovies' in subUrl:
@@ -2664,7 +2692,16 @@ elif mode == 'GetMovies':
 
     elif 'lmtv' in subUrl:
 
-        lmtvurl = 'http://www.livemalayalamtv.com/page/%s'%(currPage)
+        if 'ent' in subUrl:
+            lmtvurl = 'http://www.livemalayalamtv.com/channels/entertainment-html/page/%s'%(currPage)
+        elif 'prm' in subUrl:
+            lmtvurl = 'http://www.livemalayalamtv.com/channels/premiumchannels-html/page/%s'%(currPage)
+        elif 'news' in subUrl:
+            lmtvurl = 'http://www.livemalayalamtv.com/channels/newschannels-html/page/%s'%(currPage)
+        elif 'loc' in subUrl:
+            lmtvurl = 'http://www.livemalayalamtv.com/channels/localchannels-html/page/%s'%(currPage)
+        elif 'dev' in subUrl:
+            lmtvurl = 'http://www.livemalayalamtv.com/channels/devotional-html/page/%s'%(currPage)
         Dict_res = cache.cacheFunction(getMovList_lmtv, lmtvurl)
 
     elif 'yamgo' in subUrl:
@@ -2951,7 +2988,7 @@ elif mode == 'GetMovies':
 
     elif 'tamiltv' in subUrl:
 
-        tamiltvurl = 'http://www.tamiltvsite.com/browse-tamil-live-tv-videos-%s-date.html'%(currPage)
+        tamiltvurl = 'http://www.tamiltvsite.com/browse-tamil-live-tv-videos-%s-title.html'%(currPage)
         Dict_res = cache.cacheFunction(getMovList_tamiltv, tamiltvurl)
 
     elif 'mrulz' in subUrl:
@@ -3212,6 +3249,11 @@ elif mode == 'abcmalayalam':
     _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'ABCMalayalam-Mal'}, {'title': 'Malayalam Movies'}, img=abcm_img, fanart=fan_img)
     _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'ABCMalayalam-shortFilm'}, {'title': 'Malayalam Short Films'}, img=abcm_img, fanart=fan_img)
 
+elif mode == 'abc2':
+    _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'ABC2-Mal'}, {'title': 'Malayalam Movies'}, img=abcm_img, fanart=fan_img)
+    if SETTINGS_ADULT == 'true':
+        _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'ABC2-hot'}, {'title': 'Malayalam Hot Films'}, img=abcm_img, fanart=fan_img)
+
 elif mode == 'rajTamil':
     _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'rajtamilRecent'}, {'title': 'Tamil Recent Movies'}, img=rajt_img, fanart=fan_img)
     _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'rajtamildubbed'}, {'title': 'Tamil Dubbed Movies'}, img=rajt_img, fanart=fan_img)
@@ -3428,6 +3470,15 @@ elif mode == 'ttshows':
     _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'tts_pyss'}, {'title': 'Puthuyugam TV Shows'}, img=tts_img, fanart=fan_img)
     _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'tts_ptss'}, {'title': 'Puthiya Thalaimurai TV Shows'}, img=tts_img, fanart=fan_img)
     _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'tts_search'}, {'title': '[COLOR yellow]** Search **[/COLOR]'}, img=tts_img, fanart=fan_img)
+
+elif mode == 'lmtv':
+    lmtv_cat = [('lmtv_ent','Entertainment Channels'),
+                ('lmtv_prm','Premium Channels'),
+                ('lmtv_news','News Channels'),
+                ('lmtv_loc','Local & Web Channels'),
+                ('lmtv_dev','Devotional Channels')]
+    for i in range(5):
+        _DD.add_directory({'mode': 'GetMovies', 'subUrl': lmtv_cat[i][0]}, {'title': lmtv_cat[i][1]}, img=lmtv_img, fanart=fan_img)
     
 elif mode == 'KitMovie':
     _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'KitMovie_Tamil'}, {'title': 'Tamil Movies'}, img=kmovie_img, fanart=fan_img) 
@@ -3458,7 +3509,7 @@ elif mode == 'main':
     if SETTINGS_Olangal == 'true':         
         _DD.add_directory({'mode': 'olangal'}, {'title':'Olangal : [COLOR yellow]Malayalam[/COLOR]'}, img=olangal_img, fanart=fan_img)
     if SETTINGS_LiveMal == 'true':         
-        _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'lmtv'}, {'title': 'Live Malayalam : [COLOR yellow]Malayalam Live TV[/COLOR]'}, img=lmtv_img, fanart=fan_img)
+        _DD.add_directory({'mode': 'lmtv'}, {'title': 'Live Malayalam : [COLOR yellow]Malayalam Live TV[/COLOR]'}, img=lmtv_img, fanart=fan_img)
     if SETTINGS_HLinks == 'true':         
         _DD.add_directory({'mode': 'hlinks'}, {'title': 'Hindi Links 4U : [COLOR yellow]Hindi[/COLOR]'}, img=hlinks_img, fanart=fan_img)
         #_DD.add_directory({'mode': 'GetMovies', 'subUrl': 'yamgo'}, {'title': 'Yamgo TV : [COLOR yellow]Hindi Live TV[/COLOR]'}, img=yamgo_img, fanart=fan_img)
