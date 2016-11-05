@@ -1,3 +1,8 @@
+[B]Version 0.3.7 - 5 Nov 2016[/B]
+- Mersalaayitten fix
+- Runtamil Fix
+- ThiruttuVCDs fix
+
 [B]Version 0.3.6 - 28 Oct 2016[/B]
 - Mersalaayitten fix
 - Categories in Live Malayalam TV

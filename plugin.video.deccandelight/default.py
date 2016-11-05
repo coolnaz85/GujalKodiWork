@@ -295,7 +295,8 @@ def resolve_media(vidurl,sources):
     non_str_list = ['olangal.', '#', 'magnet:', 'desihome.co', 'thiruttuvcd',
                     'cineview', 'bollyheaven', 'videolinkz', 'moviefk.co',
                     'imdb.', 'mgid.', 'desihome', 'movierulz.', 'facebook.', 
-                    'm2pub', 'abcmalayalam', 'india4movie.co', '.filmlinks4u']
+                    'm2pub', 'abcmalayalam', 'india4movie.co', '.filmlinks4u',
+                    'tamilraja.org']
 
     embed_list = ['cineview', 'bollyheaven', 'videolinkz', 'vidzcode',
                   'embedzone', 'embedsr', 'fullmovie-hd', 'adly.biz',
@@ -652,7 +653,7 @@ def getMovList_mersal(mersalurl):
     for eachItem in Items:
         ItemNum = ItemNum+1
         movTitle = eachItem.find('img')['title']
-        movPage = 'http://mersalaayitten.com' + eachItem.find('a')['href']
+        movPage = 'http://mersalaayitten.us' + eachItem.find('a')['href']
         try:
             imgSrc = eachItem.find('img')['data-original']
         except:
@@ -1790,13 +1791,19 @@ def getMovLinksForEachMov(url):
     elif 'mersalaayitten.' in url:
 
         movid = re.findall('video/([\\d]*)',url)[0]
-        xmlurl = 'http://mersalaayitten.us/media/nuevo/econfig.php?key=%s-0-0'%movid
-        headers = {'User-Agent': mozagent,
-                   'x-flash-version': '23,0,0,185',
-                   'Referer': 'http://mersalaayitten.us/media/nuevo/player.swf?config=%s'%xmlurl}
-        r = requests.get(xmlurl, headers=headers)
+        url = 'http://mersalaayitten.us/embed/%s'%movid
+        headers = mozhdr
+
+        r = requests.get(url, headers=headers)
         link = r.text
-        avs = r.cookies['AVS']
+        cookies = r.cookies
+        avs = cookies['AVS']
+        xmlurl = re.findall('config=(.*?)"', link)[0]
+        headers['Referer'] = 'http://mersalaayitten.us/media/nuevo/player.swf?config=%s'%xmlurl
+
+        r = requests.get(xmlurl, headers=headers, cookies=cookies)
+        link = r.text
+
         soup = BeautifulSoup(link)
 
         try:
@@ -2290,15 +2297,14 @@ def getMovLinksForEachMov(url):
                                   'User-Agent': mozagent}
                         slink = requests.get(vidurl, headers=headers).text
                         hoster = 'RunTamil '
-                        srclist = re.search('(\[.*?\])', slink).group(1).replace('file', '"file"').replace('label', '"label"')
+                        srclist = re.findall('(\[.*?\])', slink)[0]
                         strlinks = eval(srclist)
                         for strlink in strlinks:
                             #xbmc.log(msg='========== link: ' + str(strlink), level=xbmc.LOGNOTICE)
                             elink = strlink['file']
-                            qual = ''
-                            if 'label' in strlink:
+                            try:
                                 qual = strlink['label']
-                            else:
+                            except:
                                 qual = 'HLS'
                             li = xbmcgui.ListItem(hoster + qual)
                             li.setArt({ 'fanart': fanarturl })
@@ -2742,20 +2748,20 @@ elif mode == 'GetMovies':
     elif 'tvcds' in subUrl:
 
         if 'tvcds_english' in subUrl:
-            tvcds_url = 'http://thiruttuvcds.com/my/category/english/page/%s/'%(currPage)
+            tvcds_url = 'http://thiruttuvcds.com/thiruttuvcd/category/english/page/%s/'%(currPage)
         elif 'tvcds_adult' in subUrl:
             tvcds_url = 'http://thiruttuvcds.com/private/?paged=%s'%(currPage)
         elif 'tvcds_tamil' in subUrl:
-            tvcds_url = 'http://thiruttuvcds.com/my/category/new-tamil-movies/page/%s/'%(currPage)
+            tvcds_url = 'http://thiruttuvcds.com/thiruttuvcd/category/new-tamil-movies/page/%s/'%(currPage)
         elif 'tvcds_telugu' in subUrl:
-            tvcds_url = 'http://thiruttuvcds.com/my/category/telugu/page/%s/'%(currPage)
+            tvcds_url = 'http://thiruttuvcds.com/thiruttuvcd/category/telugu/page/%s/'%(currPage)
         elif 'tvcds_hindi' in subUrl:
-            tvcds_url = 'http://thiruttuvcds.com/my/category/hindi/page/%s/'%(currPage)
+            tvcds_url = 'http://thiruttuvcds.com/thiruttuvcd/category/hindi/page/%s/'%(currPage)
         elif 'tvcds_search' in subUrl:
             if currPage == 1:
                 search_text = GetSearchQuery('Thiruttu VCDs')
                 search_text = search_text.replace(' ', '+')
-            tvcds_url = 'http://thiruttuvcds.com/my/page/%s/?s=%s'%(currPage,search_text)
+            tvcds_url = 'http://thiruttuvcds.com/thiruttuvcd/page/%s/?s=%s'%(currPage,search_text)
 
         #cache.delete("%")
         Dict_res = cache.cacheFunction(getMovList_tvcds, tvcds_url)
