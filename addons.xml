@@ -22,6 +22,26 @@
     </extension>
 </addon>
 
+<addon id="plugin.video.desitashan"
+version="0.1.0"
+name="Desi Tashan"
+provider-name="gujal">
+<requires>
+  <import addon="xbmc.python" version="2.24.0"/>
+  <import addon="script.module.requests" version="2.4.3"/>
+  <import addon="script.module.beautifulsoup4" version="4.3.0"/>
+  <import addon="script.module.urlresolver" version="3.0.0"/>
+</requires>
+<extension point="xbmc.python.pluginsource" library="main.py">
+  <provides>video</provides>
+</extension>
+<extension point="xbmc.addon.metadata">
+  <summary>Desi Tashan Hindi Catchup TV</summary>
+  <description>Desitashan is a popular site to watch Hindi TV Shows on demand</description>
+  <disclaimer>This addon provides access to Desi Tashan site and is not liable for any content hosted on that site</disclaimer>
+</extension>
+</addon>
+
 <addon id="repository.gujal" name="Gujal's Addon Repository" version="1.2" provider-name="Gujal">
 	<extension point="xbmc.addon.repository" name="Gujal's Addon Repository">
 	<dir>
