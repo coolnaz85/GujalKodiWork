@@ -23,7 +23,7 @@
 </addon>
 
 <addon id="plugin.video.desitashan"
-version="0.1.0"
+version="0.1.1"
 name="Desi Tashan"
 provider-name="gujal">
 <requires>

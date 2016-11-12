@@ -1,2 +1,5 @@
+[B]Version 0.1.0 - 12 Nov 2016[/B]
+- Add Pagination on episode list
+
 [B]Version 0.1.0 - 10 Nov 2016[/B]
 - First release

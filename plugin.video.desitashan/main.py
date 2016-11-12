@@ -133,7 +133,17 @@ def get_episodes(show):
             else:
                 ep_url = base_url + ep_link
             episodes.append((ep_name, ep_icon, ep_url))
-    
+    plink = SoupStrainer(class_='pagination-next')
+    soup = BeautifulSoup(html, 'html.parser', parse_only=plink)
+    if 'Next' in str(soup):
+        ep_icon = _icon
+        ep_link = soup.a.get('href')
+        if 'category' in ep_link:
+            ep_url = base_url[:-1] + ep_link
+        else:
+            ep_url = show + ep_link
+        ep_name = 'Next Page: ' + ep_url.split('page/')[1][:-1]
+        episodes.append((ep_name, ep_icon, ep_url))    
     return episodes
 
 
@@ -200,7 +210,7 @@ def list_channels(country):
 
 def list_shows(channel):
     """
-    Create the list of countries in the Kodi interface.
+    Create the list of channels in the Kodi interface.
     """
     shows = get_shows(channel)
     listing = []
@@ -219,7 +229,7 @@ def list_shows(channel):
     
 def list_episodes(show):
     """
-    Create the list of countries in the Kodi interface.
+    Create the list of episodes in the Kodi interface.
     """
     episodes = get_episodes(show)
     listing = []
@@ -229,7 +239,10 @@ def list_episodes(show):
                           'icon': episode[1],
                           'fanart': episode[1]})
         list_item.setInfo('video', {'title': episode[0], 'genre': 'Desi TV'})
-        url = '{0}?action=list_episode&episode={1}'.format(_url, episode[2])
+        if 'Next Page' not in episode[0]:
+            url = '{0}?action=list_episode&episode={1}'.format(_url, episode[2])
+        else:
+            url = '{0}?action=list_show&show={1}'.format(_url, episode[2])
         is_folder = True
         listing.append((url, list_item, is_folder))
     xbmcplugin.addDirectoryItems(_handle, listing, len(listing))
@@ -247,7 +260,9 @@ def list_videos(episode):
     listing = []
     for video in videos:
         list_item = xbmcgui.ListItem(label=video[0])
-        # Set additional info for the list item.
+        list_item.setArt({'thumb': _icon,
+                          'icon': _icon,
+                          'fanart': _icon})
         list_item.setInfo('video', {'title': video[0], 'genre': 'Desi TV'})
         list_item.setProperty('IsPlayable', 'true')
         url = '{0}?action=play&video={1}'.format(_url, video[1])
