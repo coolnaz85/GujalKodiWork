@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <addons>
-<addon id="plugin.video.deccandelight" name="Deccan Delight" version="0.3.7" provider-name="gujal">
+<addon id="plugin.video.deccandelight" name="Deccan Delight" version="0.3.8" provider-name="gujal">
     <requires>
         <import addon="xbmc.python" version="2.20.0"/>
         <import addon="script.module.urlresolver" version="3.0.0"/>
@@ -19,6 +19,7 @@
         <description>This addon provides access to entertainment in various Deccan languages such as Tamil, Telugu, Malayalam, Kannada, and Hindi</description>
         <platform>all</platform>
         <website>https://forums.tvaddons.ag/addon-releases/49105-deccan-delight-indian-entertainment.html</website>
+		<disclaimer>This addon displays content from various websites and is not liable for any content hosted on those sites</disclaimer>
     </extension>
 </addon>
 

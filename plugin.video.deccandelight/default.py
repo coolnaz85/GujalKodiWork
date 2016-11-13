@@ -878,8 +878,10 @@ def getMovList_tamilgun(tamilgunurl):
 
     Dict_movlist = {}
     link = requests.get(tamilgunurl, headers=mozhdr).text
-    soup = BeautifulSoup(link,'html5lib')
-    Items = soup.find_all(class_='col-sm-4 col-xs-6 item')
+    #soup = BeautifulSoup(link,'html5lib')
+    mlink = SoupStrainer(class_='col-sm-4 col-xs-6 item')
+    Items = BeautifulSoup(link, 'html.parser', parse_only=mlink)
+    #Items = soup.find_all(class_='col-sm-4 col-xs-6 item')
     ItemNum = 0
 
     for eachItem in Items:
@@ -892,7 +894,10 @@ def getMovList_tamilgun(tamilgunurl):
             imgSrc = 'http:' + imgSrc
         Dict_movlist.update({ItemNum:'mode=individualmovie, url=' + movPage + ', imgLink=' + imgSrc+', MovTitle='+movTitle.decode('utf8')})
 
-    Paginator = soup.find(class_='pagination')
+    #Paginator = soup.find(class_='pagination')
+    #xbmc.log(msg='========== Paginator: ' + Paginator.prettify().encode('utf8'), level=xbmc.LOGNOTICE)
+    mlink = SoupStrainer(class_='pagination')
+    Paginator = BeautifulSoup(link, 'html.parser', parse_only=mlink)
     currPage = Paginator.find("li", { "class":"active"})
     CurrentPage = int(currPage.a.string)
     lastPage = CurrentPage
@@ -2063,8 +2068,10 @@ def getMovLinksForEachMov(url):
     elif 'tamilgun.' in url:
 
         link = requests.get(url, headers=mozhdr).text
-        soup = BeautifulSoup(link, 'html5lib')
-        videoclass = soup.find(class_='videoWrapper player')     
+        #soup = BeautifulSoup(link, 'html5lib')
+        mlink = SoupStrainer(class_='videoWrapper player')
+        videoclass = BeautifulSoup(link, 'html.parser', parse_only=mlink)
+        #videoclass = soup.find(class_='videoWrapper player')     
         sources = []
         
         try:
@@ -2076,7 +2083,9 @@ def getMovLinksForEachMov(url):
         except:
             print " : no embedded urls found using wrapper method"
 
-        videoclass = soup.find(class_='post-entry')
+        #videoclass = soup.find(class_='post-entry')
+        mlink = SoupStrainer(class_='post-entry')
+        videoclass = BeautifulSoup(link, 'html.parser', parse_only=mlink)
         try:
             plinks = videoclass.find_all('p')
             for plink in plinks:
