@@ -22,9 +22,8 @@ import xbmc
 import xbmcgui
 import xbmcplugin
 import xbmcaddon
-from bs4 import BeautifulSoup
-from bs4 import SoupStrainer
-import requests
+from BeautifulSoup import BeautifulSoup, SoupStrainer
+import re, requests
 import urlresolver
 
 # Get the plugin url in plugin:// notation.
@@ -37,7 +36,6 @@ _icon = _addon.getAddonInfo('icon')
 
 
 base_url = 'http://www.desitashan.me/'
-base_icon = base_url + 'wp-content/uploads/250x31xtashan-e1468311120832.png.pagespeed.ic.iX20cZ67KF.png'
 
 MAINLIST = {'Indian': base_url,
            'Pakistani': base_url + 'pakistan-tv/'}
@@ -57,53 +55,53 @@ def get_channels(country):
     """
     channels = []
     html = requests.get(MAINLIST[country]).text
-    plink = SoupStrainer(class_='fusion-menu')
-    soup = BeautifulSoup(html, 'html.parser', parse_only=plink)
-    items = soup.find_all(class_='menu-item')
+    mlink = SoupStrainer('div', {'class':'nav fusion-mobile-tab-nav'})
+    soup = BeautifulSoup(html, parseOnlyThese=mlink)
+    items = soup.findAll('li')
     for item in items:
-        if 'fusion-megamenu-menu' not in str(item):
-            ch_name = item.text
-            try:
-                ch_icon = item.find('img')['src']
-                if 'http' not in ch_icon:
-                    ch_icon = base_url + ch_icon
-            except:
-                ch_icon = base_icon
-            ch_link = item.find('a')['href']
-            if ch_link[0] == '/':
-                ch_url = base_url[:-1] + ch_link
+        title = item.text
+        tref = item.a.get('href')[1:]
+        try:
+            icon = item.find('img')['src']
+            if icon.startswith('/'):
+                icon = base_url[:-1] + icon
             else:
-                ch_url = base_url + ch_link
-            channels.append((ch_name, ch_icon, ch_url))
+                icon = base_url + icon
+        except:
+            icon = _icon
+        
+        channels.append((title,icon,tref))
     
     return channels
 
 
-def get_shows(channel):
+def get_shows(channel,country):
     """
     Get the list of shows.
     :return: list
     """
     shows = []
-    html = requests.get(channel).text
-    plink = SoupStrainer(class_='fusion-row')
-    soup = BeautifulSoup(html, 'html.parser', parse_only=plink)
-    items = soup.find_all(class_='fusion-one-fourth')
+    html = requests.get(MAINLIST[country]).text
+    mlink = SoupStrainer('div', {'id':channel})
+    soup = BeautifulSoup(html, parseOnlyThese=mlink)
+    items = soup.findAll('div', {'class':'fusion-column-wrapper'})
     for item in items:
-        if ('</li>' not in str(item)) and ('</ul>' not in str(item)):
-            sh_name = item.text
-            try:
-                sh_icon = item.find('img')['src']
-                if 'http' not in sh_icon:
-                    sh_icon = base_url[:-1] + sh_icon
-            except:
-                sh_icon = base_icon
-            sh_link = item.find('a')['href']
-            if sh_link[0] == '/':
-                sh_url = base_url[:-1] + sh_link
+        title = item.text
+        url = item.a.get('href')
+        if url.startswith('/'):
+            url = base_url[:-1] + url
+        else:
+            url = base_url + url
+        try:
+            icon = item.find('img')['src']
+            if icon.startswith('/'):
+                icon = base_url[:-1] + icon
             else:
-                sh_url = base_url + sh_link
-            shows.append((sh_name, sh_icon, sh_url))
+                icon = base_url + icon
+        except:
+            icon = base_icon
+        
+        shows.append((title,icon,url))
     
     return shows
     
@@ -115,35 +113,37 @@ def get_episodes(show):
     """
     episodes = []
     html = requests.get(show).text
-    plink = SoupStrainer(class_='fusion-row')
-    soup = BeautifulSoup(html, 'html.parser', parse_only=plink)
-    items = soup.find_all(class_='fusion-one-fourth')
+    mlink = SoupStrainer('div', {'id':'showList'})
+    soup = BeautifulSoup(html, parseOnlyThese=mlink)
+    items = soup.findAll('div', {'class':'fusion-column-wrapper'})
     for item in items:
-        ep_name = item.h4.a.text
-        if 'written' not in ep_name.lower():
-            try:
-                ep_icon = item.find('img')['src']
-                if 'http' not in ep_icon:
-                    ep_icon = base_url[:-1] + ep_icon
-            except:
-                ep_icon = base_icon
-            ep_link = item.find('a')['href']
-            if ep_link[0] == '/':
-                ep_url = base_url[:-1] + ep_link
+        title = item.h4.a.text
+        if 'written' not in title.lower():
+            url = item.a.get('href')
+            if url.startswith('/'):
+                url = base_url[:-1] + url
             else:
-                ep_url = base_url + ep_link
-            episodes.append((ep_name, ep_icon, ep_url))
-    plink = SoupStrainer(class_='pagination-next')
-    soup = BeautifulSoup(html, 'html.parser', parse_only=plink)
+                url = base_url + url
+            try:
+                icon = item.find('img')['src']
+                if icon.startswith('/'):
+                    icon = base_url[:-1] + icon
+                else:
+                    icon = base_url + icon
+            except:
+                icon = base_icon           
+            episodes.append((title,icon,url))
+    plink = SoupStrainer('a', {'class':'pagination-next'})
+    soup = BeautifulSoup(html, parseOnlyThese=plink)
     if 'Next' in str(soup):
-        ep_icon = _icon
+        icon = _icon
         ep_link = soup.a.get('href')
         if 'category' in ep_link:
-            ep_url = base_url[:-1] + ep_link
+            url = base_url[:-1] + ep_link
         else:
-            ep_url = show + ep_link
-        ep_name = 'Next Page: ' + ep_url.split('page/')[1][:-1]
-        episodes.append((ep_name, ep_icon, ep_url))    
+            url = show + ep_link
+        title = 'Next Page: ' + url.split('page/')[1][:-1]
+        episodes.append((title, icon, url))    
     return episodes
 
 
@@ -154,9 +154,9 @@ def get_videos(episode):
     """
     videos = []
     html = requests.get(episode).text
-    plink = SoupStrainer(class_='vidLinksContent')
-    soup = BeautifulSoup(html, 'html.parser', parse_only=plink)
-    items = soup.find_all('a')
+    mlink = SoupStrainer('p', {'class':'vidLinksContent'})
+    soup = BeautifulSoup(html, parseOnlyThese=mlink)
+    items = soup.findAll('a')
     for item in items:
         try:
             vid_name = item['title']
@@ -164,7 +164,19 @@ def get_videos(episode):
             vid_name = item.text
         vid_url = item['href']
         videos.append((vid_name, vid_url))
-    
+
+    mlink = SoupStrainer('div', {'class':'post-content'})
+    soup = BeautifulSoup(html, parseOnlyThese=mlink)
+    #items = soup.findAll('div', {'class':'video-shortcode'})
+    items = soup.findAll('iframe')
+    for item in items:
+        try:
+            vid_name = item['title']
+        except:
+            vid_name = item['class']
+        vid_url = item['src']
+        videos.append((vid_name, vid_url))   
+        
     return videos
 
 
@@ -177,9 +189,9 @@ def list_countries():
     for country in countries:
         list_item = xbmcgui.ListItem(label=country+' Channels')
         list_item.setInfo('video', {'title': country, 'genre': country})
-        list_item.setArt({'thumb': base_icon,
-                          'icon': base_icon,
-                          'fanart': base_icon})
+        list_item.setArt({'thumb': _icon,
+                          'icon': _icon,
+                          'fanart': _icon})
         url = '{0}?action=list_country&country={1}'.format(_url, country)
         is_folder = True
         listing.append((url, list_item, is_folder))
@@ -200,7 +212,7 @@ def list_channels(country):
                           'icon': channel[1],
                           'fanart': channel[1]})
         list_item.setInfo('video', {'title': channel[0], 'genre': country})
-        url = '{0}?action=list_channel&channel={1}'.format(_url, channel[2])
+        url = '{0}?action=list_channel&channel={1}&country={2}'.format(_url, channel[2], country)
         is_folder = True
         listing.append((url, list_item, is_folder))
     xbmcplugin.addDirectoryItems(_handle, listing, len(listing))
@@ -208,11 +220,11 @@ def list_channels(country):
     xbmcplugin.endOfDirectory(_handle)
     
 
-def list_shows(channel):
+def list_shows(channel,country):
     """
     Create the list of channels in the Kodi interface.
     """
-    shows = get_shows(channel)
+    shows = get_shows(channel,country)
     listing = []
     for show in shows:
         list_item = xbmcgui.ListItem(label=show[0])
@@ -240,7 +252,7 @@ def list_episodes(show):
                           'fanart': episode[1]})
         list_item.setInfo('video', {'title': episode[0], 'genre': 'Desi TV'})
         if 'Next Page' not in episode[0]:
-            url = '{0}?action=list_episode&episode={1}'.format(_url, episode[2])
+            url = '{0}?action=list_episode&episode={1}&icon={2}'.format(_url, episode[2], episode[1])
         else:
             url = '{0}?action=list_show&show={1}'.format(_url, episode[2])
         is_folder = True
@@ -249,7 +261,7 @@ def list_episodes(show):
     xbmcplugin.endOfDirectory(_handle)
     
     
-def list_videos(episode):
+def list_videos(episode,icon):
     """
     Create the list of playable videos in the Kodi interface.
 
@@ -260,9 +272,9 @@ def list_videos(episode):
     listing = []
     for video in videos:
         list_item = xbmcgui.ListItem(label=video[0])
-        list_item.setArt({'thumb': _icon,
-                          'icon': _icon,
-                          'fanart': _icon})
+        list_item.setArt({'thumb': icon,
+                          'icon': icon,
+                          'fanart': icon})
         list_item.setInfo('video', {'title': video[0], 'genre': 'Desi TV'})
         list_item.setProperty('IsPlayable', 'true')
         url = '{0}?action=play&video={1}'.format(_url, video[1])
@@ -273,7 +285,7 @@ def list_videos(episode):
     xbmcplugin.endOfDirectory(_handle)
 
 def resolve_url(url):
-    duration=7500   
+    duration=5000   
     try:
         stream_url = urlresolver.HostedMediaFile(url=url).resolve()
         # If urlresolver returns false then the video url was not resolved.
@@ -303,17 +315,19 @@ def play_video(path):
     #xbmc.log(msg = '=======> Item is : %s'%url, level = xbmc.LOGNOTICE)
     if '/coming/' in vid_link:
         stream_url = 'http://www.tashanplayer.com/upcoming.mp4'
-    else:
+    elif 'tashanplayer' in vid_link:
         vhtml = requests.get(vid_link).text
         try:
             vplink = SoupStrainer('iframe')
-            vsoup = BeautifulSoup(vhtml, 'html.parser', parse_only=vplink)
+            vsoup = BeautifulSoup(vhtml, parseOnlyThese=vplink)
             vid_url = vsoup.find('iframe')['src']
         except:
             vplink = SoupStrainer('script', {'data-container':'myPlayer'})
-            vsoup = BeautifulSoup(vhtml, 'html.parser', parse_only=vplink)
+            vsoup = BeautifulSoup(vhtml, parseOnlyThese=vplink)
             vid_url = vsoup.find('script')['data-config']
         stream_url = resolve_url(vid_url)
+    else:
+        stream_url = resolve_url(vid_link)
     play_item.setPath(stream_url)
     # Pass the item to the Kodi player.
     xbmcplugin.setResolvedUrl(_handle, True, listitem=play_item)
@@ -335,16 +349,16 @@ def router(paramstring):
         if params['action'] == 'list_country':
             list_channels(params['country'])
         elif params['action'] == 'list_channel':
-            list_shows(params['channel'])
+            list_shows(params['channel'],params['country'])
         elif params['action'] == 'list_show':
             list_episodes(params['show'])
         elif params['action'] == 'list_episode':
-            list_videos(params['episode'])
+            list_videos(params['episode'],params['icon'])
         elif params['action'] == 'play':
             play_video(params['video'])
     else:
-        #list_countries()
-        list_channels('Indian')
+        list_countries()
+        #list_channels('Indian')
 
 
 if __name__ == '__main__':
