@@ -823,11 +823,14 @@ def getMovList_rmovies(rmoviesurl):
 def getMovList_moviefk(moviefkurl):
     Dict_movlist = {}
     link = requests.get(moviefkurl, headers=mozhdr).text
-    mlink = SoupStrainer(class_='singlepost')
-    Items = BeautifulSoup(link, 'html.parser', parse_only=mlink)
+    #mlink = SoupStrainer(class_='singlepost')
+    mlink = SoupStrainer(class_='listing-videos listing-tube')
+    lsoup = BeautifulSoup(link, 'html.parser', parse_only=mlink)
+    Items = lsoup.find_all('li')
     ItemNum = 0
     for eachItem in Items:
         ItemNum = ItemNum+1
+        #xbmc.log(msg='========== Item ' + str(eachItem), level=xbmc.LOGNOTICE)
         try:
             imgSrc = eachItem.find('img')['src']
         except:
@@ -837,18 +840,15 @@ def getMovList_moviefk(moviefkurl):
         movTitle = clean_movtitle(movTitle)
         Dict_movlist.update({ItemNum:'mode=individualmovie, url=%s, imgLink=%s, MovTitle=%s'%(movPage,imgSrc,movTitle.decode('utf8'))})
 
-    mlink = SoupStrainer(class_='wp-pagenavi')
+    #mlink = SoupStrainer(class_='wp-pagenavi')
+    mlink = SoupStrainer(class_='pagination')
     Paginator = BeautifulSoup(link, 'html.parser', parse_only=mlink)
     paginationText=''
     
-    if 'larger' in str(Paginator):
-        currPage = Paginator.find('span', { 'class':'current'})
-        CurrentPage = int(currPage.string)
-        laPage = Paginator.find('span', { 'class':'pages'})
-        lastPage = laPage.string
-
-        if (CurrentPage < lastPage):
-            paginationText = "(Currently in " + lastPage + ")\n"
+    if 'Next' in str(Paginator):
+        spans = Paginator.find_all('span')
+        CurrentPage = int(spans[1].text)
+        paginationText = '(Currently in %s)\n'%spans[0].text
 
     if '/tamil' in moviefkurl:
         subUrl = 'moviefk_Tamil'
@@ -1182,7 +1182,7 @@ def getMovList_hlinks(hlinksurl):
 
     Dict_movlist = {}
     url=hlinksurl
-    link = requests.get(url, headers=mozhdr).text
+    link = requests.get(url, headers=mozhdr, verify=False).text
     soup = BeautifulSoup(link,'html5lib')
     lsoup = soup.find(class_='nag cf')
     ItemNum = 0
@@ -1337,35 +1337,34 @@ def getMovList_tamiltv(tamiltvurl):
 def getMovList_lmtv(lmtvurl):
     Dict_movlist = {}
     link = requests.get(lmtvurl, headers=mozhdr).text
-    mlink = SoupStrainer(class_='moviefilm')
+    mlink = SoupStrainer(class_='item-img')
     Items = BeautifulSoup(link, 'html.parser', parse_only=mlink)
     ItemNum=0
     for Item in Items:
         ItemNum = ItemNum+1
         movUrl = Item.a.get('href')
-        movName = Item.img.get('alt')
+        movName = Item.a.get('title')
         imgSrc = Item.img.get('src')
         
         Dict_movlist.update({ItemNum:'mode=individualmovie, url=' + movUrl + ', imgLink=' + imgSrc + ', MovTitle=' + movName})
 
-    mlink = SoupStrainer(class_='wp-pagenavi')
+    mlink = SoupStrainer(class_='pagination')
     Paginator = BeautifulSoup(link, 'html.parser', parse_only=mlink)
     paginationText=''
     
-    if 'larger' in str(Paginator):
-        currPage = Paginator.find('span', { 'class':'current'})
-        CurrentPage = int(currPage.string)
-        laPage = Paginator.find('span', { 'class':'pages'})
-        lastPage = laPage.string
-        lPage = int(re.findall('of (.*)', lastPage)[0])
-
-        if (CurrentPage < lPage):
-            paginationText = "(Currently in " + lastPage + ")\n"
+    if 'Next' in str(Paginator):
+        currPage = Paginator.find('span', { 'class':'page-numbers current'})
+        CurrentPage = int(currPage.text)
+        pages = Paginator.find_all('a', { 'class':'page-numbers'})
+        lPage = pages[len(pages)-2].text
+        paginationText = "(Currently in Page %s of %s)\n"%(CurrentPage,lPage)
 
     if 'entertainment' in lmtvurl:
         suburl = 'lmtv_ent'
-    elif 'premium' in lmtvurl:
-        suburl = 'lmtv_prm'
+    elif 'hindi' in lmtvurl:
+        suburl = 'lmtv_hindi'
+    elif 'tamil' in lmtvurl:
+        suburl = 'lmtv_tamil'
     elif 'news' in lmtvurl:
         suburl = 'lmtv_news'
     elif 'local' in lmtvurl:
@@ -1927,22 +1926,22 @@ def getMovLinksForEachMov(url):
             li.setProperty('IsPlayable', 'true')
             xbmcplugin.addDirectoryItem(int(sys.argv[1]), movfile, li)
 
-    elif 'livemalayalamtv.' in url:
+    elif 'mhdtvlive.' in url:
 
         slink = requests.get(url, headers=mozhdr).text
-        mlink = SoupStrainer(class_='filmicerik')
-        soup = BeautifulSoup(slink, 'html.parser', parse_only=mlink)
+        mlink = SoupStrainer('iframe')
+        item = BeautifulSoup(slink, 'html.parser', parse_only=mlink)
         movfile=''
 
         try:
-            tlink = soup.iframe.get('src')
-            if 'livemalayalamtv.' in tlink:
+            tlink = item.find('iframe')['src']
+            if 'mhdtvlive.' in tlink or 'livemalayalamtv.' in tlink:
                 link = requests.get(tlink, headers=mozhdr).text
                 if 'unescape(' in link:
                     strdata = re.findall("unescape\('(.*?)'", link)[0]
                     link = urllib.unquote(strdata)
                 movfile = re.findall('stream = "(.*?)"',link)[0] #+ '|User-Agent=' + mozagent
-               
+
             else:
                 xbmc.log(msg = tlink + ' not resolvable.\n', level = xbmc.LOGNOTICE)
         except:
@@ -2215,7 +2214,7 @@ def getMovLinksForEachMov(url):
 
     elif 'hindilinks4u.' in url:
 
-        link = requests.get(url, headers=mozhdr).text
+        link = requests.get(url, headers=mozhdr, verify=False).text
         soup = BeautifulSoup(link, 'html5lib')
         sources = []
 
@@ -2272,7 +2271,7 @@ def getMovLinksForEachMov(url):
     elif 'moviefk.' in url:
 
         link = requests.get(url, headers=mozhdr).text
-        mlink = SoupStrainer(class_='entry-content clearfix')
+        mlink = SoupStrainer(class_='video-embed')
         soup = BeautifulSoup(link, 'html.parser', parse_only=mlink)
         links = soup.find_all('p')
         sources = []
@@ -2621,7 +2620,7 @@ def getMovLinksForEachMov(url):
             
         list_media(movTitle, sources, fanarturl)
 
-    elif 'moviefisher' in url:
+    elif 'moviesdbz.' in url:
         
         link = requests.get(url, headers=mozhdr).text
         soup = BeautifulSoup(link, 'html5lib')
@@ -2708,15 +2707,17 @@ elif mode == 'GetMovies':
     elif 'lmtv' in subUrl:
 
         if 'ent' in subUrl:
-            lmtvurl = 'http://www.livemalayalamtv.com/channels/entertainment-html/page/%s'%(currPage)
-        elif 'prm' in subUrl:
-            lmtvurl = 'http://www.livemalayalamtv.com/channels/premiumchannels-html/page/%s'%(currPage)
+            lmtvurl = 'http://mhdtvlive.com/entertainment_channels/page/%s'%(currPage)
+        elif 'tamil' in subUrl:
+            lmtvurl = 'http://mhdtvlive.com/tamil/page/%s'%(currPage)
+        elif 'hindi' in subUrl:
+            lmtvurl = 'http://mhdtvlive.com/hindi_channels/page/%s'%(currPage)
         elif 'news' in subUrl:
-            lmtvurl = 'http://www.livemalayalamtv.com/channels/newschannels-html/page/%s'%(currPage)
+            lmtvurl = 'http://mhdtvlive.com/news_channels/page/%s'%(currPage)
         elif 'loc' in subUrl:
-            lmtvurl = 'http://www.livemalayalamtv.com/channels/localchannels-html/page/%s'%(currPage)
+            lmtvurl = 'http://mhdtvlive.com/regional_web_channels/page/%s'%(currPage)
         elif 'dev' in subUrl:
-            lmtvurl = 'http://www.livemalayalamtv.com/channels/devotional-html/page/%s'%(currPage)
+            lmtvurl = 'http://mhdtvlive.com/devotional_channels/page/%s'%(currPage)
         Dict_res = cache.cacheFunction(getMovList_lmtv, lmtvurl)
 
     elif 'yamgo' in subUrl:
@@ -2938,18 +2939,18 @@ elif mode == 'GetMovies':
     elif 'hlinks' in subUrl:
    
         if 'hlinkshindi' in subUrl:
-            hlinksurl = 'http://www.hindilinks4u.to/category/hindi-movies/page/%s?orderby=date'%(currPage)
+            hlinksurl = 'https://www.hindilinks4u.to/category/hindi-movies/page/%s?orderby=date'%(currPage)
         elif 'hlinksdub' in subUrl:
-            hlinksurl = 'http://www.hindilinks4u.to/category/dubbed-movies/page/%s?orderby=date'%(currPage)
+            hlinksurl = 'https://www.hindilinks4u.to/category/dubbed-movies/page/%s?orderby=date'%(currPage)
         elif 'hlinksadult' in subUrl:
-            hlinksurl = 'http://www.hindilinks4u.to/category/adult/page/%s?orderby=date'%(currPage)
+            hlinksurl = 'https://www.hindilinks4u.to/category/adult/page/%s?orderby=date'%(currPage)
         elif 'hlinksdocu' in subUrl:
-            hlinksurl = 'http://www.hindilinks4u.to/category/documentaries/page/%s?orderby=date'%(currPage)
+            hlinksurl = 'https://www.hindilinks4u.to/category/documentaries/page/%s?orderby=date'%(currPage)
         elif 'hlinkssearch' in subUrl:
             if currPage == 1:
                 search_text = GetSearchQuery('HindiLinks4U')
                 search_text = search_text.replace(' ', '+')
-            hlinksurl = 'http://www.hindilinks4u.to/page/%s/?s=%s'%(currPage,search_text)
+            hlinksurl = 'https://www.hindilinks4u.to/page/%s/?s=%s'%(currPage,search_text)
             
         Dict_res = cache.cacheFunction(getMovList_hlinks, hlinksurl)
 
@@ -2978,26 +2979,26 @@ elif mode == 'GetMovies':
     elif 'mfish' in subUrl:
 
         if 'mfish_Tamil' in subUrl:
-            mfishurl = 'http://moviefisherhd.com/category/watch-tamil/page/%s'%(currPage)
+            mfishurl = 'http://moviesdbz.net/category/watch-tamil/page/%s'%(currPage)
         elif 'mfish_Telugu' in subUrl:
-            mfishurl = 'http://moviefisherhd.com/category/telugu/page/%s'%(currPage)
+            mfishurl = 'http://moviesdbz.net/category/telugu/page/%s'%(currPage)
         elif 'mfish_Mal' in subUrl:
-            mfishurl = 'http://moviefisherhd.com/category/watch-malayalam/page/%s'%(currPage)
+            mfishurl = 'http://moviesdbz.net/category/watch-malayalam/page/%s'%(currPage)
         elif 'mfish_Hindi' in subUrl:
-            mfishurl = 'http://moviefisherhd.com/category/all-video/page/%s'%(currPage)
+            mfishurl = 'http://moviesdbz.net/category/all-video/page/%s'%(currPage)
         elif 'mfish_English' in subUrl:
-            mfishurl = 'http://moviefisherhd.com/category/hollywood/page/%s'%(currPage)
+            mfishurl = 'http://moviesdbz.net/category/hollywood/page/%s'%(currPage)
         elif 'mfish_Dubbed' in subUrl:
-            mfishurl = 'http://moviefisherhd.com/category/hindi-dubbed/page/%s'%(currPage)
+            mfishurl = 'http://moviesdbz.net/category/hindi-dubbed/page/%s'%(currPage)
         elif 'mfish_SDubbed' in subUrl:
-            mfishurl = 'http://moviefisherhd.com/category/dubbed/page/%s'%(currPage)
+            mfishurl = 'http://moviesdbz.net/category/dubbed/page/%s'%(currPage)
         elif 'mfish_Punjabi' in subUrl:
-            mfishurl = 'http://moviefisherhd.com/category/punjabi/page/%s'%(currPage)
+            mfishurl = 'http://moviesdbz.net/category/punjabi/page/%s'%(currPage)
         elif 'mfish_search' in subUrl:
             if currPage == 1:
-                search_text = GetSearchQuery('FirstTube')
+                search_text = GetSearchQuery('MovieFisher')
                 search_text = search_text.replace(' ', '+')
-            mfishurl = 'http://moviefisherhd.com/page/%s/?s=%s'%(currPage,search_text)
+            mfishurl = 'http://moviesdbz.net/page/%s/?s=%s'%(currPage,search_text)
             
         Dict_res = cache.cacheFunction(getMovList_mfish, mfishurl)
 
@@ -3115,26 +3116,26 @@ elif mode == 'GetMovies':
     elif 'moviefk' in subUrl:
             
         if 'moviefk_Tamil' in subUrl:
-            moviefkurl = 'http://www.moviefk.com/category/tamil-movies/page/%s/'%(currPage)
+            moviefkurl = 'http://www.moviefk.net/category/tamil-movies/page/%s/'%(currPage)
         elif 'moviefk_Telugu' in subUrl:
-            moviefkurl = 'http://www.moviefk.com/category/telugu-movies/page/%s/'%(currPage)
+            moviefkurl = 'http://www.moviefk.net/category/telugu-movies/page/%s/'%(currPage)
         elif 'moviefk_Marathi' in subUrl:
-            moviefkurl = 'http://www.moviefk.com/category/marathi-movie/page/%s/'%(currPage)
+            moviefkurl = 'http://www.moviefk.net/category/marathi-movie/page/%s/'%(currPage)
         elif 'moviefk_Hindi' in subUrl:
-            moviefkurl = 'http://www.moviefk.com/category/hindi-movies/page/%s/'%(currPage)
+            moviefkurl = 'http://www.moviefk.net/category/hindi-movies/page/%s/'%(currPage)
         elif 'moviefk_Dubbed' in subUrl:
-            moviefkurl = 'http://www.moviefk.com/category/hindi-dubbed/page/%s/'%(currPage)
+            moviefkurl = 'http://www.moviefk.net/category/hindi-dubbed/page/%s/'%(currPage)
         elif 'moviefk_English' in subUrl:
-            moviefkurl = 'http://www.moviefk.com/category/hollywood-movies/page/%s/'%(currPage)
+            moviefkurl = 'http://www.moviefk.net/category/hollywood-movies/page/%s/'%(currPage)
         elif 'moviefk_WWE' in subUrl:
-            moviefkurl = 'http://www.moviefk.com/category/wwe/page/%s/'%(currPage)
+            moviefkurl = 'http://www.moviefk.net/category/wwe/page/%s/'%(currPage)
         elif 'moviefk_Punjabi' in subUrl:
-            moviefkurl = 'http://www.moviefk.com/category/punjabi-movies/page/%s/'%(currPage)
+            moviefkurl = 'http://www.moviefk.net/category/punjabi-movies/page/%s/'%(currPage)
         elif 'moviefk_search' in subUrl:
             if currPage == 1:
                 search_text = GetSearchQuery('Full New Movie')
                 search_text = search_text.replace(' ', '+')
-            moviefkurl = 'http://www.moviefk.com/page/%s/?s=%s'%(currPage,search_text)
+            moviefkurl = 'http://www.moviefk.net/page/%s/?s=%s'%(currPage,search_text)
             
         Dict_res = cache.cacheFunction(getMovList_moviefk, moviefkurl)
 
@@ -3487,13 +3488,14 @@ elif mode == 'ttshows':
     _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'tts_search'}, {'title': '[COLOR yellow]** Search **[/COLOR]'}, img=tts_img, fanart=fan_img)
 
 elif mode == 'lmtv':
-    lmtv_cat = [('lmtv_ent','Entertainment Channels'),
-                ('lmtv_prm','Premium Channels'),
-                ('lmtv_news','News Channels'),
-                ('lmtv_loc','Local & Web Channels'),
-                ('lmtv_dev','Devotional Channels')]
-    for i in range(5):
-        _DD.add_directory({'mode': 'GetMovies', 'subUrl': lmtv_cat[i][0]}, {'title': lmtv_cat[i][1]}, img=lmtv_img, fanart=fan_img)
+    lmtv_cat = [('lmtv_ent','Malayalam Entertainment Channels'),
+                ('lmtv_news','Malayalam News Channels'),
+                ('lmtv_loc','Malayalam Local & Web Channels'),
+                ('lmtv_dev','Malayalam Devotional Channels'),
+                ('lmtv_tamil','Tamil Channels'),
+                ('lmtv_hindi','Hindi Channels')]
+    for cat,title in lmtv_cat:
+        _DD.add_directory({'mode': 'GetMovies', 'subUrl': cat}, {'title': title}, img=lmtv_img, fanart=fan_img)
     
 elif mode == 'KitMovie':
     _DD.add_directory({'mode': 'GetMovies', 'subUrl': 'KitMovie_Tamil'}, {'title': 'Tamil Movies'}, img=kmovie_img, fanart=fan_img) 
@@ -3524,7 +3526,7 @@ elif mode == 'main':
     if SETTINGS_Olangal == 'true':         
         _DD.add_directory({'mode': 'olangal'}, {'title':'Olangal : [COLOR yellow]Malayalam[/COLOR]'}, img=olangal_img, fanart=fan_img)
     if SETTINGS_LiveMal == 'true':         
-        _DD.add_directory({'mode': 'lmtv'}, {'title': 'Live Malayalam : [COLOR yellow]Malayalam Live TV[/COLOR]'}, img=lmtv_img, fanart=fan_img)
+        _DD.add_directory({'mode': 'lmtv'}, {'title': 'Live Malayalam TV: [COLOR magenta]Various Live TV[/COLOR]'}, img=lmtv_img, fanart=fan_img)
     if SETTINGS_HLinks == 'true':         
         _DD.add_directory({'mode': 'hlinks'}, {'title': 'Hindi Links 4U : [COLOR yellow]Hindi[/COLOR]'}, img=hlinks_img, fanart=fan_img)
         #_DD.add_directory({'mode': 'GetMovies', 'subUrl': 'yamgo'}, {'title': 'Yamgo TV : [COLOR yellow]Hindi Live TV[/COLOR]'}, img=yamgo_img, fanart=fan_img)

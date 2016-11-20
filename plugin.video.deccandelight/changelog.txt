@@ -1,4 +1,9 @@
-[B]Version 0.3.7 - 13 Nov 2016[/B]
+[B]Version 0.3.9 - 20 Nov 2016[/B]
+- Live Malayalam fix
+- MovieFK Fix
+- MovieFisher Fix
+
+[B]Version 0.3.8 - 13 Nov 2016[/B]
 - TamilGun fix
 
 [B]Version 0.3.7 - 5 Nov 2016[/B]
