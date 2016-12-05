@@ -1,0 +1,502 @@
+"""
+    Deccan Delight Kodi Addon
+    Copyright (C) 2016 gujal
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+"""
+
+import sys
+from urlparse import parse_qsl
+import xbmc
+import xbmcgui
+import xbmcplugin
+import xbmcaddon
+from BeautifulSoup import BeautifulSoup, SoupStrainer
+import abc, urllib, re, requests
+import urlresolver
+
+# Get the plugin url in plugin:// notation.
+_url = sys.argv[0]
+# Get the plugin handle as an integer number.
+_handle = int(sys.argv[1])
+_addon = xbmcaddon.Addon()
+_addonname = _addon.getAddonInfo('name')
+_icon = _addon.getAddonInfo('icon')
+_fanart = _addon.getAddonInfo('fanart')
+_path = _addon.getAddonInfo('path')
+_ipath = _path + '/resources/images/'
+_spath = 'resources.scrapers'
+_settings = _addon.getSetting
+mozhdr = {'User-Agent': 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3'}
+
+class abstractclassmethod(classmethod):
+    __isabstractmethod__ = True
+
+    def __init__(self, callable):
+        callable.__isabstractmethod__ = True
+        super(abstractclassmethod, self).__init__(callable)
+
+class Scraper(object):
+    __metaclass__ = abc.ABCMeta
+    
+    def __init__(self):
+        self.ipath = _ipath
+        self.hdr = mozhdr
+        self.nicon = self.ipath + 'next.png'
+        
+    def get_nicon(self):
+        return self.nicon
+    
+    def get_SearchQuery(self,sitename):
+        keyboard = xbmc.Keyboard()
+        keyboard.setHeading('Search ' + sitename)
+        keyboard.doModal()
+        if keyboard.isConfirmed():
+            search_text = keyboard.getText()
+
+        return search_text
+
+    def get_vidhost(self,url):
+        """
+        Trim the url to get the video hoster
+        :return vidhost
+        """
+        parts = url.split('/')[2].split('.')
+        vidhost = '%s.%s'%(parts[len(parts)-2],parts[len(parts)-1])
+        return vidhost
+
+        
+    def resolve_media(self,url,videos):
+        non_str_list = ['olangal.', '#', 'magnet:', 'desihome.co', 'thiruttuvcd',
+                        'cineview', 'bollyheaven', 'videolinkz', 'moviefk.co', 'atemda.',
+                        'imdb.', 'mgid.', 'desihome', 'movierulz.', 'facebook.', 
+                        'm2pub', 'abcmalayalam', 'india4movie.co', '.filmlinks4u',
+                        'tamilraja.', 'multiup.', 'filesupload.', 'fileorbs.']
+
+        embed_list = ['cineview', 'bollyheaven', 'videolinkz', 'vidzcode',
+                      'embedzone', 'embedsr', 'fullmovie-hd', 'adly.biz',
+                      'embedscr', 'embedrip', 'movembed', 'power4link.us',
+                      'watchmoviesonline4u', 'nobuffer.info', 'yo-desi.com',
+                      'techking.me', 'onlinemoviesworld.xyz', 'cinebix.com']
+
+        if 'pongomovies' in url:
+            link = requests.get(url, headers=mozhdr).text
+            mlink = SoupStrainer(class_='tabs-catch-all')
+            links = BeautifulSoup(link, 'html.parser', parse_only=mlink)
+            for link in links:
+                if 'iframe' in str(link.contents):
+                    strurl = str(link.find('iframe')['src'])
+                    if urlresolver.HostedMediaFile(strurl):
+                        vidhost = self.get_vidhost(strurl)
+                        videos.append((vidhost,strurl))
+                    # else:
+                        # xbmc.log('-------> URLResolver cannot resolve : %s' % url)
+           
+        elif 'filmshowonline.net/media/' in url:
+            r = requests.get(url, headers=mozhdr)
+            clink = r.text
+            cookies = r.cookies
+            eurl = re.findall("url: '([^']*)[\d\D]*nonce :", clink)[0]
+            enonce = re.findall("nonce : '([^']*)", clink)[0]
+            evid = re.findall("nonce : [\d\D]*?link_id: ([\d]*)", clink)[0]
+            values = {'echo' : 'true',
+                      'nonce' : enonce,
+                      'width' : '848',
+                      'height' : '480',
+                      'link_id' : evid }
+            headers = {'User-Agent': mozagent,
+                       'Referer': vidurl,
+                      'X-Requested-With': 'XMLHttpRequest'}
+            emurl = requests.post(eurl, data=values, headers=headers, cookies=cookies).text
+            strurl = (re.findall('(http[^"]*)', emurl)[0]).replace('\\', '')
+            if urlresolver.HostedMediaFile(strurl):
+                vidhost = self.get_vidhost(strurl)
+                videos.append((vidhost,strurl))
+            # else:
+                # xbmc.log('-------> URLResolver cannot resolve : %s' % url)
+
+        elif 'filmshowonline.net/videos/' in url:
+            clink = requests.get(url, headers=mozhdr).text
+            csoup = BeautifulSoup(clink)
+            strurl = csoup.find('iframe')['src']
+            if 'http' in strurl:
+                if urlresolver.HostedMediaFile(strurl):
+                    vidhost = self.get_vidhost(strurl)
+                    videos.append((vidhost,strurl))
+                # else:
+                    # xbmc.log('-------> URLResolver cannot resolve : %s' % url)
+                        
+        elif 'tamildbox' in url:
+            try:
+                link = requests.get(url, headers=mozhdr).text
+                mlink = SoupStrainer('div', {'id':'player-embed'})
+                dclass = BeautifulSoup(link, parseOnlyThese=mlink)       
+                if 'unescape' in str(dclass):
+                    etext = re.findall("unescape.'[^']*", str(dclass))[0]
+                    etext = urllib.unquote(etext)
+                    dclass = BeautifulSoup(etext)
+                glink = dclass.iframe.get('src')
+                if urlresolver.HostedMediaFile(glink):
+                    vidhost = self.get_vidhost(glink)
+                    videos.append((vidhost,glink))
+                # else:
+                    # xbmc.log('-------> URLResolver cannot resolve : %s' % url)
+                mlink = SoupStrainer('div', {'class':re.compile('^item-content')})
+                dclass = BeautifulSoup(link, parseOnlyThese=mlink)
+                glink = dclass.p.iframe.get('src')
+                if urlresolver.HostedMediaFile(glink):
+                    vidhost = self.get_vidhost(glink)
+                    videos.append((vidhost,glink))
+                # else:
+                    # xbmc.log('-------> URLResolver cannot resolve : %s' % url)
+            except:
+                pass
+
+        elif any([x in url for x in embed_list]):
+            clink = requests.get(url, headers=mozhdr).text
+            csoup = BeautifulSoup(clink)
+            try:
+                for link in csoup.findAll('iframe'):
+                    strurl = link.get('src')
+                    if not any([x in strurl for x in non_str_list]):
+                        if urlresolver.HostedMediaFile(strurl):
+                            vidhost = self.get_vidhost(strurl)
+                            videos.append((vidhost,strurl))
+                        # else:
+                            # xbmc.log('-------> URLResolver cannot resolve : %s' % url)
+            except:
+                pass
+
+            try:
+                plink = csoup.find('a', {'class':'main-button dlbutton'})
+                strurl = plink.get('href')
+                if not any([x in strurl for x in non_str_list]):
+                    if urlresolver.HostedMediaFile(strurl):
+                        vidhost = self.get_vidhost(strurl)
+                        videos.append((vidhost,strurl))
+                    # else:
+                        # xbmc.log('-------> URLResolver cannot resolve : %s' % url)
+            except:
+                pass
+
+            try:
+                plink = csoup.find('div', {'class':'aio-pulse'})
+                strurl = plink.find('a')['href']
+                if not any([x in strurl for x in non_str_list]):
+                    if urlresolver.HostedMediaFile(strurl):
+                        vidhost = self.get_vidhost(strurl)
+                        videos.append((vidhost,strurl))
+                    # else:
+                        # xbmc.log('-------> URLResolver cannot resolve : %s' % url)
+            except:
+                pass
+
+            try:
+                plink = csoup.find('div', {'class':'entry-content rich-content'})
+                strurl = plink.find('a')['href']
+                if not any([x in strurl for x in non_str_list]):
+                    if urlresolver.HostedMediaFile(strurl):
+                        vidhost = self.get_vidhost(strurl)
+                        videos.append((vidhost,strurl))
+                    # else:
+                        # xbmc.log('-------> URLResolver cannot resolve : %s' % url)
+            except:
+                pass
+
+            try:
+                for linksSection in csoup.findAll('embed'):
+                    strurl = linksSection.get('src')
+                    if not any([x in strurl for x in non_str_list]):
+                        if urlresolver.HostedMediaFile(strurl):
+                            vidhost = self.get_vidhost(strurl)
+                            videos.append((vidhost,strurl))
+                        # else:
+                            # xbmc.log('-------> URLResolver cannot resolve : %s' % url)
+            except:
+                pass
+                
+        elif not any([x in url for x in non_str_list]):
+            if urlresolver.HostedMediaFile(url):
+                vidhost = self.get_vidhost(url)
+                videos.append((vidhost,url))
+            else:
+                xbmc.log('-------> URLResolver cannot resolve : %s' % url)
+
+        return
+        
+    def clean_title(self, title):
+        cleanup = ['Watch Online Movie', 'Watch Onilne', 'Tamil Movie ', 'Tamil Dubbed', 'WAtch ', 'Online Free',
+                   'Full Movie Online Free', 'Full Movie Online', 'Watch Online ', 'Free HD', 'Online Full Movie',
+                   'Full Free', 'Malayalam Movie', ' Malayalam ', 'Full Movies', 'Full Movie', 'Free Online',
+                   'Movie Online', 'Watch ', 'movie online', 'Wach ', 'Movie Songs Online', 'Full Hindi',
+                   'tamil movie songs online', 'tamil movie songs', 'movie songs online', 'Tamil Movie', ' Hindi',
+                   'Hilarious Comedy Scenes', 'Super Comedy Scenes', 'Ultimate Comedy Scenes', 'Watch...',
+                   'Super comedy Scenes', 'Comedy Scenes', 'hilarious comedy Scenes', '...', 'Telugu Movie',
+                   'Sun TV Show', 'Vijay TV Show', 'Vijay Tv Show', 'Vijay TV Comedy Show', 'Hindi Movie',
+                   'Vijay Tv Comedy Show', 'Vijay TV', 'Vijay Tv', 'Sun Tv Show', 'Download', 'Starring',
+                   'Tamil Full Movie', 'Tamil Horror Movie', 'Tamil Dubbed Movie', '|', '-', ' Full ',
+                   '/', 'Pre HDRip', '(DVDScr Audio)', 'PDVDRip', 'DVDSCR', '(HQ Audio)', 'HQ', ' Telugu',
+                   'DVDScr', 'DVDscr', 'PreDVDRip', 'DVDRip', 'DVDRIP', 'WEBRip', 'WebRip', 'Movie', ' Punjabi',
+                   'TCRip', 'HDRip', 'HDTVRip', 'HD-TC', 'HDTV', 'TVRip', '720p', 'DVD', 'HD', ' Dubbed',
+                   '720p', '(UNCUT)', 'UNCUT', '(Clear Audio)', 'DTHRip', '(Line Audio)', ' Kannada', 
+                   'TS', 'CAM', 'Online Full', '[+18]', 'Streaming Free', 'Permalink to ', 'And Download',
+                   'Full English', ' English', 'Downlaod', 'Bluray', 'Online', ' Tamil', ' Bengali',]
+        title = title.encode('utf8')
+        for word in cleanup:
+            if word in title:
+                title = title.replace(word,'')
+
+        title = title.strip()
+        return title
+
+
+sites = {'01tgun': 'Tamil Gun : [COLOR yellow]Tamil[/COLOR]',
+         '02rajt': 'Raj Tamil : [COLOR yellow]Tamil[/COLOR]',
+         '03tyogi': 'Tamil Yogi : [COLOR yellow]Tamil[/COLOR]',
+         '04runt': 'Run Tamil : [COLOR yellow]Tamil[/COLOR]',
+         '05tamiltv': 'APKLand TV : [COLOR yellow]Tamil Live TV[/COLOR]',
+         '06ttvs': 'Tamil TV Shows : [COLOR yellow]Tamil Catchup TV[/COLOR]',
+         '07abcm': 'ABC Malayalam : [COLOR yellow]Malayalam[/COLOR]',
+         '08olangal': 'Olangal : [COLOR yellow]Malayalam[/COLOR]',
+         '09lmtv': 'Live Malayalam : [COLOR yellow]Malayalam Live TV[/COLOR]',
+         '11yodesi': 'Yo Desi : [COLOR yellow]Hindi Catchup TV[/COLOR]',
+         '12tvcd': 'Thiruttu VCD : [COLOR magenta]Various[/COLOR]',
+         '13mrulz': 'Movie Rulz : [COLOR magenta]Various[/COLOR]',
+         '14i4movie': 'India 4 Movie : [COLOR magenta]Various[/COLOR]',
+         '15moviefk': 'Movie FK : [COLOR magenta]Various[/COLOR]',
+         '16mfish': 'Movie Fisher : [COLOR magenta]Various[/COLOR]',
+         '17mersal': 'Mersalaayitten : [COLOR magenta]Various[/COLOR]',
+         '18ttwist': 'Tamil Twists : [COLOR magenta]Various[/COLOR]',
+         '20redm': 'Red Movies : [COLOR magenta]Various[/COLOR]',
+         '21tvcds': 'Thiruttu VCDs : [COLOR magenta]Various[/COLOR]'}
+
+import resources.scrapers.tgun
+import resources.scrapers.rajt
+import resources.scrapers.tyogi
+import resources.scrapers.runt
+import resources.scrapers.abcm
+import resources.scrapers.olangal
+import resources.scrapers.mersal
+import resources.scrapers.lmtv
+import resources.scrapers.tvcd
+import resources.scrapers.tamiltv
+import resources.scrapers.ttvs
+import resources.scrapers.redm
+import resources.scrapers.mrulz
+import resources.scrapers.i4movie
+import resources.scrapers.moviefk
+import resources.scrapers.mfish
+import resources.scrapers.yodesi
+import resources.scrapers.ttwist
+import resources.scrapers.tvcds
+
+
+def list_sites():
+    """
+    Create the Sites menu in the Kodi interface.
+    """
+    listing = []
+    for site,title in sorted(sites.iteritems()):
+        if _settings(site[2:]) == 'true':
+            list_item = xbmcgui.ListItem(label=title)
+            list_item.setArt({'thumb': _icon,
+                              'icon': _icon,
+                              'fanart': _fanart})
+            url = '{0}?action=1&site={1}'.format(_url, site[2:])
+            is_folder = True
+            listing.append((url, list_item, is_folder))
+
+    xbmcplugin.addDirectoryItems(_handle, listing, len(listing))
+    xbmcplugin.endOfDirectory(_handle)
+
+def list_menu(site):
+    """
+    Create the Site menu in the Kodi interface.
+    """
+    scraper = eval('%s.%s.%s()'%(_spath,site,site))
+    menu,mode,icon = scraper.get_menu()
+    listing = []
+    for title,iurl in sorted(menu.iteritems()):
+        if 'Adult' not in title:
+            list_item = xbmcgui.ListItem(label=title[2:])
+            list_item.setArt({'thumb': icon,
+                              'icon': icon,
+                              'fanart': _fanart})
+            url = '{0}?action={1}&site={2}&iurl={3}'.format(_url, mode, site, urllib.quote(iurl))
+            is_folder = True
+            listing.append((url, list_item, is_folder))
+        elif _settings('adult') == 'true':
+            list_item = xbmcgui.ListItem(label=title[2:])
+            list_item.setArt({'thumb': icon,
+                              'icon': icon,
+                              'fanart': _fanart})
+            url = '{0}?action={1}&site={2}&iurl={3}'.format(_url, mode, site, urllib.quote(iurl))
+            is_folder = True
+            listing.append((url, list_item, is_folder))            
+    xbmcplugin.addDirectoryItems(_handle, listing, len(listing))
+    xbmcplugin.endOfDirectory(_handle)
+
+def list_items(site,iurl):
+    """
+    Create the list of movies/episodes in the Kodi interface.
+    """
+    #xbmc.log('Entered List items')
+    scraper = eval('%s.%s.%s()'%(_spath,site,site))
+    movies,mode = scraper.get_items(iurl)
+    listing = []
+    for movie in movies:
+        title = movie[0]
+        if title == '':
+            title = 'Unknown'
+        list_item = xbmcgui.ListItem(label=title)
+        list_item.setInfo('video', {'title': title})
+        if 'Next Page' in title:
+            if mode == 9:
+                nextmode = 7
+            else:
+                nextmode = mode - 1
+            url = '{0}?action={1}&site={2}&iurl={3}'.format(_url, nextmode, site, urllib.quote(movie[2]))
+            list_item.setArt({'thumb': movie[1],
+                              'icon': movie[1],
+                              'fanart': _fanart})            
+        else:
+            qtitle = urllib.quote(title)
+            iurl = urllib.quote(movie[2])
+            url = '{0}?action={1}&site={2}&title={3}&thumb={4}&iurl={5}'.format(_url, mode, site, qtitle, movie[1].encode('utf8'), iurl)
+            list_item.setArt({'thumb': movie[1],
+                              'icon': movie[1],
+                              'fanart': _fanart})
+        if mode == 9 and 'Next Page' not in title:
+            is_folder = False
+            list_item.setProperty('IsPlayable', 'true')
+        else:
+            is_folder = True
+        listing.append((url, list_item, is_folder))
+    xbmcplugin.addDirectoryItems(_handle, listing, len(listing))
+    xbmcplugin.endOfDirectory(_handle)
+    
+def list_videos(site,title,iurl,thumb):
+    """
+    Create the list of playable videos in the Kodi interface.
+
+    :param category: str
+    """
+    scraper = eval('%s.%s.%s()'%(_spath,site,site))
+    videos = scraper.get_videos(iurl)
+    listing = []
+    for video in videos:
+        list_item = xbmcgui.ListItem(label=video[0])
+        list_item.setArt({'thumb': thumb,
+                          'icon': thumb,
+                          'fanart': thumb})
+        list_item.setInfo('video', {'title': title})
+        list_item.setProperty('IsPlayable', 'true')
+        url = '{0}?action=9&iurl={1}'.format(_url, video[1])
+        is_folder = False
+        listing.append((url, list_item, is_folder))
+
+    xbmcplugin.addDirectoryItems(_handle, listing, len(listing))
+    xbmcplugin.endOfDirectory(_handle)
+
+def resolve_url(url):
+    duration=7500   
+    try:
+        stream_url = urlresolver.HostedMediaFile(url=url).resolve()
+        # If urlresolver returns false then the video url was not resolved.
+        if not stream_url or not isinstance(stream_url, basestring):
+            try: msg = stream_url.msg
+            except: msg = url
+            xbmc.executebuiltin('Notification(%s, %s, %d, %s)'%('URL Resolver',msg, duration, _icon))
+            return False
+    except Exception as e:
+        try: msg = str(e)
+        except: msg = url
+        xbmc.executebuiltin('Notification(%s, %s, %d, %s)'%('URL Resolver',msg, duration, _icon))
+        return False
+        
+    return stream_url
+
+def play_video(iurl):
+    """
+    Play a video by the provided path.
+
+    :param path: str
+    """
+    streamer_list = ['tamilgun', 'mersalaayitten', 'mhdtvlive.',
+                     'tamiltvsite.', 'cloudspro.']
+    # Create a playable item with a path to play.
+    play_item = xbmcgui.ListItem(path=iurl)
+    vid_url = play_item.getfilename()
+    if any([x in vid_url for x in streamer_list]):
+        if 'mersalaayitten' in vid_url:
+            scraper = resources.scrapers.mersal.mersal()
+            stream_url,srtfile = scraper.get_video(vid_url)
+            play_item.setPath(stream_url)
+            if srtfile:
+                play_item.setSubtitles(['special://temp/mersal.srt', srtfile])
+        elif 'tamiltvsite.' in vid_url:
+            scraper = resources.scrapers.tamiltv.tamiltv()
+            stream_url = scraper.get_video(vid_url)
+            if stream_url:
+                if 'youtube.' in stream_url:
+                    stream_url = resolve_url(stream_url)
+                play_item.setPath(stream_url)
+        elif 'mhdtvlive.' in vid_url:
+            scraper = resources.scrapers.lmtv.lmtv()
+            stream_url = scraper.get_video(vid_url)
+            play_item.setPath(stream_url)
+
+    else:
+        stream_url = resolve_url(vid_url)
+        if stream_url:
+            play_item.setPath(stream_url)    
+    # Pass the item to the Kodi player.
+    xbmcplugin.setResolvedUrl(_handle, True, listitem=play_item)
+
+def router(paramstring):
+    """
+    Router function that calls other functions
+    depending on the provided paramstring
+
+    :param paramstring:
+    Action Definitions:
+    1 : List Site
+    5 : List Channels
+    6 : List Shows
+    7 : List Individual Items (Movies, Episodes)
+    8 : List Playable Videos
+    9 : Play Video
+    """
+    # Parse a URL-encoded paramstring to the dictionary of
+    # {<parameter>: <value>} elements
+    params = dict(parse_qsl(paramstring))
+    # Check the parameters passed to the plugin
+
+    if params:
+        if params['action'] == '1':
+            list_menu(params['site'])
+        if params['action'] == '7':
+            list_items(params['site'],params['iurl'])
+        elif params['action'] == '8':
+            list_videos(params['site'],params['title'],params['iurl'],params['thumb'])
+        elif params['action'] == '9':
+            play_video(params['iurl'])
+    else:
+        list_sites()
+
+
+if __name__ == '__main__':
+    # Call the router function and pass the plugin call parameters to it.
+    # We use string slicing to trim the leading '?' from the plugin call paramstring
+    router(sys.argv[2][1:])

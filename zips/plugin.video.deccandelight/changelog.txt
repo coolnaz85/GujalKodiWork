@@ -1,3 +1,9 @@
+[B]Version 1.0.0 - 06 Dec 2016[/B]
+- Total rewrite of the addon
+- Not relying on unoffical frameworks
+- Used BeautifulSoup3 instead of 4 due to Android issues
+- Modular with scraper plugins
+
 [B]Version 0.3.9 - 20 Nov 2016[/B]
 - Live Malayalam fix
 - MovieFK Fix
