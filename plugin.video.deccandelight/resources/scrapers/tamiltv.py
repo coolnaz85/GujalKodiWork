@@ -23,12 +23,14 @@ class tamiltv(Scraper):
     def __init__(self):
         Scraper.__init__(self)
         self.bu = 'http://www.tamiltvsite.com/'
+        self.rbu = 'http://radio.tamiltvsite.com/'
         self.icon = self.ipath + 'apkland.png'
         self.list = {'01Entertainment Channels': self.bu + 'browse-tamil-tv-videos-1-title.html',
                      '02Music Channels': self.bu + 'browse-tamil-music-tv-videos-1-title.html',
                      '03News Channels': self.bu + 'browse-tamil-news-videos-1-title.html',
                      '04HD Channels': self.bu + 'browse-tamil-hd-videos-1-title.html',
                      '05Devotional Channels': self.bu + 'browse-tamil-devotional-tv-videos-1-title.html',
+                     '06Tamil Radio': self.rbu + '?c=all',
                      '07[COLOR yellow]** Search **[/COLOR]': self.bu + 'search.php?keywords='}
   
     def get_menu(self):
@@ -42,24 +44,41 @@ class tamiltv(Scraper):
             url = url + search_text
 
         html = requests.get(url, headers=self.hdr).text
-        mlink = SoupStrainer('ul', {'id':'pm-grid'})
-        mdiv = BeautifulSoup(html, parseOnlyThese=mlink)
-        plink = SoupStrainer('div', {'class':'pagination pagination-centered'})
-        Paginator = BeautifulSoup(html, parseOnlyThese=plink)
-        items = mdiv.findAll('div', {'class':'pm-li-video'})
-        for item in items:
-            title = item.h3.text.encode('utf8')
-            url = item.find('a')['href']
-            thumb = item.find('img')['src']
-            movies.append((title, thumb, url))
+        
+        if 'radio' in url:
+            items = json.loads(html)
+            for item in items:
+                title = item['name']
+                url = item['streams']['Default Quality']['mp3']
+                if 'radionomy.com' in url:
+                    url += '.m3u'
+                try:
+                    thumb = self.rbu + item['logo']
+                except:
+                    thumb = self.icon
+                movies.append((title, thumb, url))
+        else:
+            mlink = SoupStrainer('ul', {'id':'pm-grid'})
+            mdiv = BeautifulSoup(html, parseOnlyThese=mlink)
+            plink = SoupStrainer('div', {'class':'pagination pagination-centered'})
+            Paginator = BeautifulSoup(html, parseOnlyThese=plink)
+            items = mdiv.findAll('div', {'class':'pm-li-video'})
+            for item in items:
+                title = item.h3.text.encode('utf8')
+                url = item.find('a')['href']
+                try:
+                    thumb = item.find('img')['src']
+                except:
+                    thumb = self.icon
+                movies.append((title, thumb, url))
 
-        pages = Paginator.findAll('li', {'class':''})
-        if '&raquo;' in str(pages):
-            currpg = Paginator.find('li', {'class':'active'}).text            
-            purl = pages[len(pages)-1].find('a')['href']
-            lastpg = pages[len(pages)-2].text
-            title = 'Next Page.. (Currently in Page %s of %s)' % (currpg,lastpg)
-            movies.append((title, self.nicon, purl))
+            pages = Paginator.findAll('li', {'class':''})
+            if '&raquo;' in str(pages):
+                currpg = Paginator.find('li', {'class':'active'}).text            
+                purl = pages[len(pages)-1].find('a')['href']
+                lastpg = pages[len(pages)-2].text
+                title = 'Next Page.. (Currently in Page %s of %s)' % (currpg,lastpg)
+                movies.append((title, self.nicon, purl))
         
         return (movies,9)
       

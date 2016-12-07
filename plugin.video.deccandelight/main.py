@@ -26,10 +26,16 @@ from BeautifulSoup import BeautifulSoup, SoupStrainer
 import abc, urllib, re, requests
 import urlresolver
 
+try:
+    import StorageServer
+except:
+    import storageserverdummy as StorageServer
+
 # Get the plugin url in plugin:// notation.
 _url = sys.argv[0]
 # Get the plugin handle as an integer number.
 _handle = int(sys.argv[1])
+
 _addon = xbmcaddon.Addon()
 _addonname = _addon.getAddonInfo('name')
 _icon = _addon.getAddonInfo('icon')
@@ -38,7 +44,12 @@ _path = _addon.getAddonInfo('path')
 _ipath = _path + '/resources/images/'
 _spath = 'resources.scrapers'
 _settings = _addon.getSetting
+
+cache = StorageServer.StorageServer("deccandelight", _settings('timeout'))
+
 mozhdr = {'User-Agent': 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3'}
+
+
 
 class abstractclassmethod(classmethod):
     __isabstractmethod__ = True
@@ -53,6 +64,7 @@ class Scraper(object):
     def __init__(self):
         self.ipath = _ipath
         self.hdr = mozhdr
+        self.adult = _settings('adult')
         self.nicon = self.ipath + 'next.png'
         
     def get_nicon(self):
@@ -78,64 +90,52 @@ class Scraper(object):
 
         
     def resolve_media(self,url,videos):
-        non_str_list = ['olangal.', '#', 'magnet:', 'desihome.co', 'thiruttuvcd',
-                        'cineview', 'bollyheaven', 'videolinkz', 'moviefk.co', 'atemda.',
-                        'imdb.', 'mgid.', 'desihome', 'movierulz.', 'facebook.', 
+        non_str_list = ['olangal.', '#', 'magnet:', 'desihome.', 'thiruttuvcd',
+                        'cineview', 'bollyheaven', 'videolinkz', 'moviefk.co',
+                        'imdb.', 'mgid.', 'atemda.', 'movierulz.', 'facebook.', 
                         'm2pub', 'abcmalayalam', 'india4movie.co', '.filmlinks4u',
-                        'tamilraja.', 'multiup.', 'filesupload.', 'fileorbs.']
+                        'tamilraja.', 'multiup.', 'filesupload.', 'fileorbs.',
+                        'insurance-donate.']
 
         embed_list = ['cineview', 'bollyheaven', 'videolinkz', 'vidzcode',
                       'embedzone', 'embedsr', 'fullmovie-hd', 'adly.biz',
                       'embedscr', 'embedrip', 'movembed', 'power4link.us',
                       'watchmoviesonline4u', 'nobuffer.info', 'yo-desi.com',
-                      'techking.me', 'onlinemoviesworld.xyz', 'cinebix.com']
-
-        if 'pongomovies' in url:
-            link = requests.get(url, headers=mozhdr).text
-            mlink = SoupStrainer(class_='tabs-catch-all')
-            links = BeautifulSoup(link, 'html.parser', parse_only=mlink)
-            for link in links:
-                if 'iframe' in str(link.contents):
-                    strurl = str(link.find('iframe')['src'])
-                    if urlresolver.HostedMediaFile(strurl):
-                        vidhost = self.get_vidhost(strurl)
-                        videos.append((vidhost,strurl))
-                    # else:
-                        # xbmc.log('-------> URLResolver cannot resolve : %s' % url)
+                      'techking.me', 'onlinemoviesworld.xyz', 'cinebix.com',
+                      'desihome.', 'loan-forex.', 'filmshowonline.']
            
-        elif 'filmshowonline.net/media/' in url:
-            r = requests.get(url, headers=mozhdr)
-            clink = r.text
-            cookies = r.cookies
-            eurl = re.findall("url: '([^']*)[\d\D]*nonce :", clink)[0]
-            enonce = re.findall("nonce : '([^']*)", clink)[0]
-            evid = re.findall("nonce : [\d\D]*?link_id: ([\d]*)", clink)[0]
-            values = {'echo' : 'true',
-                      'nonce' : enonce,
-                      'width' : '848',
-                      'height' : '480',
-                      'link_id' : evid }
-            headers = {'User-Agent': mozagent,
-                       'Referer': vidurl,
-                      'X-Requested-With': 'XMLHttpRequest'}
-            emurl = requests.post(eurl, data=values, headers=headers, cookies=cookies).text
-            strurl = (re.findall('(http[^"]*)', emurl)[0]).replace('\\', '')
-            if urlresolver.HostedMediaFile(strurl):
-                vidhost = self.get_vidhost(strurl)
-                videos.append((vidhost,strurl))
-            # else:
-                # xbmc.log('-------> URLResolver cannot resolve : %s' % url)
-
-        elif 'filmshowonline.net/videos/' in url:
-            clink = requests.get(url, headers=mozhdr).text
-            csoup = BeautifulSoup(clink)
-            strurl = csoup.find('iframe')['src']
-            if 'http' in strurl:
+        if 'filmshowonline.net/media/' in url:
+            try:
+                r = requests.get(url, headers=self.hdr)
+                clink = r.text
+                cookies = r.cookies
+                eurl = re.findall("var height.*?url: '(.*?)'", clink, re.DOTALL)[0]
+                enonce = re.findall("var height.*?nonce.*?'(.*?)'", clink, re.DOTALL)[0]
+                evid = re.findall("var height.*?link_id: ([^\s]*)", clink, re.DOTALL)[0]
+                values = {'echo' : 'true',
+                          'nonce' : enonce,
+                          'width' : '848',
+                          'height' : '480',
+                          'link_id' : evid }
+                headers = self.hdr
+                headers['Referer'] = url
+                headers['X-Requested-With'] = 'XMLHttpRequest'
+                emurl = requests.post(eurl, data=values, headers=headers, cookies=cookies).text
+                strurl = (re.findall('(http[^"]*)', emurl)[0]).replace('\\', '')
                 if urlresolver.HostedMediaFile(strurl):
                     vidhost = self.get_vidhost(strurl)
                     videos.append((vidhost,strurl))
-                # else:
-                    # xbmc.log('-------> URLResolver cannot resolve : %s' % url)
+            except:
+                pass
+
+        # elif 'filmshowonline.net/videos/' in url:
+            # clink = requests.get(url, headers=self.hdr).text
+            # csoup = BeautifulSoup(clink)
+            # strurl = csoup.find('iframe')['src']
+            # if 'http' in strurl:
+                # if urlresolver.HostedMediaFile(strurl):
+                    # vidhost = self.get_vidhost(strurl)
+                    # videos.append((vidhost,strurl))
                         
         elif 'tamildbox' in url:
             try:
@@ -150,16 +150,12 @@ class Scraper(object):
                 if urlresolver.HostedMediaFile(glink):
                     vidhost = self.get_vidhost(glink)
                     videos.append((vidhost,glink))
-                # else:
-                    # xbmc.log('-------> URLResolver cannot resolve : %s' % url)
                 mlink = SoupStrainer('div', {'class':re.compile('^item-content')})
                 dclass = BeautifulSoup(link, parseOnlyThese=mlink)
                 glink = dclass.p.iframe.get('src')
                 if urlresolver.HostedMediaFile(glink):
                     vidhost = self.get_vidhost(glink)
                     videos.append((vidhost,glink))
-                # else:
-                    # xbmc.log('-------> URLResolver cannot resolve : %s' % url)
             except:
                 pass
 
@@ -173,8 +169,6 @@ class Scraper(object):
                         if urlresolver.HostedMediaFile(strurl):
                             vidhost = self.get_vidhost(strurl)
                             videos.append((vidhost,strurl))
-                        # else:
-                            # xbmc.log('-------> URLResolver cannot resolve : %s' % url)
             except:
                 pass
 
@@ -185,8 +179,6 @@ class Scraper(object):
                     if urlresolver.HostedMediaFile(strurl):
                         vidhost = self.get_vidhost(strurl)
                         videos.append((vidhost,strurl))
-                    # else:
-                        # xbmc.log('-------> URLResolver cannot resolve : %s' % url)
             except:
                 pass
 
@@ -197,8 +189,6 @@ class Scraper(object):
                     if urlresolver.HostedMediaFile(strurl):
                         vidhost = self.get_vidhost(strurl)
                         videos.append((vidhost,strurl))
-                    # else:
-                        # xbmc.log('-------> URLResolver cannot resolve : %s' % url)
             except:
                 pass
 
@@ -209,8 +199,6 @@ class Scraper(object):
                     if urlresolver.HostedMediaFile(strurl):
                         vidhost = self.get_vidhost(strurl)
                         videos.append((vidhost,strurl))
-                    # else:
-                        # xbmc.log('-------> URLResolver cannot resolve : %s' % url)
             except:
                 pass
 
@@ -221,8 +209,6 @@ class Scraper(object):
                         if urlresolver.HostedMediaFile(strurl):
                             vidhost = self.get_vidhost(strurl)
                             videos.append((vidhost,strurl))
-                        # else:
-                            # xbmc.log('-------> URLResolver cannot resolve : %s' % url)
             except:
                 pass
                 
@@ -249,9 +235,9 @@ class Scraper(object):
                    '/', 'Pre HDRip', '(DVDScr Audio)', 'PDVDRip', 'DVDSCR', '(HQ Audio)', 'HQ', ' Telugu',
                    'DVDScr', 'DVDscr', 'PreDVDRip', 'DVDRip', 'DVDRIP', 'WEBRip', 'WebRip', 'Movie', ' Punjabi',
                    'TCRip', 'HDRip', 'HDTVRip', 'HD-TC', 'HDTV', 'TVRip', '720p', 'DVD', 'HD', ' Dubbed',
-                   '720p', '(UNCUT)', 'UNCUT', '(Clear Audio)', 'DTHRip', '(Line Audio)', ' Kannada', 
+                   '720p', '(UNCUT)', 'UNCUT', '(Clear Audio)', 'DTHRip', '(Line Audio)', ' Kannada', ' Hollywood',
                    'TS', 'CAM', 'Online Full', '[+18]', 'Streaming Free', 'Permalink to ', 'And Download',
-                   'Full English', ' English', 'Downlaod', 'Bluray', 'Online', ' Tamil', ' Bengali',]
+                   'Full English', ' English', 'Downlaod', 'Bluray', 'Online', ' Tamil', ' Bengali', ' Bhojpuri']
         title = title.encode('utf8')
         for word in cleanup:
             if word in title:
@@ -265,11 +251,12 @@ sites = {'01tgun': 'Tamil Gun : [COLOR yellow]Tamil[/COLOR]',
          '02rajt': 'Raj Tamil : [COLOR yellow]Tamil[/COLOR]',
          '03tyogi': 'Tamil Yogi : [COLOR yellow]Tamil[/COLOR]',
          '04runt': 'Run Tamil : [COLOR yellow]Tamil[/COLOR]',
-         '05tamiltv': 'APKLand TV : [COLOR yellow]Tamil Live TV[/COLOR]',
+         '05tamiltv': 'APKLand TV : [COLOR yellow]Tamil Live TV and Radio[/COLOR]',
          '06ttvs': 'Tamil TV Shows : [COLOR yellow]Tamil Catchup TV[/COLOR]',
          '07abcm': 'ABC Malayalam : [COLOR yellow]Malayalam[/COLOR]',
          '08olangal': 'Olangal : [COLOR yellow]Malayalam[/COLOR]',
          '09lmtv': 'Live Malayalam : [COLOR yellow]Malayalam Live TV[/COLOR]',
+         '10hlinks': 'Hindi Links 4U : [COLOR yellow]Hindi[/COLOR]',
          '11yodesi': 'Yo Desi : [COLOR yellow]Hindi Catchup TV[/COLOR]',
          '12tvcd': 'Thiruttu VCD : [COLOR magenta]Various[/COLOR]',
          '13mrulz': 'Movie Rulz : [COLOR magenta]Various[/COLOR]',
@@ -278,6 +265,7 @@ sites = {'01tgun': 'Tamil Gun : [COLOR yellow]Tamil[/COLOR]',
          '16mfish': 'Movie Fisher : [COLOR magenta]Various[/COLOR]',
          '17mersal': 'Mersalaayitten : [COLOR magenta]Various[/COLOR]',
          '18ttwist': 'Tamil Twists : [COLOR magenta]Various[/COLOR]',
+         '19flinks': 'Film Links 4 U : [COLOR magenta]Various[/COLOR]',
          '20redm': 'Red Movies : [COLOR magenta]Various[/COLOR]',
          '21tvcds': 'Thiruttu VCDs : [COLOR magenta]Various[/COLOR]'}
 
@@ -300,7 +288,8 @@ import resources.scrapers.mfish
 import resources.scrapers.yodesi
 import resources.scrapers.ttwist
 import resources.scrapers.tvcds
-
+import resources.scrapers.flinks
+import resources.scrapers.hlinks
 
 def list_sites():
     """
@@ -325,7 +314,7 @@ def list_menu(site):
     Create the Site menu in the Kodi interface.
     """
     scraper = eval('%s.%s.%s()'%(_spath,site,site))
-    menu,mode,icon = scraper.get_menu()
+    menu,mode,icon = cache.cacheFunction(scraper.get_menu)
     listing = []
     for title,iurl in sorted(menu.iteritems()):
         if 'Adult' not in title:
@@ -351,9 +340,8 @@ def list_items(site,iurl):
     """
     Create the list of movies/episodes in the Kodi interface.
     """
-    #xbmc.log('Entered List items')
     scraper = eval('%s.%s.%s()'%(_spath,site,site))
-    movies,mode = scraper.get_items(iurl)
+    movies,mode = cache.cacheFunction(scraper.get_items,iurl)
     listing = []
     for movie in movies:
         title = movie[0]
@@ -393,7 +381,7 @@ def list_videos(site,title,iurl,thumb):
     :param category: str
     """
     scraper = eval('%s.%s.%s()'%(_spath,site,site))
-    videos = scraper.get_videos(iurl)
+    videos = cache.cacheFunction(scraper.get_videos,iurl)
     listing = []
     for video in videos:
         list_item = xbmcgui.ListItem(label=video[0])
@@ -434,7 +422,7 @@ def play_video(iurl):
     :param path: str
     """
     streamer_list = ['tamilgun', 'mersalaayitten', 'mhdtvlive.',
-                     'tamiltvsite.', 'cloudspro.']
+                     'tamiltvsite.', 'cloudspro.', 'radio', '.mp3']
     # Create a playable item with a path to play.
     play_item = xbmcgui.ListItem(path=iurl)
     vid_url = play_item.getfilename()
@@ -455,14 +443,16 @@ def play_video(iurl):
         elif 'mhdtvlive.' in vid_url:
             scraper = resources.scrapers.lmtv.lmtv()
             stream_url = scraper.get_video(vid_url)
-            play_item.setPath(stream_url)
-
+            play_item.setPath(stream_url)            
     else:
         stream_url = resolve_url(vid_url)
         if stream_url:
             play_item.setPath(stream_url)    
     # Pass the item to the Kodi player.
-    xbmcplugin.setResolvedUrl(_handle, True, listitem=play_item)
+    if 'radionomy' in vid_url:
+        xbmc.Player().play(vid_url)
+    else:
+        xbmcplugin.setResolvedUrl(_handle, True, listitem=play_item)
 
 def router(paramstring):
     """

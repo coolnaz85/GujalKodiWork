@@ -1,6 +1,9 @@
+[B]Version 1.0.1 - 07 Dec 2016[/B]
+- Add Tamil Radio
+
 [B]Version 1.0.0 - 06 Dec 2016[/B]
 - Total rewrite of the addon
-- Not relying on unoffical frameworks
+- Not relying on external frameworks
 - Used BeautifulSoup3 instead of 4 due to Android issues
 - Modular with scraper plugins
 

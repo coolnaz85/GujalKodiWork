@@ -18,6 +18,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 from main import Scraper
 from BeautifulSoup import BeautifulSoup, SoupStrainer
 import urllib, re, requests, json
+import HTMLParser
 
 class tgun(Scraper):
     def __init__(self):
@@ -35,6 +36,7 @@ class tgun(Scraper):
         return (self.list,7,self.icon)
     
     def get_items(self,url):
+        h = HTMLParser.HTMLParser()
         movies = []
         if url[-3:] == '?s=':
             search_text = self.get_SearchQuery('Tamil Gun')
@@ -48,7 +50,7 @@ class tgun(Scraper):
         Paginator = BeautifulSoup(html, parseOnlyThese=plink)
 
         for item in items:
-            title = item.h3.text
+            title = h.unescape(item.h3.text)
             title = self.clean_title(title)
             url = item.find('a')['href']
             thumb = item.find('img')['src']

@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <addons>
 <addon id="plugin.video.deccandelight"
-version="1.0.0"
+version="1.0.1"
 name="Deccan Delight"
 provider-name="Gujal">
 <requires>
   <import addon="xbmc.python" version="2.20.0"/>
   <import addon="script.module.requests" version="2.4.3"/>
   <import addon="script.module.beautifulsoup" version="3.2.1"/>
+  <import addon="script.common.plugin.cache" version="2.5.5"/>
   <import addon="script.module.urlresolver" version="3.0.0"/>
 </requires>
 <extension point="xbmc.python.pluginsource" library="main.py">
