@@ -257,17 +257,18 @@ sites = {'01tgun': 'Tamil Gun : [COLOR yellow]Tamil[/COLOR]',
          '08olangal': 'Olangal : [COLOR yellow]Malayalam[/COLOR]',
          '09lmtv': 'Live Malayalam : [COLOR yellow]Malayalam Live TV[/COLOR]',
          '10hlinks': 'Hindi Links 4U : [COLOR yellow]Hindi[/COLOR]',
-         '11yodesi': 'Yo Desi : [COLOR yellow]Hindi Catchup TV[/COLOR]',
-         '12tvcd': 'Thiruttu VCD : [COLOR magenta]Various[/COLOR]',
-         '13mrulz': 'Movie Rulz : [COLOR magenta]Various[/COLOR]',
-         '14i4movie': 'India 4 Movie : [COLOR magenta]Various[/COLOR]',
-         '15moviefk': 'Movie FK : [COLOR magenta]Various[/COLOR]',
-         '16mfish': 'Movie Fisher : [COLOR magenta]Various[/COLOR]',
-         '17mersal': 'Mersalaayitten : [COLOR magenta]Various[/COLOR]',
-         '18ttwist': 'Tamil Twists : [COLOR magenta]Various[/COLOR]',
-         '19flinks': 'Film Links 4 U : [COLOR magenta]Various[/COLOR]',
-         '20redm': 'Red Movies : [COLOR magenta]Various[/COLOR]',
-         '21tvcds': 'Thiruttu VCDs : [COLOR magenta]Various[/COLOR]'}
+         '11desit': 'Desi Tashan : [COLOR yellow]Hindi Catchup TV[/COLOR]',
+         '12yodesi': 'Yo Desi : [COLOR yellow]Hindi Catchup TV[/COLOR]',
+         '13tvcd': 'Thiruttu VCD : [COLOR magenta]Various[/COLOR]',
+         '14mrulz': 'Movie Rulz : [COLOR magenta]Various[/COLOR]',
+         '15i4movie': 'India 4 Movie : [COLOR magenta]Various[/COLOR]',
+         '16moviefk': 'Movie FK : [COLOR magenta]Various[/COLOR]',
+         '17mfish': 'Movie Fisher : [COLOR magenta]Various[/COLOR]',
+         '18mersal': 'Mersalaayitten : [COLOR magenta]Various[/COLOR]',
+         '19ttwist': 'Tamil Twists : [COLOR magenta]Various[/COLOR]',
+         '20flinks': 'Film Links 4 U : [COLOR magenta]Various[/COLOR]',
+         '21redm': 'Red Movies : [COLOR magenta]Various[/COLOR]',
+         '22tvcds': 'Thiruttu VCDs : [COLOR magenta]Various[/COLOR]'}
 
 import resources.scrapers.tgun
 import resources.scrapers.rajt
@@ -290,6 +291,7 @@ import resources.scrapers.ttwist
 import resources.scrapers.tvcds
 import resources.scrapers.flinks
 import resources.scrapers.hlinks
+import resources.scrapers.desit
 
 def list_sites():
     """
@@ -298,9 +300,10 @@ def list_sites():
     listing = []
     for site,title in sorted(sites.iteritems()):
         if _settings(site[2:]) == 'true':
+            item_icon = _ipath + '%s.png'%site[2:]
             list_item = xbmcgui.ListItem(label=title)
-            list_item.setArt({'thumb': _icon,
-                              'icon': _icon,
+            list_item.setArt({'thumb': item_icon,
+                              'icon': item_icon,
                               'fanart': _fanart})
             url = '{0}?action=1&site={1}'.format(_url, site[2:])
             is_folder = True
@@ -327,6 +330,42 @@ def list_menu(site):
             listing.append((url, list_item, is_folder))
         elif _settings('adult') == 'true':
             list_item = xbmcgui.ListItem(label=title[2:])
+            list_item.setArt({'thumb': icon,
+                              'icon': icon,
+                              'fanart': _fanart})
+            url = '{0}?action={1}&site={2}&iurl={3}'.format(_url, mode, site, urllib.quote(iurl))
+            is_folder = True
+            listing.append((url, list_item, is_folder))            
+    xbmcplugin.addDirectoryItems(_handle, listing, len(listing))
+    xbmcplugin.endOfDirectory(_handle)
+
+def list_top(site,iurl):
+    """
+    Create the Site menu in the Kodi interface.
+    """
+    scraper = eval('%s.%s.%s()'%(_spath,site,site))
+    menu,mode = cache.cacheFunction(scraper.get_top,iurl)
+    listing = []
+    for title,icon,iurl in menu:
+            list_item = xbmcgui.ListItem(label=title)
+            list_item.setArt({'thumb': icon,
+                              'icon': icon,
+                              'fanart': _fanart})
+            url = '{0}?action={1}&site={2}&iurl={3}'.format(_url, mode, site, urllib.quote(iurl))
+            is_folder = True
+            listing.append((url, list_item, is_folder))            
+    xbmcplugin.addDirectoryItems(_handle, listing, len(listing))
+    xbmcplugin.endOfDirectory(_handle)
+
+def list_second(site,iurl):
+    """
+    Create the Site menu in the Kodi interface.
+    """
+    scraper = eval('%s.%s.%s()'%(_spath,site,site))
+    menu,mode = cache.cacheFunction(scraper.get_second,iurl)
+    listing = []
+    for title,icon,iurl in menu:
+            list_item = xbmcgui.ListItem(label=title)
             list_item.setArt({'thumb': icon,
                               'icon': icon,
                               'fanart': _fanart})
@@ -422,7 +461,8 @@ def play_video(iurl):
     :param path: str
     """
     streamer_list = ['tamilgun', 'mersalaayitten', 'mhdtvlive.',
-                     'tamiltvsite.', 'cloudspro.', 'radio', '.mp3']
+                     'tamiltvsite.', 'cloudspro.', '.mp4',
+                     'radio', '.mp3']
     # Create a playable item with a path to play.
     play_item = xbmcgui.ListItem(path=iurl)
     vid_url = play_item.getfilename()
@@ -462,8 +502,8 @@ def router(paramstring):
     :param paramstring:
     Action Definitions:
     1 : List Site
-    5 : List Channels
-    6 : List Shows
+    4 : List Top Menu (Channels, Languages)
+    5 : List Secondary Menu (Shows, Categories)
     7 : List Individual Items (Movies, Episodes)
     8 : List Playable Videos
     9 : Play Video
@@ -476,7 +516,11 @@ def router(paramstring):
     if params:
         if params['action'] == '1':
             list_menu(params['site'])
-        if params['action'] == '7':
+        elif params['action'] == '4':
+            list_top(params['site'],params['iurl'])
+        elif params['action'] == '5':
+            list_second(params['site'],params['iurl'])   
+        elif params['action'] == '7':
             list_items(params['site'],params['iurl'])
         elif params['action'] == '8':
             list_videos(params['site'],params['title'],params['iurl'],params['thumb'])

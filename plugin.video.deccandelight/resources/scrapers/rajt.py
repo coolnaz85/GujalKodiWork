@@ -22,7 +22,7 @@ import urllib, requests, re
 class rajt(Scraper):
     def __init__(self):
         Scraper.__init__(self)
-        self.icon = self.ipath + 'rajtamil.png'
+        self.icon = self.ipath + 'rajt.png'
         self.bu = 'http://www.rajtamil.com/category/'
         self.list = {'01Recent Movies': self.bu + 'movies/',
                      '02Dubbed Movies': self.bu + 'tamil-dubbed/',

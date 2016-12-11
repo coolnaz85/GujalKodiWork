@@ -24,7 +24,7 @@ class tamiltv(Scraper):
         Scraper.__init__(self)
         self.bu = 'http://www.tamiltvsite.com/'
         self.rbu = 'http://radio.tamiltvsite.com/'
-        self.icon = self.ipath + 'apkland.png'
+        self.icon = self.ipath + 'tamiltv.png'
         self.list = {'01Entertainment Channels': self.bu + 'browse-tamil-tv-videos-1-title.html',
                      '02Music Channels': self.bu + 'browse-tamil-music-tv-videos-1-title.html',
                      '03News Channels': self.bu + 'browse-tamil-news-videos-1-title.html',

@@ -24,7 +24,7 @@ class tgun(Scraper):
     def __init__(self):
         Scraper.__init__(self)
         self.bu = 'http://tamilgun.us/categories/'
-        self.icon = self.ipath + 'tamilgun.png'
+        self.icon = self.ipath + 'tgun.png'
         self.list = {'01New Movies': self.bu + 'new-movies/',
                      '02HD Movies': self.bu + 'hd-movies/',
                      '03Dubbed Movies': self.bu + 'dubbed-movies/',
@@ -133,6 +133,13 @@ class tgun(Scraper):
                 url += '|Referer=http://tamilgun.us'
                 url = urllib.quote_plus(url)
                 videos.append(('tamilgun.us',url))
+        except:
+            pass
+
+        try:
+            sources = json.loads(re.findall('vdf-data-json">(.*?)<',html)[0])
+            url = 'https://www.youtube.com/watch?v=%s'%sources['videos'][0]['youtubeID']
+            self.resolve_media(url,videos)
         except:
             pass
             

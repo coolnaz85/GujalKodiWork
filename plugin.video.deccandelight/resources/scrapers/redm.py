@@ -24,7 +24,7 @@ class redm(Scraper):
     def __init__(self):
         Scraper.__init__(self)
         self.bu = 'http://redmovies.me/category/'
-        self.icon = self.ipath + 'rmovies.png'
+        self.icon = self.ipath + 'redm.png'
         self.list = {'01Tamil Movies': self.bu + 'tamil/',
                      '02Telugu Movies': self.bu + 'telugu/',
                      '03Malayalam Movies': self.bu + 'malayalam/',

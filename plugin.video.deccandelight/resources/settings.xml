@@ -15,6 +15,7 @@
     </category> 
     <category label="Hindi Scrapers">
         <setting id="hlinks" type="bool" label="Hindi Links 4 U [COLOR magenta](Needs TLS1.2)[/COLOR]" default="false"/>
+		<setting id="desit" type="bool" label="Desi Tashan" default="true"/>
         <setting id="yodesi" type="bool" label="Yo Desi" default="true"/>
     </category>
     <category label="Multi Language Scrapers">

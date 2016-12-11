@@ -1,3 +1,6 @@
+[B]Version 1.0.2 - 11 Dec 2016[/B]
+- Add Desi Tashan
+
 [B]Version 1.0.1 - 07 Dec 2016[/B]
 - Add Tamil Radio
 
