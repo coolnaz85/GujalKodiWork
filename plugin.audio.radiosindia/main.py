@@ -129,6 +129,13 @@ def play_audio(iurl):
             stream_url = re.findall('source src="(.*?)"',html)[0]
         except:
             pass
+    if stream_url == '':
+        try:
+            stream_url = re.findall('flashvars.serverHost = "(.*?)"',html)[0]
+            if 'http' not in stream_url:
+                stream_url = 'http://' + stream_url
+        except:
+            pass
     # Pass the item to the Kodi player.
     play_item.setPath(stream_url)
     #xbmc.Player().play(stream_url)
