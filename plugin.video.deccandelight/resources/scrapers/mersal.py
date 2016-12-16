@@ -18,6 +18,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 from main import Scraper
 from BeautifulSoup import BeautifulSoup, SoupStrainer
 import urllib, re, requests
+import HTMLParser
 
 class mersal(Scraper):
     def __init__(self):
@@ -37,6 +38,7 @@ class mersal(Scraper):
     
     def get_items(self,url):
         movies = []
+        h = HTMLParser.HTMLParser()
         if '%' in url:
             url = urllib.unquote(url)
         if url[-6:] == 'query=':
@@ -51,7 +53,7 @@ class mersal(Scraper):
         Paginator = BeautifulSoup(html, parseOnlyThese=plink)
         items = mdiv.findAll('div', {'class':'col-sm-6 col-md-4 col-lg-4'})
         for item in items:
-            title = item.find('span').text.encode('utf8')
+            title = h.unescape(item.find('span').text).encode('utf8')
             url = item.find('a')['href']
             url = self.bu[:-9] + 'embed/' + url.split('/')[2]
             try:

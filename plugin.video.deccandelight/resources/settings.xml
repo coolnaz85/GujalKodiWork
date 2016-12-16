@@ -19,6 +19,7 @@
         <setting id="yodesi" type="bool" label="Yo Desi" default="true"/>
     </category>
     <category label="Multi Language Scrapers">
+		<setting id="apnav" type="bool" label="Apna View" default="true"/>
         <setting id="tvcd" type="bool" label="Thiruttu VCD" default="true"/>
         <setting id="ttwist" type="bool" label="Tamil Twists" default="true"/>
         <setting id="mrulz" type="bool" label="Movie Rulez" default="true"/>

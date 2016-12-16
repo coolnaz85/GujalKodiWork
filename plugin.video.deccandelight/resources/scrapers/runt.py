@@ -25,7 +25,7 @@ class runt(Scraper):
         Scraper.__init__(self)
         self.bu = 'http://runtamil.co/category/'
         self.icon = self.ipath + 'runt.png'
-        self.list = {'01Tamil New Movies': self.bu + 'runtamil-new-tamil-movies2/',
+        self.list = {'01Tamil New Movies': self.bu + 'runtamil-new-tamil-movies2o/',
                      '02Tamil HD Movies': self.bu + 'tamil-hd-movies-online/',
                      '03Tamil DVD Movies': self.bu + 'tamil-dvd-movies1/',
                      '04Tamil Classic Movies': self.bu + 'mid-movies/',

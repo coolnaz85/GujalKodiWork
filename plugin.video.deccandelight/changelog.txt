@@ -1,3 +1,10 @@
+[B]Version 1.0.3 - 17 Dec 2016[/B]
+- Add Apna View
+- Fix Run Tamil New movies
+- Fix MovieFK Hindi movies
+- Fix Search caching
+- Add Multipart Indications in video sources
+
 [B]Version 1.0.2 - 11 Dec 2016[/B]
 - Add Desi Tashan
 

@@ -37,12 +37,13 @@ class desit(Scraper):
         :return: list
         """
         channels = []
+        h = HTMLParser.HTMLParser()
         html = requests.get(url, headers=self.hdr).text
         mlink = SoupStrainer('div', {'class':'nav fusion-mobile-tab-nav'})
         mdiv = BeautifulSoup(html, parseOnlyThese=mlink)
         items = mdiv.findAll('li')
         for item in items:
-            title = item.text
+            title = h.unescape(item.text)
             tref = item.a.get('href')[1:]
             iurl = '%sZZZZ%s'%(url,tref)
             try:
@@ -64,6 +65,7 @@ class desit(Scraper):
         :return: list
         """
         shows = []
+        h = HTMLParser.HTMLParser()
         url = iurl.split('ZZZZ')[0]
         channel = iurl.split('ZZZZ')[1]
         html = requests.get(url, headers=self.hdr).text
@@ -71,7 +73,7 @@ class desit(Scraper):
         mdiv = BeautifulSoup(html, parseOnlyThese=mlink)
         items = mdiv.findAll('div', {'class':'fusion-column-wrapper'})
         for item in items:
-            title = item.text
+            title = h.unescape(item.text)
             url = item.a.get('href')
             if url.startswith('/'):
                 url = self.bu[:-1] + url
@@ -92,12 +94,13 @@ class desit(Scraper):
         
     def get_items(self,iurl):
         episodes = []
+        h = HTMLParser.HTMLParser()
         html = requests.get(iurl).text
         mlink = SoupStrainer('div', {'id':'showList'})
         mdiv = BeautifulSoup(html, parseOnlyThese=mlink)
         items = mdiv.findAll('div', {'class':'fusion-column-wrapper'})
         for item in items:
-            title = item.h4.a.text
+            title = h.unescape(item.h4.a.text)
             if 'written' not in title.lower():
                 url = item.a.get('href')
                 if url.startswith('/'):
@@ -127,15 +130,18 @@ class desit(Scraper):
 
     def get_videos(self,iurl):
         videos = []
+        h = HTMLParser.HTMLParser()
         html = requests.get(iurl).text
         mlink = SoupStrainer('p', {'class':'vidLinksContent'})
         videoclass = BeautifulSoup(html, parseOnlyThese=mlink)
         items = videoclass.findAll('a')
         for item in items:
             vid_link = item['href']
+            vidtxt = h.unescape(item.text)
+            vidtxt = re.findall('(\d.*)',vidtxt)[0]
             if '/coming/' in vid_link:
                 url = 'http://www.tashanplayer.com/upcoming.mp4'
-                videos.append(('DT Upcoming',url))
+                videos.append(('Coming Soon',url))
             elif 'tashanplayer' in vid_link:
                 vhtml = requests.get(vid_link).text
                 try:
@@ -146,9 +152,9 @@ class desit(Scraper):
                     vplink = SoupStrainer('script', {'data-container':'myPlayer'})
                     vsoup = BeautifulSoup(vhtml, parseOnlyThese=vplink)
                     vid_url = vsoup.find('script')['data-config']
-                self.resolve_media(vid_url,videos)
+                self.resolve_media(vid_url,videos,vidtxt)
             else:
-                self.resolve_media(vid_link,videos)
+                self.resolve_media(vid_link,videos,vidtxt)
 
         mlink = SoupStrainer('div', {'class':'post-content'})
         videoclass = BeautifulSoup(html, parseOnlyThese=mlink)

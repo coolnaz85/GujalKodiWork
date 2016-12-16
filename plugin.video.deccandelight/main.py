@@ -11,7 +11,7 @@
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
-
+    
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
@@ -48,8 +48,6 @@ _settings = _addon.getSetting
 cache = StorageServer.StorageServer("deccandelight", _settings('timeout'))
 
 mozhdr = {'User-Agent': 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3'}
-
-
 
 class abstractclassmethod(classmethod):
     __isabstractmethod__ = True
@@ -89,20 +87,20 @@ class Scraper(object):
         return vidhost
 
         
-    def resolve_media(self,url,videos):
+    def resolve_media(self,url,videos,vidtxt=''):
         non_str_list = ['olangal.', '#', 'magnet:', 'desihome.', 'thiruttuvcd',
                         'cineview', 'bollyheaven', 'videolinkz', 'moviefk.co',
                         'imdb.', 'mgid.', 'atemda.', 'movierulz.', 'facebook.', 
                         'm2pub', 'abcmalayalam', 'india4movie.co', '.filmlinks4u',
                         'tamilraja.', 'multiup.', 'filesupload.', 'fileorbs.',
-                        'insurance-donate.']
+                        'insurance-donate.', '.blogspot.']
 
         embed_list = ['cineview', 'bollyheaven', 'videolinkz', 'vidzcode',
                       'embedzone', 'embedsr', 'fullmovie-hd', 'adly.biz',
                       'embedscr', 'embedrip', 'movembed', 'power4link.us',
                       'watchmoviesonline4u', 'nobuffer.info', 'yo-desi.com',
                       'techking.me', 'onlinemoviesworld.xyz', 'cinebix.com',
-                      'desihome.', 'loan-forex.', 'filmshowonline.']
+                      'desihome.', 'loan-forex.', 'filmshowonline.', 'vids.xyz']
            
         if 'filmshowonline.net/media/' in url:
             try:
@@ -124,19 +122,12 @@ class Scraper(object):
                 strurl = (re.findall('(http[^"]*)', emurl)[0]).replace('\\', '')
                 if urlresolver.HostedMediaFile(strurl):
                     vidhost = self.get_vidhost(strurl)
+                    if not vidtxt == '':
+                        vidhost += ' | %s' % vidtxt
                     videos.append((vidhost,strurl))
             except:
                 pass
 
-        # elif 'filmshowonline.net/videos/' in url:
-            # clink = requests.get(url, headers=self.hdr).text
-            # csoup = BeautifulSoup(clink)
-            # strurl = csoup.find('iframe')['src']
-            # if 'http' in strurl:
-                # if urlresolver.HostedMediaFile(strurl):
-                    # vidhost = self.get_vidhost(strurl)
-                    # videos.append((vidhost,strurl))
-                        
         elif 'tamildbox' in url:
             try:
                 link = requests.get(url, headers=mozhdr).text
@@ -168,6 +159,8 @@ class Scraper(object):
                     if not any([x in strurl for x in non_str_list]):
                         if urlresolver.HostedMediaFile(strurl):
                             vidhost = self.get_vidhost(strurl)
+                            if not vidtxt == '':
+                                vidhost += ' | %s' % vidtxt
                             videos.append((vidhost,strurl))
             except:
                 pass
@@ -178,6 +171,8 @@ class Scraper(object):
                 if not any([x in strurl for x in non_str_list]):
                     if urlresolver.HostedMediaFile(strurl):
                         vidhost = self.get_vidhost(strurl)
+                        if not vidtxt == '':
+                            vidhost += ' | %s' % vidtxt
                         videos.append((vidhost,strurl))
             except:
                 pass
@@ -188,6 +183,8 @@ class Scraper(object):
                 if not any([x in strurl for x in non_str_list]):
                     if urlresolver.HostedMediaFile(strurl):
                         vidhost = self.get_vidhost(strurl)
+                        if not vidtxt == '':
+                            vidhost += ' | %s' % vidtxt
                         videos.append((vidhost,strurl))
             except:
                 pass
@@ -198,6 +195,8 @@ class Scraper(object):
                 if not any([x in strurl for x in non_str_list]):
                     if urlresolver.HostedMediaFile(strurl):
                         vidhost = self.get_vidhost(strurl)
+                        if not vidtxt == '':
+                            vidhost += ' | %s' % vidtxt
                         videos.append((vidhost,strurl))
             except:
                 pass
@@ -208,6 +207,8 @@ class Scraper(object):
                     if not any([x in strurl for x in non_str_list]):
                         if urlresolver.HostedMediaFile(strurl):
                             vidhost = self.get_vidhost(strurl)
+                            if not vidtxt == '':
+                                vidhost += ' | %s' % vidtxt
                             videos.append((vidhost,strurl))
             except:
                 pass
@@ -215,6 +216,8 @@ class Scraper(object):
         elif not any([x in url for x in non_str_list]):
             if urlresolver.HostedMediaFile(url):
                 vidhost = self.get_vidhost(url)
+                if not vidtxt == '':
+                    vidhost += ' | %s' % vidtxt
                 videos.append((vidhost,url))
             else:
                 xbmc.log('-------> URLResolver cannot resolve : %s' % url)
@@ -246,7 +249,6 @@ class Scraper(object):
         title = title.strip()
         return title
 
-
 sites = {'01tgun': 'Tamil Gun : [COLOR yellow]Tamil[/COLOR]',
          '02rajt': 'Raj Tamil : [COLOR yellow]Tamil[/COLOR]',
          '03tyogi': 'Tamil Yogi : [COLOR yellow]Tamil[/COLOR]',
@@ -259,16 +261,17 @@ sites = {'01tgun': 'Tamil Gun : [COLOR yellow]Tamil[/COLOR]',
          '10hlinks': 'Hindi Links 4U : [COLOR yellow]Hindi[/COLOR]',
          '11desit': 'Desi Tashan : [COLOR yellow]Hindi Catchup TV[/COLOR]',
          '12yodesi': 'Yo Desi : [COLOR yellow]Hindi Catchup TV[/COLOR]',
-         '13tvcd': 'Thiruttu VCD : [COLOR magenta]Various[/COLOR]',
-         '14mrulz': 'Movie Rulz : [COLOR magenta]Various[/COLOR]',
-         '15i4movie': 'India 4 Movie : [COLOR magenta]Various[/COLOR]',
-         '16moviefk': 'Movie FK : [COLOR magenta]Various[/COLOR]',
-         '17mfish': 'Movie Fisher : [COLOR magenta]Various[/COLOR]',
-         '18mersal': 'Mersalaayitten : [COLOR magenta]Various[/COLOR]',
-         '19ttwist': 'Tamil Twists : [COLOR magenta]Various[/COLOR]',
-         '20flinks': 'Film Links 4 U : [COLOR magenta]Various[/COLOR]',
-         '21redm': 'Red Movies : [COLOR magenta]Various[/COLOR]',
-         '22tvcds': 'Thiruttu VCDs : [COLOR magenta]Various[/COLOR]'}
+         '13apnav': 'Apna View : [COLOR magenta]Various[/COLOR]',
+         '14tvcd': 'Thiruttu VCD : [COLOR magenta]Various[/COLOR]',
+         '15mrulz': 'Movie Rulz : [COLOR magenta]Various[/COLOR]',
+         '16i4movie': 'India 4 Movie : [COLOR magenta]Various[/COLOR]',
+         '17moviefk': 'Movie FK : [COLOR magenta]Various[/COLOR]',
+         '18mfish': 'Movie Fisher : [COLOR magenta]Various[/COLOR]',
+         '19mersal': 'Mersalaayitten : [COLOR magenta]Various[/COLOR]',
+         '20ttwist': 'Tamil Twists : [COLOR magenta]Various[/COLOR]',
+         '21flinks': 'Film Links 4 U : [COLOR magenta]Various[/COLOR]',
+         '22redm': 'Red Movies : [COLOR magenta]Various[/COLOR]',
+         '23tvcds': 'Thiruttu VCDs : [COLOR magenta]Various[/COLOR]'}
 
 import resources.scrapers.tgun
 import resources.scrapers.rajt
@@ -292,6 +295,7 @@ import resources.scrapers.tvcds
 import resources.scrapers.flinks
 import resources.scrapers.hlinks
 import resources.scrapers.desit
+import resources.scrapers.apnav
 
 def list_sites():
     """
@@ -317,6 +321,7 @@ def list_menu(site):
     Create the Site menu in the Kodi interface.
     """
     scraper = eval('%s.%s.%s()'%(_spath,site,site))
+    #scraper = eval('%s.%s()'%(site,site))
     menu,mode,icon = cache.cacheFunction(scraper.get_menu)
     listing = []
     for title,iurl in sorted(menu.iteritems()):
@@ -380,7 +385,10 @@ def list_items(site,iurl):
     Create the list of movies/episodes in the Kodi interface.
     """
     scraper = eval('%s.%s.%s()'%(_spath,site,site))
-    movies,mode = cache.cacheFunction(scraper.get_items,iurl)
+    if iurl[-3:] == '?s=':
+        movies,mode = scraper.get_items(iurl)
+    else:
+        movies,mode = cache.cacheFunction(scraper.get_items,iurl)
     listing = []
     for movie in movies:
         title = movie[0]

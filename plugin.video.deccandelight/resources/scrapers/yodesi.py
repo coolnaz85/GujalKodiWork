@@ -83,7 +83,7 @@ class yodesi(Scraper):
 
     def get_videos(self,url):
         videos = []
-            
+        h = HTMLParser.HTMLParser()    
         html = requests.get(url, headers=self.hdr).text
         mlink = SoupStrainer('div', {'class':'thecontent'})
         videoclass = BeautifulSoup(html, parseOnlyThese=mlink)
@@ -100,9 +100,11 @@ class yodesi(Scraper):
             links = videoclass.findAll('a')
             for link in links:
                 vidurl = link.get('href')
+                vidtxt = h.unescape(link.text)
+                vidtxt = re.findall('(\d.*)',vidtxt)[0]
                 if 'yodesi.net/player.php' in vidurl:
                     vidurl = vidurl.replace('yodesi.net','yo-desi.com')
-                self.resolve_media(vidurl,videos)
+                self.resolve_media(vidurl,videos,vidtxt)
         except:
             pass
             

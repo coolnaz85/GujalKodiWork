@@ -1,5 +1,5 @@
 '''
-moviefisher deccandelight plugin
+apnaview deccandelight plugin
 Copyright (C) 2016 Gujal
 
 This program is free software: you can redistribute it and/or modify
@@ -20,70 +20,72 @@ from BeautifulSoup import BeautifulSoup, SoupStrainer
 import urllib, re, requests
 import HTMLParser
 
-class mfish(Scraper):
+class apnav(Scraper):
     def __init__(self):
         Scraper.__init__(self)
-        self.bu = 'http://moviefisher.org/category/'
-        self.icon = self.ipath + 'mfish.png'
+        self.bu = 'http://apnaview.com/browse/'
+        self.icon = self.ipath + 'apnav.png'
         self.list = {'01Tamil Movies': self.bu + 'tamil',
-                     '02Telugu Movies': self.bu + 'telugu-movie',
-                     '04Hindi Movies': self.bu + 'all-video',
-                     '05English Movies': self.bu + 'new-english',
-                     '06Hindi Dubbed Movies': self.bu + 'dubbed',
-                     '07Hindi Dubbed South Movies': self.bu + 'south-in-hindi',
-                     '08Punjabi Movies': self.bu + 'punjabi',
-                     '09[COLOR yellow]** Search **[/COLOR]': self.bu[:-9] + '?s='}
-             
+                     '02Telugu Movies': self.bu + 'telugu',
+                     '03Malayalam Movies': self.bu + 'Malayalam',
+                     '04Hindi Movies': self.bu + 'hindi',
+                     '05Marathi Movies': self.bu + 'marathi',
+                     '06Punjabi Movies': self.bu + 'punjabi',
+                     '07[COLOR yellow]** Search **[/COLOR]': self.bu[:-9] + '?q='}
+
     def get_menu(self):
         return (self.list,7,self.icon)
     
     def get_items(self,url):
         h = HTMLParser.HTMLParser()
         movies = []
-        if url[-3:] == '?s=':
-            search_text = self.get_SearchQuery('Movie Fisher')
+        if url[-3:] == '?q=':
+            search_text = self.get_SearchQuery('Apna View')
             search_text = urllib.quote_plus(search_text)
             url = url + search_text
 
         html = requests.get(url, headers=self.hdr).text
-        mlink = SoupStrainer('div', {'class':re.compile('^loop-content')})
+        mlink = SoupStrainer('div', {'class':'row movie-list'})
         mdiv = BeautifulSoup(html, parseOnlyThese=mlink)
-        plink = SoupStrainer('div', {'class':'wp-pagenavi'})
+        plink = SoupStrainer('ul', {'class':re.compile('^pagination')})
         Paginator = BeautifulSoup(html, parseOnlyThese=plink)
-        items = mdiv.findAll('div', {'id':re.compile('^post-')})
+        items = mdiv.findAll('div', {'class':'movie'})
         
         for item in items:
-            title = h.unescape(item.h2.text)
+            title = h.unescape(item.text)
             title = self.clean_title(title)
-            url = item.find('a')['href']
+            url = self.bu[:-8] + item.find('a')['href']
             try:
-                thumb = item.find('img')['src']
+                thumb = self.bu[:-8] + item.find('img')['src']
             except:
                 thumb = self.icon
             movies.append((title, thumb, url))
         
-        if 'next' in str(Paginator):
-            nextli = Paginator.find('a', {'class':'nextpostslink'})
-            purl = nextli.get('href')
-            pgtxt = Paginator.span.text
-            title = 'Next Page.. (Currently in %s)' % pgtxt
+        if 'Next' in str(Paginator):
+            nextli = Paginator.find('li', {'class':'next page'})
+            purl = self.bu[:-8] + nextli.find('a')['href']
+            pgtxt = Paginator.find('li', {'class':'active'}).text
+            title = 'Next Page.. (Currently in Page %s)' % pgtxt
             movies.append((title, self.nicon, purl))
         
         return (movies,8)
 
     def get_videos(self,url):
         videos = []
-            
+        h = HTMLParser.HTMLParser()    
         html = requests.get(url, headers=self.hdr).text
-        mlink = SoupStrainer('div', {'class':re.compile('^entry-content')})
+        mlink = SoupStrainer('table', {'class':re.compile('^table')})
         videoclass = BeautifulSoup(html, parseOnlyThese=mlink)
-        links = videoclass.findAll('iframe')
 
-        for link in links:
-            try:
-                vidurl = link.get('src')
-                self.resolve_media(vidurl,videos)
-            except:
-                pass
+        try:
+            links = videoclass.findAll('a')
+            for link in links:
+                vidurl = link.get('href')
+                vidtxt = h.unescape(link.text)
+                if 'http' in vidurl:
+                    self.resolve_media(vidurl,videos,vidtxt)
+
+        except:
+            pass
       
         return videos
