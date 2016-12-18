@@ -20,7 +20,7 @@ provider-name="Gujal">
 </addon>
 
 <addon id="plugin.video.deccandelight"
-version="1.0.3"
+version="1.0.4"
 name="Deccan Delight"
 provider-name="Gujal">
 <requires>
@@ -91,6 +91,26 @@ provider-name="Gujal">
     <website>http://www.imdb.com/</website>
     <source>https://github.com/queeup/plugin.video.imdb.trailers</source>
   </extension>
+</addon>
+
+<addon id="plugin.video.tamilgun"
+version="0.1.0"
+name="Tamil Gun"
+provider-name="Gujal">
+<requires>
+  <import addon="xbmc.python" version="2.24.0"/>
+  <import addon="script.module.requests" version="2.4.3"/>
+  <import addon="script.module.beautifulsoup" version="3.2.1"/>
+  <import addon="script.module.urlresolver" version="3.0.0"/>
+</requires>
+<extension point="xbmc.python.pluginsource" library="main.py">
+  <provides>video</provides>
+</extension>
+<extension point="xbmc.addon.metadata">
+  <summary>TamilGun</summary>
+  <description>TamilGun is a popular site to watch Tamil Movies on demand</description>
+  <disclaimer>This addon provides access to TamilGun website and is not liable for any content hosted on that site</disclaimer>
+</extension>
 </addon>
 
 <addon id="repository.gujal" name="Gujal's Addon Repository" version="1.2" provider-name="Gujal">

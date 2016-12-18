@@ -23,10 +23,9 @@ import HTMLParser
 class yodesi(Scraper):
     def __init__(self):
         Scraper.__init__(self)
-        self.bu = 'http://www.yodesi.net/category/'
+        self.bu = 'http://www.yodesi.net/'
         self.icon = self.ipath + 'yodesi.png'
-        self.list = {'01Recently Added': self.bu[:-9],
-                     '02Star Plus': self.bu + 'star-plus/',
+        self.list = {'02Star Plus': self.bu + 'star-plus/',
                      '03Colors': self.bu + 'colors/',
                      '04Zee TV': self.bu + 'zee-tv/',
                      '05Sony TV': self.bu + 'sony-tv/',
@@ -35,16 +34,40 @@ class yodesi(Scraper):
                      '08Star Jalsha': self.bu + 'star-jalsha/',
                      '09& TV': self.bu + 'tv/',
                      '10Star Pravah': self.bu + 'star-pravah/',
+                     '11Star Vijay': self.bu + 'star-vijay/',
                      '11MTV': self.bu + 'mtv-india/',
                      '12Bindass': self.bu + 'bindass-tv/',
-                     '13Channel V': self.bu + 'channel-v/',
-                     '14E 24': self.bu + 'e24/',
-                     '15Promos': self.bu + 'promos-section/',
-                     '16[COLOR yellow]** Search **[/COLOR]': self.bu[:-9] + '?s='}
+                     '13Channel V': self.bu + 'category/channel-v/MMMM7',
+                     '14E 24': self.bu + 'category/e24/MMMM7',
+                     '15Promos': self.bu + 'category/promos-section/MMMM7',
+                     '16[COLOR yellow]** Search **[/COLOR]': self.bu + '?s=MMMM7'}
                      
     def get_menu(self):
-        return (self.list,7,self.icon)
-    
+        return (self.list,5,self.icon)
+
+    def get_second(self,iurl):
+        """
+        Get the list of shows.
+        :return: list
+        """
+        shows = []
+        h = HTMLParser.HTMLParser()
+        html = requests.get(iurl, headers=self.hdr).text
+        mlink = SoupStrainer('div', {'class':'tab_container'})
+        mdiv = BeautifulSoup(html, parseOnlyThese=mlink)
+        items = mdiv.findAll('div', {'class':re.compile('^one_')})
+        for item in items:
+            title = h.unescape(item.text)
+            url = item.find('a')['href']
+            try:
+                icon = item.find('img')['src']
+            except:
+                icon = self.icon
+            
+            shows.append((title,icon,url))
+        
+        return (shows,7)
+        
     def get_items(self,url):
         h = HTMLParser.HTMLParser()
         movies = []
@@ -52,7 +75,6 @@ class yodesi(Scraper):
             search_text = self.get_SearchQuery('Yo Desi!')
             search_text = urllib.quote_plus(search_text)
             url = url + search_text
-
         html = requests.get(url, headers=self.hdr).text
         mlink = SoupStrainer('div', {'id':'page'})
         mdiv = BeautifulSoup(html, parseOnlyThese=mlink)

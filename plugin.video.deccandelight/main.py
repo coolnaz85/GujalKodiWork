@@ -325,7 +325,17 @@ def list_menu(site):
     menu,mode,icon = cache.cacheFunction(scraper.get_menu)
     listing = []
     for title,iurl in sorted(menu.iteritems()):
-        if 'Adult' not in title:
+        if 'MMMM' in iurl:
+            niurl = iurl.split('MMMM')[0]
+            nmode = iurl.split('MMMM')[1]
+            list_item = xbmcgui.ListItem(label=title[2:])
+            list_item.setArt({'thumb': icon,
+                              'icon': icon,
+                              'fanart': _fanart})
+            url = '{0}?action={1}&site={2}&iurl={3}'.format(_url, nmode, site, urllib.quote(niurl))
+            is_folder = True
+            listing.append((url, list_item, is_folder))
+        elif 'Adult' not in title:
             list_item = xbmcgui.ListItem(label=title[2:])
             list_item.setArt({'thumb': icon,
                               'icon': icon,
