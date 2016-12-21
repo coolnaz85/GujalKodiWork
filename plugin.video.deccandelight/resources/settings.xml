@@ -19,6 +19,7 @@
         <setting id="yodesi" type="bool" label="Yo Desi" default="true"/>
     </category>
     <category label="Multi Language Scrapers">
+		<setting id="aindia" type="bool" label="Abroad India" default="true"/>
 		<setting id="apnav" type="bool" label="Apna View" default="true"/>
         <setting id="tvcd" type="bool" label="Thiruttu VCD" default="true"/>
         <setting id="ttwist" type="bool" label="Tamil Twists" default="true"/>

@@ -261,17 +261,18 @@ sites = {'01tgun': 'Tamil Gun : [COLOR yellow]Tamil[/COLOR]',
          '10hlinks': 'Hindi Links 4U : [COLOR yellow]Hindi[/COLOR]',
          '11desit': 'Desi Tashan : [COLOR yellow]Hindi Catchup TV[/COLOR]',
          '12yodesi': 'Yo Desi : [COLOR yellow]Hindi Catchup TV[/COLOR]',
-         '13apnav': 'Apna View : [COLOR magenta]Various[/COLOR]',
-         '14tvcd': 'Thiruttu VCD : [COLOR magenta]Various[/COLOR]',
-         '15mrulz': 'Movie Rulz : [COLOR magenta]Various[/COLOR]',
-         '16i4movie': 'India 4 Movie : [COLOR magenta]Various[/COLOR]',
-         '17moviefk': 'Movie FK : [COLOR magenta]Various[/COLOR]',
-         '18mfish': 'Movie Fisher : [COLOR magenta]Various[/COLOR]',
-         '19mersal': 'Mersalaayitten : [COLOR magenta]Various[/COLOR]',
-         '20ttwist': 'Tamil Twists : [COLOR magenta]Various[/COLOR]',
-         '21flinks': 'Film Links 4 U : [COLOR magenta]Various[/COLOR]',
-         '22redm': 'Red Movies : [COLOR magenta]Various[/COLOR]',
-         '23tvcds': 'Thiruttu VCDs : [COLOR magenta]Various[/COLOR]'}
+         '13aindia': 'Abroad India : [COLOR magenta]Various Live TV[/COLOR]',
+         '14apnav': 'Apna View : [COLOR magenta]Various[/COLOR]',
+         '15tvcd': 'Thiruttu VCD : [COLOR magenta]Various[/COLOR]',
+         '16mrulz': 'Movie Rulz : [COLOR magenta]Various[/COLOR]',
+         '17i4movie': 'India 4 Movie : [COLOR magenta]Various[/COLOR]',
+         '18moviefk': 'Movie FK : [COLOR magenta]Various[/COLOR]',
+         '19mfish': 'Movie Fisher : [COLOR magenta]Various[/COLOR]',
+         '20mersal': 'Mersalaayitten : [COLOR magenta]Various[/COLOR]',
+         '21ttwist': 'Tamil Twists : [COLOR magenta]Various[/COLOR]',
+         '22flinks': 'Film Links 4 U : [COLOR magenta]Various[/COLOR]',
+         '23redm': 'Red Movies : [COLOR magenta]Various[/COLOR]',
+         '24tvcds': 'Thiruttu VCDs : [COLOR magenta]Various[/COLOR]'}
 
 import resources.scrapers.tgun
 import resources.scrapers.rajt
@@ -296,6 +297,7 @@ import resources.scrapers.flinks
 import resources.scrapers.hlinks
 import resources.scrapers.desit
 import resources.scrapers.apnav
+import resources.scrapers.aindia
 
 def list_sites():
     """
@@ -479,8 +481,8 @@ def play_video(iurl):
     :param path: str
     """
     streamer_list = ['tamilgun', 'mersalaayitten', 'mhdtvlive.',
-                     'tamiltvsite.', 'cloudspro.', '.mp4',
-                     'radio', '.mp3']
+                     'tamiltvsite.', 'cloudspro.', 'abroadindia.',
+                     '.mp4', '.mp3', 'radio']
     # Create a playable item with a path to play.
     play_item = xbmcgui.ListItem(path=iurl)
     vid_url = play_item.getfilename()
@@ -501,7 +503,11 @@ def play_video(iurl):
         elif 'mhdtvlive.' in vid_url:
             scraper = resources.scrapers.lmtv.lmtv()
             stream_url = scraper.get_video(vid_url)
-            play_item.setPath(stream_url)            
+            play_item.setPath(stream_url)
+        elif 'abroadindia.' in vid_url:
+            scraper = resources.scrapers.aindia.aindia()
+            stream_url = scraper.get_video(vid_url)
+            play_item.setPath(stream_url) 
     else:
         stream_url = resolve_url(vid_url)
         if stream_url:
