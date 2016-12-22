@@ -71,28 +71,65 @@ class aindia(Scraper):
         headers['Referer'] = self.bu
         url = requests.post(purl, data=values, headers=headers).text
         
-        try:
-            html = requests.get(url, headers=headers).text
-            sid = re.findall('sid="(.*?)"',html)[0]
-            fspid = re.findall('sid="(.*?)"',html)[0]
-            url = self.bu + 'm_loadplayer.php?channel=&tid=&cid=&sid=%s&fspid=%s'%(sid,fspid)
-            html = requests.get(url, headers=headers).text
-            sid = re.findall('sid="(.*?)"',html)[0]
-            url = self.bu + 'm_loadframe1.php?channel=&tid=&cid=&sid=%s&fspid='%sid
-            html = requests.get(url, headers=headers).text
-            pid = re.findall('pid="(.*?)"',html)[0]
-            headers1 = headers
-            headers1['X-Requested-With'] = 'XMLHttpRequest'
-            url = self.bu + 'm_loadfram.php?tid=&cid=&pid=%s&fspid=&sid=%s'%(pid,sid)
-            html = requests.get(url, headers=headers1).text
-            url = re.findall('<iframe.*?src="(.*?)"',html)[0]
+        html = requests.get(url, headers=headers).text
+        sid = re.findall('sid="(.*?)"',html)[0]
+        fspid = re.findall('sid="(.*?)"',html)[0]
+        url = self.bu + 'm_loadplayer.php?channel=&tid=&cid=&sid=%s&fspid=%s'%(sid,fspid)
+        html = requests.get(url, headers=headers).text
+        sid = re.findall('sid="(.*?)"',html)[0]
+        url = self.bu + 'm_loadframe1.php?channel=&tid=&cid=&sid=%s&fspid='%sid
+        html = requests.get(url, headers=headers).text
+        pid = re.findall('pid="(.*?)"',html)[0]
+        headers1 = headers
+        headers1['X-Requested-With'] = 'XMLHttpRequest'
+        url = self.bu + 'm_loadfram.php?tid=&cid=&pid=%s&fspid=&sid=%s'%(pid,sid)
+        html = requests.get(url, headers=headers1).text
+        url = re.findall('<iframe.*?src="(.*?)"',html)[0]
+        if 'player_amain' in url:
             html = requests.get(url, headers=headers).text
             fpid = re.findall('fpid="(.*?)"',html)[0]
             url = self.bu + 'm_player_echo_hls.php'
             values = {'fpid': fpid}
             stream_url = requests.post(url, data=values, headers=headers).text
+        
+        elif 'player_yup' in url:
+            html = requests.get(url, headers=headers).text
+            url = re.findall('src=([^\s]*)',html)[0]
+            html = requests.get(url, headers=headers).text
+            stream_url = re.findall("file:\s?'(.*?m3u8.*?)'",html)[0]
 
-        except:
+        elif 'player_iframe' in url:
+            html = requests.get(url, headers=headers).text
+            try:
+                url = re.findall('iframe.*?src=([^\s]*)',html)[0]
+            except:
+                url = re.findall('(http.*?)</div',html)[0]
+            url = url.replace('"','')
+            if 'youtube' in url:
+                stream_url = url
+            elif 'abroadindia' in url:
+                html = requests.get(url, headers=headers).text
+                if 'video=' in html:
+                    stream_url = re.findall('video="(.*?)"',html)[0]
+                elif 'iframe' in html:
+                    stream_url = re.findall('iframe.*?src="(.*?)"',html)[0]
+            elif 'embed.' in url:
+                stream_url = url.split('embed')[0] + 'index.m3u8'
+            elif 'holygod' in url:
+                html = requests.get(url, headers=headers).text
+                url = re.findall("script src='(.*?)'",html)[0]
+                html = requests.get(url, headers=headers).text
+                stream_url = re.findall('ipadUrl:"(.*?)"',html)[0]
+            elif 'uthamiyae.' in url or 'filmon.' in url or 'livestream.' in url:
+                stream_url = None
+            else:
+                html = requests.get(url, headers=headers).text
+                try:
+                    stream_url = re.findall('"(.*?m3u8.*?)"',html)[0]
+                except:
+                    stream_url = re.findall("file:\s?'(.*?)'",html)[0]
+            
+        else:
             stream_url = None
             
         return stream_url

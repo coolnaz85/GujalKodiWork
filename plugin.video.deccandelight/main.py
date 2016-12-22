@@ -507,7 +507,10 @@ def play_video(iurl):
         elif 'abroadindia.' in vid_url:
             scraper = resources.scrapers.aindia.aindia()
             stream_url = scraper.get_video(vid_url)
-            play_item.setPath(stream_url) 
+            if stream_url:
+                if 'youtube.' in stream_url:
+                    stream_url = resolve_url(stream_url)
+                play_item.setPath(stream_url) 
     else:
         stream_url = resolve_url(vid_url)
         if stream_url:
