@@ -23,7 +23,7 @@ import HTMLParser
 class tgun(Scraper):
     def __init__(self):
         Scraper.__init__(self)
-        self.bu = 'http://tamilgun.us/categories/'
+        self.bu = 'http://tamilgun.com/categories/'
         self.icon = self.ipath + 'tgun.png'
         self.list = {'01New Movies': self.bu + 'new-movies/',
                      '02HD Movies': self.bu + 'hd-movies/',

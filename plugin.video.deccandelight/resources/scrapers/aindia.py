@@ -69,8 +69,7 @@ class aindia(Scraper):
         purl = self.bu + 'm_load.php'
         headers = self.hdr
         headers['Referer'] = self.bu
-        url = requests.post(purl, data=values, headers=headers).text
-        
+        url = requests.post(purl, data=values, headers=headers).text.strip()      
         html = requests.get(url, headers=headers).text
         sid = re.findall('sid="(.*?)"',html)[0]
         fspid = re.findall('sid="(.*?)"',html)[0]
@@ -85,6 +84,7 @@ class aindia(Scraper):
         url = self.bu + 'm_loadfram.php?tid=&cid=&pid=%s&fspid=&sid=%s'%(pid,sid)
         html = requests.get(url, headers=headers1).text
         url = re.findall('<iframe.*?src="(.*?)"',html)[0]
+        
         if 'player_amain' in url:
             html = requests.get(url, headers=headers).text
             fpid = re.findall('fpid="(.*?)"',html)[0]

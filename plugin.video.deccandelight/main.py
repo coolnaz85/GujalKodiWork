@@ -427,6 +427,7 @@ def list_items(site,iurl):
         if mode == 9 and 'Next Page' not in title:
             is_folder = False
             list_item.setProperty('IsPlayable', 'true')
+            list_item.addStreamInfo('video', { 'codec': 'h264'})
         else:
             is_folder = True
         listing.append((url, list_item, is_folder))
@@ -448,6 +449,7 @@ def list_videos(site,title,iurl,thumb):
                           'icon': thumb,
                           'fanart': thumb})
         list_item.setInfo('video', {'title': title})
+        list_item.addStreamInfo('video', { 'codec': 'h264'})
         list_item.setProperty('IsPlayable', 'true')
         url = '{0}?action=9&iurl={1}'.format(_url, video[1])
         is_folder = False
