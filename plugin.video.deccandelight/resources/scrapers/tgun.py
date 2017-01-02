@@ -23,13 +23,13 @@ import HTMLParser
 class tgun(Scraper):
     def __init__(self):
         Scraper.__init__(self)
-        self.bu = 'http://tamilgun.com/categories/'
+        self.bu = 'http://tamilgun.pro/categories/'
         self.icon = self.ipath + 'tgun.png'
         self.list = {'01New Movies': self.bu + 'new-movies/',
                      '02HD Movies': self.bu + 'hd-movies/',
                      '03Dubbed Movies': self.bu + 'dubbed-movies/',
                      '04Trailers': self.bu + 'trailers/',
-                     '05Comedy': self.bu + 'hd-comedys/',
+                     '05Special Shows': self.bu + 'special-tv-shows/',
                      '06[COLOR yellow]** Search **[/COLOR]': self.bu[:-11] + '?s='}
     
     def get_menu(self):
@@ -44,24 +44,29 @@ class tgun(Scraper):
             url = url + search_text
 
         html = requests.get(url, headers=self.hdr).text
-        mlink = SoupStrainer("div", {"class":"col-sm-4 col-xs-6 item"})
-        items = BeautifulSoup(html, parseOnlyThese=mlink)
-        plink = SoupStrainer("ul", {"class":"pagination"})
+        mlink = SoupStrainer('article', {'class':re.compile('video')})
+        mdiv = BeautifulSoup(html, parseOnlyThese=mlink)
+
+        plink = SoupStrainer('ul', {'class':'page-numbers'})
         Paginator = BeautifulSoup(html, parseOnlyThese=plink)
 
-        for item in items:
-            title = h.unescape(item.h3.text)
-            title = self.clean_title(title)
-            url = item.find('a')['href']
-            thumb = item.find('img')['src']
+        for item in mdiv:
+            title = h.unescape(item.h3.text).encode('utf8')
+            url = item.h3.find('a')['href']
+            try:
+                thumb = item.find('img')['src'].strip()
+            except:
+                thumb = self.icon
             movies.append((title, thumb, url))
         
         if 'next' in str(Paginator):
-            nextli = Paginator.find('li', {'class':'next'})
-            lastli = Paginator.find('li', {'class':'last'})
-            purl = nextli.a.get('href')
-            lastpg = lastli.a.get('href').split('page/')[1].split('/')[0]
-            currpg = Paginator.find('li', {'class':'active'}).text
+            nextli = Paginator.find('a', {'class':re.compile('next')})
+            purl = nextli.get('href')
+            if 'http' not in purl:
+                purl = self.bu[:-12] + purl
+            currpg = Paginator.find('span', {'class':re.compile('current')}).text
+            pages = Paginator.findAll('a', {'class':re.compile('^page')})
+            lastpg = pages[len(pages)-1].text
             title = 'Next Page.. (Currently in Page %s of %s)' % (currpg,lastpg)
             movies.append((title, self.nicon, purl))
         
@@ -130,9 +135,9 @@ class tgun(Scraper):
             sources = json.loads(re.findall('sources:\s?(.*)',html)[0])
             url = sources[0]['file'].replace('&amp;','&')
             if ('tamilgun' in url) or ('m3u8' in url):
-                url += '|Referer=http://tamilgun.us'
+                url += '|Referer=http://tamilgun.pro'
                 url = urllib.quote_plus(url)
-                videos.append(('tamilgun.us',url))
+                videos.append(('tamilgun.pro',url))
         except:
             pass
 

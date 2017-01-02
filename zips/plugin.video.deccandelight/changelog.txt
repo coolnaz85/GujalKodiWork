@@ -1,3 +1,6 @@
+[B]Version 1.0.8 - 2 Jan 2017[/B]
+- Tamilgun domain change
+
 [B]Version 1.0.7 - 30 Dec 2016[/B]
 - Abroad India Live TV code refine
 - Tamilgun domain change
