@@ -86,7 +86,6 @@ class Scraper(object):
         vidhost = '%s.%s'%(parts[len(parts)-2],parts[len(parts)-1])
         return vidhost
 
-        
     def resolve_media(self,url,videos,vidtxt=''):
         non_str_list = ['olangal.', '#', 'magnet:', 'desihome.', 'thiruttuvcd',
                         'cineview', 'bollyheaven', 'videolinkz', 'moviefk.co',
@@ -258,21 +257,22 @@ sites = {'01tgun': 'Tamil Gun : [COLOR yellow]Tamil[/COLOR]',
          '07abcm': 'ABC Malayalam : [COLOR yellow]Malayalam[/COLOR]',
          '08olangal': 'Olangal : [COLOR yellow]Malayalam[/COLOR]',
          '09lmtv': 'Live Malayalam : [COLOR yellow]Malayalam Live TV[/COLOR]',
-         '10hlinks': 'Hindi Links 4U : [COLOR yellow]Hindi[/COLOR]',
-         '11desit': 'Desi Tashan : [COLOR yellow]Hindi Catchup TV[/COLOR]',
-         '12yodesi': 'Yo Desi : [COLOR yellow]Hindi Catchup TV[/COLOR]',
-         '13aindia': 'Abroad India : [COLOR magenta]Various Live TV[/COLOR]',
-         '14apnav': 'Apna View : [COLOR magenta]Various[/COLOR]',
-         '15tvcd': 'Thiruttu VCD : [COLOR magenta]Various[/COLOR]',
-         '16mrulz': 'Movie Rulz : [COLOR magenta]Various[/COLOR]',
-         '17i4movie': 'India 4 Movie : [COLOR magenta]Various[/COLOR]',
-         '18moviefk': 'Movie FK : [COLOR magenta]Various[/COLOR]',
-         '19mfish': 'Movie Fisher : [COLOR magenta]Various[/COLOR]',
-         '20mersal': 'Mersalaayitten : [COLOR magenta]Various[/COLOR]',
-         '21ttwist': 'Tamil Twists : [COLOR magenta]Various[/COLOR]',
-         '22flinks': 'Film Links 4 U : [COLOR magenta]Various[/COLOR]',
-         '23redm': 'Red Movies : [COLOR magenta]Various[/COLOR]',
-         '24tvcds': 'Thiruttu VCDs : [COLOR magenta]Various[/COLOR]'}
+         '10mserial': 'Malayalam Serials : [COLOR yellow]Malayalam Catchup TV[/COLOR]',
+         '11hlinks': 'Hindi Links 4U : [COLOR yellow]Hindi[/COLOR]',
+         '12desit': 'Desi Tashan : [COLOR yellow]Hindi Catchup TV[/COLOR]',
+         '13yodesi': 'Yo Desi : [COLOR yellow]Hindi Catchup TV[/COLOR]',
+         '14aindia': 'Abroad India : [COLOR magenta]Various Live TV[/COLOR]',
+         '15apnav': 'Apna View : [COLOR magenta]Various[/COLOR]',
+         '16tvcd': 'Thiruttu VCD : [COLOR magenta]Various[/COLOR]',
+         '17mrulz': 'Movie Rulz : [COLOR magenta]Various[/COLOR]',
+         '18i4movie': 'India 4 Movie : [COLOR magenta]Various[/COLOR]',
+         '19moviefk': 'Movie FK : [COLOR magenta]Various[/COLOR]',
+         '20mfish': 'Movie Fisher : [COLOR magenta]Various[/COLOR]',
+         '21mersal': 'Mersalaayitten : [COLOR magenta]Various[/COLOR]',
+         '22ttwist': 'Tamil Twists : [COLOR magenta]Various[/COLOR]',
+         '23flinks': 'Film Links 4 U : [COLOR magenta]Various[/COLOR]',
+         '24redm': 'Red Movies : [COLOR magenta]Various[/COLOR]',
+         '25tvcds': 'Thiruttu VCDs : [COLOR magenta]Various[/COLOR]'}
 
 import resources.scrapers.tgun
 import resources.scrapers.rajt
@@ -298,6 +298,7 @@ import resources.scrapers.hlinks
 import resources.scrapers.desit
 import resources.scrapers.apnav
 import resources.scrapers.aindia
+import resources.scrapers.mserial
 
 def list_sites():
     """
@@ -397,7 +398,7 @@ def list_items(site,iurl):
     Create the list of movies/episodes in the Kodi interface.
     """
     scraper = eval('%s.%s.%s()'%(_spath,site,site))
-    if iurl[-3:] == '?s=':
+    if iurl.endswith(('?s=','query=')):
         movies,mode = scraper.get_items(iurl)
     else:
         movies,mode = cache.cacheFunction(scraper.get_items,iurl)

@@ -12,6 +12,7 @@
         <setting id="abcm" type="bool" label="ABC Malayalam" default="true"/>
         <setting id="olangal" type="bool" label="Olangal" default="true"/>
         <setting id="lmtv" type="bool" label="Live Malayalam" default="true"/>
+		<setting id="mserial" type="bool" label="Malayalam Serials" default="true"/>
     </category> 
     <category label="Hindi Scrapers">
         <setting id="hlinks" type="bool" label="Hindi Links 4 U [COLOR magenta](Needs TLS1.2)[/COLOR]" default="false"/>
