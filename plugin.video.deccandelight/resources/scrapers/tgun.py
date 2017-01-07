@@ -17,8 +17,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 '''
 from main import Scraper
 from BeautifulSoup import BeautifulSoup, SoupStrainer
-import urllib, re, requests, json
-import HTMLParser
+import urllib, re, requests, json, HTMLParser
+import urlresolver.plugins.lib.jsunpack as jsunpack
 
 class tgun(Scraper):
     def __init__(self):
@@ -79,14 +79,14 @@ class tgun(Scraper):
             return videos
             
         html = requests.get(url, headers=self.hdr).text
-        mlink = SoupStrainer('div', {'class':'videoWrapper player'})
-        videoclass = BeautifulSoup(html, parseOnlyThese=mlink)
 
         try:
-            links = videoclass.findAll('iframe')
-            for link in links:
-                url = link.get('src')
-                self.resolve_media(url,videos)
+            linkcode = jsunpack.unpack(html).replace('\\','')
+            sources = json.loads(re.findall('sources:(.*?)\}\)',linkcode)[0])
+            for source in sources:    
+                url = source['file'] + '|Referer=http://tamilgun.pro'
+                url = urllib.quote_plus(url)
+                videos.append(('tamilgun.pro | %s'%source['label'],url))
         except:
             pass
 
@@ -107,37 +107,9 @@ class tgun(Scraper):
         try:
             links = videoclass.findAll('iframe')
             for link in links:
-                url = link.get('src')
-                self.resolve_media(url,videos)
-        except:
-            pass
-
-        mlink = SoupStrainer('div', {'class':'post-entry'})
-        videoclass = BeautifulSoup(html, parseOnlyThese=mlink)
-
-        try:
-            links = videoclass.findAll('iframe')
-            for link in links:
-                url = link.get('src')
-                self.resolve_media(url,videos)
-        except:
-            pass
-
-        try:
-            links = videoclass.findAll('a')
-            for link in links:
-                url = link.get('href')
-                self.resolve_media(url,videos)                          
-        except:
-            pass
-
-        try:
-            sources = json.loads(re.findall('sources:\s?(.*)',html)[0])
-            url = sources[0]['file'].replace('&amp;','&')
-            if ('tamilgun' in url) or ('m3u8' in url):
-                url += '|Referer=http://tamilgun.pro'
-                url = urllib.quote_plus(url)
-                videos.append(('tamilgun.pro',url))
+                if 'http' in str(link):
+                    url = link.get('src')
+                    self.resolve_media(url,videos)
         except:
             pass
 
