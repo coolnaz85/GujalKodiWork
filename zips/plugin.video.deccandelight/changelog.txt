@@ -1,3 +1,9 @@
+[B]Version 1.1.1 - 22 Feb 2017[/B]
+- Hindi Geetmala new scraper
+- Abroad India improvements
+- MovieRulz url changes
+- Tamilgun url changes
+
 [B]Version 1.1.0 - 7 Jan 2017[/B]
 - Tamilgun scraper improvements
 

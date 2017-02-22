@@ -59,7 +59,8 @@ class aindia(Scraper):
       
     def get_video(self,iurl):
 
-        echo_url = requests.get(iurl, headers=self.hdr).text.strip()
+        r = requests.get(iurl, headers=self.hdr)
+        echo_url = 'http://abroadindia.com/k_echo_stream.php'
         stream_url = requests.get(echo_url, headers=self.hdr).text.strip()
         if '//' not in stream_url:
             stream_url = None

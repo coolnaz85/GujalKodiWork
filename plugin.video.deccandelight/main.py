@@ -261,18 +261,19 @@ sites = {'01tgun': 'Tamil Gun : [COLOR yellow]Tamil[/COLOR]',
          '11hlinks': 'Hindi Links 4U : [COLOR yellow]Hindi[/COLOR]',
          '12desit': 'Desi Tashan : [COLOR yellow]Hindi Catchup TV[/COLOR]',
          '13yodesi': 'Yo Desi : [COLOR yellow]Hindi Catchup TV[/COLOR]',
-         '14aindia': 'Abroad India : [COLOR magenta]Various Live TV[/COLOR]',
-         '15apnav': 'Apna View : [COLOR magenta]Various[/COLOR]',
-         '16tvcd': 'Thiruttu VCD : [COLOR magenta]Various[/COLOR]',
-         '17mrulz': 'Movie Rulz : [COLOR magenta]Various[/COLOR]',
-         '18i4movie': 'India 4 Movie : [COLOR magenta]Various[/COLOR]',
-         '19moviefk': 'Movie FK : [COLOR magenta]Various[/COLOR]',
-         '20mfish': 'Movie Fisher : [COLOR magenta]Various[/COLOR]',
-         '21mersal': 'Mersalaayitten : [COLOR magenta]Various[/COLOR]',
-         '22ttwist': 'Tamil Twists : [COLOR magenta]Various[/COLOR]',
-         '23flinks': 'Film Links 4 U : [COLOR magenta]Various[/COLOR]',
-         '24redm': 'Red Movies : [COLOR magenta]Various[/COLOR]',
-         '25tvcds': 'Thiruttu VCDs : [COLOR magenta]Various[/COLOR]'}
+         '14gmala': 'Hindi Geetmala : [COLOR yellow]Hindi Songs[/COLOR]',
+         '15aindia': 'Abroad India : [COLOR magenta]Various Live TV[/COLOR]',
+         '16apnav': 'Apna View : [COLOR magenta]Various[/COLOR]',
+         '17tvcd': 'Thiruttu VCD : [COLOR magenta]Various[/COLOR]',
+         '18mrulz': 'Movie Rulz : [COLOR magenta]Various[/COLOR]',
+         '19i4movie': 'India 4 Movie : [COLOR magenta]Various[/COLOR]',
+         '20moviefk': 'Movie FK : [COLOR magenta]Various[/COLOR]',
+         '21mfish': 'Movie Fisher : [COLOR magenta]Various[/COLOR]',
+         '22mersal': 'Mersalaayitten : [COLOR magenta]Various[/COLOR]',
+         '23ttwist': 'Tamil Twists : [COLOR magenta]Various[/COLOR]',
+         '24flinks': 'Film Links 4 U : [COLOR magenta]Various[/COLOR]',
+         '25redm': 'Red Movies : [COLOR magenta]Various[/COLOR]',
+         '26tvcds': 'Thiruttu VCDs : [COLOR magenta]Various[/COLOR]'}
 
 import resources.scrapers.tgun
 import resources.scrapers.rajt
@@ -299,6 +300,7 @@ import resources.scrapers.desit
 import resources.scrapers.apnav
 import resources.scrapers.aindia
 import resources.scrapers.mserial
+import resources.scrapers.gmala
 
 def list_sites():
     """
@@ -362,6 +364,7 @@ def list_top(site,iurl):
     Create the Site menu in the Kodi interface.
     """
     scraper = eval('%s.%s.%s()'%(_spath,site,site))
+    #scraper = eval('%s.%s()'%(site,site))
     menu,mode = cache.cacheFunction(scraper.get_top,iurl)
     listing = []
     for title,icon,iurl in menu:
@@ -380,6 +383,7 @@ def list_second(site,iurl):
     Create the Site menu in the Kodi interface.
     """
     scraper = eval('%s.%s.%s()'%(_spath,site,site))
+    #scraper = eval('%s.%s()'%(site,site))
     menu,mode = cache.cacheFunction(scraper.get_second,iurl)
     listing = []
     for title,icon,iurl in menu:
@@ -387,6 +391,8 @@ def list_second(site,iurl):
             list_item.setArt({'thumb': icon,
                               'icon': icon,
                               'fanart': _fanart})
+            if 'Next Page' in title:
+                mode = 5
             url = '{0}?action={1}&site={2}&iurl={3}'.format(_url, mode, site, urllib.quote(iurl))
             is_folder = True
             listing.append((url, list_item, is_folder))            
@@ -398,6 +404,7 @@ def list_items(site,iurl):
     Create the list of movies/episodes in the Kodi interface.
     """
     scraper = eval('%s.%s.%s()'%(_spath,site,site))
+    #scraper = eval('%s.%s()'%(site,site))
     if iurl.endswith(('?s=','query=')):
         movies,mode = scraper.get_items(iurl)
     else:
@@ -442,6 +449,7 @@ def list_videos(site,title,iurl,thumb):
     :param category: str
     """
     scraper = eval('%s.%s.%s()'%(_spath,site,site))
+    #scraper = eval('%s.%s()'%(site,site))
     videos = cache.cacheFunction(scraper.get_videos,iurl)
     listing = []
     for video in videos:
@@ -485,7 +493,7 @@ def play_video(iurl):
     """
     streamer_list = ['tamilgun', 'mersalaayitten', 'mhdtvlive.',
                      'tamiltvsite.', 'cloudspro.', 'abroadindia.',
-                     '.mp4', '.mp3', 'radio']
+                     'hindigeetmala.','.mp4', '.mp3', 'radio']
     # Create a playable item with a path to play.
     play_item = xbmcgui.ListItem(path=iurl)
     vid_url = play_item.getfilename()
@@ -496,6 +504,13 @@ def play_video(iurl):
             play_item.setPath(stream_url)
             if srtfile:
                 play_item.setSubtitles(['special://temp/mersal.srt', srtfile])
+        elif 'hindigeetmala.' in vid_url:
+            scraper = resources.scrapers.gmala.gmala()
+            stream_url = scraper.get_video(vid_url)
+            if stream_url:
+                if 'youtube.' in stream_url:
+                    stream_url = resolve_url(stream_url)
+                play_item.setPath(stream_url)
         elif 'tamiltvsite.' in vid_url:
             scraper = resources.scrapers.tamiltv.tamiltv()
             stream_url = scraper.get_video(vid_url)
@@ -513,16 +528,22 @@ def play_video(iurl):
             if stream_url:
                 if 'youtube.' in stream_url:
                     stream_url = resolve_url(stream_url)
+                elif '.f4m' in stream_url:
+                    qurl = urllib.quote_plus(stream_url)
+                    stream_url = 'plugin://plugin.video.f4mTester/?streamtype=HDS&url=%s'%qurl
+                elif '.ts' in stream_url:
+                    qurl = urllib.quote_plus(stream_url)
+                    stream_url = 'plugin://plugin.video.f4mTester/?streamtype=TSDOWNLOADER&url=%s'%qurl
                 play_item.setPath(stream_url) 
     else:
         stream_url = resolve_url(vid_url)
         if stream_url:
             play_item.setPath(stream_url)    
     # Pass the item to the Kodi player.
-    if 'radionomy' in vid_url:
-        xbmc.Player().play(vid_url)
-    else:
-        xbmcplugin.setResolvedUrl(_handle, True, listitem=play_item)
+    # if 'radionomy' in vid_url:
+        # xbmc.Player().play(vid_url)
+    # else:
+    xbmcplugin.setResolvedUrl(_handle, True, listitem=play_item)
 
 def router(paramstring):
     """

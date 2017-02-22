@@ -23,15 +23,15 @@ class tamiltv(Scraper):
     def __init__(self):
         Scraper.__init__(self)
         self.bu = 'http://www.tamiltvsite.com/'
-        self.rbu = 'http://radio.tamiltvsite.com/'
+        #self.rbu = 'http://radio.tamiltvsite.com/'
         self.icon = self.ipath + 'tamiltv.png'
         self.list = {'01Entertainment Channels': self.bu + 'browse-tamil-tv-videos-1-title.html',
                      '02Music Channels': self.bu + 'browse-tamil-music-tv-videos-1-title.html',
                      '03News Channels': self.bu + 'browse-tamil-news-videos-1-title.html',
                      '04HD Channels': self.bu + 'browse-tamil-hd-videos-1-title.html',
                      '05Devotional Channels': self.bu + 'browse-tamil-devotional-tv-videos-1-title.html',
-                     '06Tamil Radio': self.rbu + '?c=all',
                      '07[COLOR yellow]** Search **[/COLOR]': self.bu + 'search.php?keywords='}
+                     #'06Tamil Radio': self.rbu + '?c=all',
   
     def get_menu(self):
         return (self.list,7,self.icon)

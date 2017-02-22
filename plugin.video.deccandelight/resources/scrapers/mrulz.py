@@ -23,18 +23,18 @@ import HTMLParser
 class mrulz(Scraper):
     def __init__(self):
         Scraper.__init__(self)
-        self.bu = 'http://www.movierulz.ws/category/'
+        self.bu = 'http://www.movierulz.mn/category/'
         self.icon = self.ipath + 'mrulz.png'
         self.list = {'01Tamil Movies': self.bu + 'tamil-movie/',
                      '02Telugu Movies': self.bu + 'telugu-movie/',
                      '03Malayalam Movies': self.bu + 'malayalam-movie/',
                      '04Kannada Movies': self.bu + 'kannada-movie/',
-                     '05Hindi 2016 Movies': self.bu + 'bollywood-movie-2016/',
-                     '06Hindi 2015 Movies': self.bu + 'bollywood-movie-2015/',
-                     '07Hindi 2014 Movies': self.bu + 'bollywood-movie-2014/',
-                     '08English 2016 Movies': self.bu + 'hollywood-movie-2016/',
-                     '09English 2015 Movies': self.bu + 'hollywood-movie-2015/',
-                     '10English 2014 Movies': self.bu + 'hollywood-movie-2014/',
+                     '05Hindi 2017 Movies': self.bu + 'bollywood-movie-2017/',
+                     '06Hindi 2016 Movies': self.bu + 'bollywood-movie-2016/',
+                     '07Hindi 2015 Movies': self.bu + 'bollywood-movie-2015/',
+                     '08English 2017 Movies': self.bu + 'hollywood-movie-2017/',
+                     '09English 2016 Movies': self.bu + 'hollywood-movie-2016/',
+                     '10English 2015 Movies': self.bu + 'hollywood-movie-2015/',
                      '11Tamil Dubbed Movies': self.bu + 'tamil-dubbed-movie-2/',
                      '12Telugu Dubbed Movies': self.bu + 'telugu-dubbed-movie-2/',
                      '13Hindi Dubbed Movies': self.bu + 'hindi-dubbed-movie/',

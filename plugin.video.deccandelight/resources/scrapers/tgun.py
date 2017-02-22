@@ -25,7 +25,7 @@ class tgun(Scraper):
         Scraper.__init__(self)
         self.bu = 'http://tamilgun.pro/categories/'
         self.icon = self.ipath + 'tgun.png'
-        self.list = {'01New Movies': self.bu + 'new-movies/',
+        self.list = {'01New Movies': self.bu + 'new-movies-2017/',
                      '02HD Movies': self.bu + 'hd-movies/',
                      '03Dubbed Movies': self.bu + 'dubbed-movies/',
                      '04Trailers': self.bu + 'trailers/',
