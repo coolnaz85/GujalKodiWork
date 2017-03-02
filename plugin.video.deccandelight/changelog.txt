@@ -1,3 +1,6 @@
+[B]Version 1.1.2 - 2 Mar 2017[/B]
+- Add APKLand VOD
+
 [B]Version 1.1.1 - 22 Feb 2017[/B]
 - Hindi Geetmala new scraper
 - Abroad India improvements

@@ -30,23 +30,59 @@ class tamiltv(Scraper):
                      '03News Channels': self.bu + 'browse-tamil-news-videos-1-title.html',
                      '04HD Channels': self.bu + 'browse-tamil-hd-videos-1-title.html',
                      '05Devotional Channels': self.bu + 'browse-tamil-devotional-tv-videos-1-title.html',
+                     '06 VOD TV Channel Shows': self.bu + 'vod/mindex.phpMMMM4',
                      '07[COLOR yellow]** Search **[/COLOR]': self.bu + 'search.php?keywords='}
                      #'06Tamil Radio': self.rbu + '?c=all',
   
     def get_menu(self):
         return (self.list,7,self.icon)
+
+    def get_top(self,iurl):
+        """
+        Get the list of Categories.
+        :return: list
+        """
+        categories = []
+        html = requests.get(iurl, headers=self.hdr).text
+        chobj = re.findall('var chObj = (.*)',html)[0]
+        items = json.loads(chobj)
+        for item in items:
+            title = item['name']
+            icon = item['img']
+            url = iurl + 'ZZZZ%sZZZZ%s'%(item['tag'],title.replace(' ','%20'))
+            categories.append((title,icon,url))      
+        
+        return (categories,5)
+        
+    def get_second(self,iurl):
+        """
+        Get the list of categories.
+        :return: list
+        """
+        categories = []
+        url = iurl.split('ZZZZ')[0]
+        ctag = iurl.split('ZZZZ')[1]
+        cname = iurl.split('ZZZZ')[2]
+        html = requests.get(url, headers=self.hdr).text
+        dateobj = re.findall('var dateObj = (.*)',html)[0]
+        items = json.loads(dateobj)
+        for item in items:
+            title = item
+            icon = self.icon
+            url = 'http://www.tamiltvsite.com/channels/get_vod.php?tag=%s&date=%sZZZZ%s'%(ctag,item,cname)
+            categories.append((title,icon,url))
     
-    def get_items(self,url):
+        return (categories,7)
+        
+    def get_items(self,iurl):
         movies = []
-        if url[-9:] == 'keywords=':
+        if iurl[-9:] == 'keywords=':
             search_text = self.get_SearchQuery('APKLand TV')
             search_text = urllib.quote_plus(search_text)
-            url = url + search_text
-
-        html = requests.get(url, headers=self.hdr).text
-        
-        if 'radio' in url:
-            items = json.loads(html)
+            iurl = iurl + search_text     
+       
+        if 'radio' in iurl:
+            items = requests.get(url, headers=self.hdr).json()
             for item in items:
                 title = item['name']
                 url = item['streams']['Default Quality']['mp3']
@@ -57,7 +93,22 @@ class tamiltv(Scraper):
                 except:
                     thumb = self.icon
                 movies.append((title, thumb, url))
+        elif 'ZZZZ' in iurl:
+            url = iurl.split('ZZZZ')[0]
+            channel = iurl.split('ZZZZ')[1]
+            mozhdr = self.hdr
+            mozhdr['X-Requested-With'] = 'XMLHttpRequest'
+            mozhdr['Referer'] = self.bu
+            items = requests.get(url, headers=mozhdr).json()['channels']
+            for item in items:
+                title = item['name']
+                icon = item['image']
+                cht = channel + ': %s'%title
+                url = 'http://tamilhdtv.net/tv/channels/view.php?ch=%s&isLocal=V&vodUrl=%s'%(cht.replace(' ','%20'),item['url'])
+                movies.append((title,icon,url))
+        
         else:
+            html = requests.get(iurl, headers=self.hdr).text
             mlink = SoupStrainer('ul', {'id':'pm-grid'})
             mdiv = BeautifulSoup(html, parseOnlyThese=mlink)
             plink = SoupStrainer('div', {'class':'pagination pagination-centered'})
@@ -84,50 +135,59 @@ class tamiltv(Scraper):
       
     def get_video(self,url):
 
-        html = requests.get(url, headers=self.hdr).text
-        mlink = SoupStrainer('div', {'id':'Playerholder'})
-        soup = BeautifulSoup(html, parseOnlyThese=mlink)
-        stream_url = None
-
-        tlink = soup.iframe.get('src')
-        link = requests.get(tlink, headers=self.hdr).text
-        strdata = re.findall('var act_data = ({.*?});', link)[0]
-        act_data = json.loads(strdata)
-        act_url = act_data["url"]
-        if '>>>>' in act_url:
-            act_url = act_url.split('>>>>')[0]
-        act_url = '%schannels/channel.php?%s'%(self.bu, act_url.split('?')[1])
-        link = requests.get(act_url, headers=self.hdr).text
-        strdata = re.findall('act_data = ({.*?});', link)[0]
-        act_data = json.loads(strdata)
-        tlink = act_data["url"]
-        
-        if 'embed.' in tlink:
-            stream_url = tlink.split('embed')[0] + 'index.m3u8'
-        
-        elif 'wmsAuthSign' in tlink:
-            new_token = re.findall('new_token = "(.*?)"', link)[0]
-            stream_url = tlink.split('?')[0] + '?wmsAuthSign=' + new_token
-                
-        elif ('dacast.' in tlink) or ('streamingasaservice.' in tlink):
-            surl = tlink.split('.com')[1]
-            headers = self.hdr
-            headers['Referer'] = 'http://iframe.dacast.com/'
-            link = requests.get('http://json.dacast.com' + surl, headers=headers).text
-            act_data = json.loads(link)
-            act_url = act_data["hls"]
-            link = requests.get('https://services.dacast.com/token/i%s?'%surl, headers=headers, verify=False).text
-            act_data = json.loads(link)
-            new_token = act_data["token"]
-            stream_url = act_url + new_token
-                        
-        elif any([x in tlink for x in ['youtube', '.m3u8', 'rtmp:']]):
-            stream_url = tlink
-
-        elif 'chennaistream.net' in tlink:
+        if 'tamilhdtv.' in url:
+            html = requests.get(url, headers=self.hdr).text
+            mlink = SoupStrainer('div', {'id':'videoContent'})
+            soup = BeautifulSoup(html, parseOnlyThese=mlink)
+            tlink = soup.iframe.get('src')
             link = requests.get(tlink, headers=self.hdr).text
-            tcurl = re.findall("netConnectionUrl: '(.*?)'", link)[0]
-            stream_url = '%s playpath=mp4:%slive live=1 timeout=15'%(tcurl, tcurl.split('/')[3])
+            stream_url = re.findall('act_url = "(.*?)"', link)[0]       
+        
+        else:
+            html = requests.get(url, headers=self.hdr).text
+            mlink = SoupStrainer('div', {'id':'Playerholder'})
+            soup = BeautifulSoup(html, parseOnlyThese=mlink)
+            stream_url = None
+
+            tlink = soup.iframe.get('src')
+            link = requests.get(tlink, headers=self.hdr).text
+            strdata = re.findall('var act_data = ({.*?});', link)[0]
+            act_data = json.loads(strdata)
+            act_url = act_data["url"]
+            if '>>>>' in act_url:
+                act_url = act_url.split('>>>>')[0]
+            act_url = '%schannels/channel.php?%s'%(self.bu, act_url.split('?')[1])
+            link = requests.get(act_url, headers=self.hdr).text
+            strdata = re.findall('act_data = ({.*?});', link)[0]
+            act_data = json.loads(strdata)
+            tlink = act_data["url"]
+            
+            if 'embed.' in tlink:
+                stream_url = tlink.split('embed')[0] + 'index.m3u8'
+            
+            elif 'wmsAuthSign' in tlink:
+                new_token = re.findall('new_token = "(.*?)"', link)[0]
+                stream_url = tlink.split('?')[0] + '?wmsAuthSign=' + new_token
+                    
+            elif ('dacast.' in tlink) or ('streamingasaservice.' in tlink):
+                surl = tlink.split('.com')[1]
+                headers = self.hdr
+                headers['Referer'] = 'http://iframe.dacast.com/'
+                link = requests.get('http://json.dacast.com' + surl, headers=headers).text
+                act_data = json.loads(link)
+                act_url = act_data["hls"]
+                link = requests.get('https://services.dacast.com/token/i%s?'%surl, headers=headers, verify=False).text
+                act_data = json.loads(link)
+                new_token = act_data["token"]
+                stream_url = act_url + new_token
+                            
+            elif any([x in tlink for x in ['youtube', '.m3u8', 'rtmp:']]):
+                stream_url = tlink
+
+            elif 'chennaistream.net' in tlink:
+                link = requests.get(tlink, headers=self.hdr).text
+                tcurl = re.findall("netConnectionUrl: '(.*?)'", link)[0]
+                stream_url = '%s playpath=mp4:%slive live=1 timeout=15'%(tcurl, tcurl.split('/')[3])
 
             
         return stream_url

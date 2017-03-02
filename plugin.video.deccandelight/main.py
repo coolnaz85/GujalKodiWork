@@ -252,7 +252,7 @@ sites = {'01tgun': 'Tamil Gun : [COLOR yellow]Tamil[/COLOR]',
          '02rajt': 'Raj Tamil : [COLOR yellow]Tamil[/COLOR]',
          '03tyogi': 'Tamil Yogi : [COLOR yellow]Tamil[/COLOR]',
          '04runt': 'Run Tamil : [COLOR yellow]Tamil[/COLOR]',
-         '05tamiltv': 'APKLand TV : [COLOR yellow]Tamil Live TV and Radio[/COLOR]',
+         '05tamiltv': 'APKLand TV : [COLOR yellow]Tamil Live TV and VOD[/COLOR]',
          '06ttvs': 'Tamil TV Shows : [COLOR yellow]Tamil Catchup TV[/COLOR]',
          '07abcm': 'ABC Malayalam : [COLOR yellow]Malayalam[/COLOR]',
          '08olangal': 'Olangal : [COLOR yellow]Malayalam[/COLOR]',
@@ -405,7 +405,8 @@ def list_items(site,iurl):
     """
     scraper = eval('%s.%s.%s()'%(_spath,site,site))
     #scraper = eval('%s.%s()'%(site,site))
-    if iurl.endswith(('?s=','query=')):
+    #if iurl.endswith(('?s=','query=','value=','words=')):
+    if iurl.endswith('='):
         movies,mode = scraper.get_items(iurl)
     else:
         movies,mode = cache.cacheFunction(scraper.get_items,iurl)
@@ -493,7 +494,7 @@ def play_video(iurl):
     """
     streamer_list = ['tamilgun', 'mersalaayitten', 'mhdtvlive.',
                      'tamiltvsite.', 'cloudspro.', 'abroadindia.',
-                     'hindigeetmala.','.mp4', '.mp3', 'radio']
+                     'hindigeetmala.','.mp4', '.mp3', 'tamilhdtv.']
     # Create a playable item with a path to play.
     play_item = xbmcgui.ListItem(path=iurl)
     vid_url = play_item.getfilename()
@@ -511,7 +512,7 @@ def play_video(iurl):
                 if 'youtube.' in stream_url:
                     stream_url = resolve_url(stream_url)
                 play_item.setPath(stream_url)
-        elif 'tamiltvsite.' in vid_url:
+        elif 'tamiltvsite.' in vid_url or 'tamilhdtv.' in vid_url:
             scraper = resources.scrapers.tamiltv.tamiltv()
             stream_url = scraper.get_video(vid_url)
             if stream_url:
