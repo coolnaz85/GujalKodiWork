@@ -225,6 +225,7 @@ class Scraper(object):
         
     def clean_title(self, title):
         cleanup = ['Watch Online Movie', 'Watch Onilne', 'Tamil Movie ', 'Tamil Dubbed', 'WAtch ', 'Online Free',
+                   'Full Length', 'Latest Telugu',
                    'Full Movie Online Free', 'Full Movie Online', 'Watch Online ', 'Free HD', 'Online Full Movie',
                    'Full Free', 'Malayalam Movie', ' Malayalam ', 'Full Movies', 'Full Movie', 'Free Online',
                    'Movie Online', 'Watch ', 'movie online', 'Wach ', 'Movie Songs Online', 'Full Hindi',
@@ -232,20 +233,21 @@ class Scraper(object):
                    'Hilarious Comedy Scenes', 'Super Comedy Scenes', 'Ultimate Comedy Scenes', 'Watch...',
                    'Super comedy Scenes', 'Comedy Scenes', 'hilarious comedy Scenes', '...', 'Telugu Movie',
                    'Sun TV Show', 'Vijay TV Show', 'Vijay Tv Show', 'Vijay TV Comedy Show', 'Hindi Movie',
-                   'Vijay Tv Comedy Show', 'Vijay TV', 'Vijay Tv', 'Sun Tv Show', 'Download', 'Starring',
-                   'Tamil Full Movie', 'Tamil Horror Movie', 'Tamil Dubbed Movie', '|', '-', ' Full ',
+                   'Vijay Tv Comedy Show', 'Vijay TV', 'Vijay Tv', 'Sun Tv Show', 'Download', 'Starring', u'\u2013',
+                   'Tamil Full Movie', 'Tamil Horror Movie', 'Tamil Dubbed Movie', '|', '-', ' Full ', u'\u2019',
                    '/', 'Pre HDRip', '(DVDScr Audio)', 'PDVDRip', 'DVDSCR', '(HQ Audio)', 'HQ', ' Telugu',
                    'DVDScr', 'DVDscr', 'PreDVDRip', 'DVDRip', 'DVDRIP', 'WEBRip', 'WebRip', 'Movie', ' Punjabi',
                    'TCRip', 'HDRip', 'HDTVRip', 'HD-TC', 'HDTV', 'TVRip', '720p', 'DVD', 'HD', ' Dubbed',
                    '720p', '(UNCUT)', 'UNCUT', '(Clear Audio)', 'DTHRip', '(Line Audio)', ' Kannada', ' Hollywood',
                    'TS', 'CAM', 'Online Full', '[+18]', 'Streaming Free', 'Permalink to ', 'And Download',
                    'Full English', ' English', 'Downlaod', 'Bluray', 'Online', ' Tamil', ' Bengali', ' Bhojpuri']
-        title = title.encode('utf8')
+        
         for word in cleanup:
             if word in title:
                 title = title.replace(word,'')
 
         title = title.strip()
+        title = title.encode('utf8')
         return title
 
 sites = {'01tgun': 'Tamil Gun : [COLOR yellow]Tamil[/COLOR]',
@@ -254,26 +256,27 @@ sites = {'01tgun': 'Tamil Gun : [COLOR yellow]Tamil[/COLOR]',
          '04runt': 'Run Tamil : [COLOR yellow]Tamil[/COLOR]',
          '05tamiltv': 'APKLand TV : [COLOR yellow]Tamil Live TV and VOD[/COLOR]',
          '06ttvs': 'Tamil TV Shows : [COLOR yellow]Tamil Catchup TV[/COLOR]',
-         '07abcm': 'ABC Malayalam : [COLOR yellow]Malayalam[/COLOR]',
-         '08olangal': 'Olangal : [COLOR yellow]Malayalam[/COLOR]',
-         '09lmtv': 'Live Malayalam : [COLOR yellow]Malayalam Live TV[/COLOR]',
-         '10mserial': 'Malayalam Serials : [COLOR yellow]Malayalam Catchup TV[/COLOR]',
-         '11hlinks': 'Hindi Links 4U : [COLOR yellow]Hindi[/COLOR]',
-         '12desit': 'Desi Tashan : [COLOR yellow]Hindi Catchup TV[/COLOR]',
-         '13yodesi': 'Yo Desi : [COLOR yellow]Hindi Catchup TV[/COLOR]',
-         '14gmala': 'Hindi Geetmala : [COLOR yellow]Hindi Songs[/COLOR]',
-         '15aindia': 'Abroad India : [COLOR magenta]Various Live TV[/COLOR]',
-         '16apnav': 'Apna View : [COLOR magenta]Various[/COLOR]',
-         '17tvcd': 'Thiruttu VCD : [COLOR magenta]Various[/COLOR]',
-         '18mrulz': 'Movie Rulz : [COLOR magenta]Various[/COLOR]',
-         '19i4movie': 'India 4 Movie : [COLOR magenta]Various[/COLOR]',
-         '20moviefk': 'Movie FK : [COLOR magenta]Various[/COLOR]',
-         '21mfish': 'Movie Fisher : [COLOR magenta]Various[/COLOR]',
-         '22mersal': 'Mersalaayitten : [COLOR magenta]Various[/COLOR]',
-         '23ttwist': 'Tamil Twists : [COLOR magenta]Various[/COLOR]',
-         '24flinks': 'Film Links 4 U : [COLOR magenta]Various[/COLOR]',
-         '25redm': 'Red Movies : [COLOR magenta]Various[/COLOR]',
-         '26tvcds': 'Thiruttu VCDs : [COLOR magenta]Various[/COLOR]'}
+         '07awatch': 'Andhra Watch : [COLOR yellow]Telugu[/COLOR]',
+         '08abcm': 'ABC Malayalam : [COLOR yellow]Malayalam[/COLOR]',
+         '09olangal': 'Olangal : [COLOR yellow]Malayalam[/COLOR]',
+         '10lmtv': 'Live Malayalam : [COLOR yellow]Malayalam Live TV[/COLOR]',
+         '11mserial': 'Malayalam Serials : [COLOR yellow]Malayalam Catchup TV[/COLOR]',
+         '12hlinks': 'Hindi Links 4U : [COLOR yellow]Hindi[/COLOR]',
+         '13desit': 'Desi Tashan : [COLOR yellow]Hindi Catchup TV[/COLOR]',
+         '14yodesi': 'Yo Desi : [COLOR yellow]Hindi Catchup TV[/COLOR]',
+         '15gmala': 'Hindi Geetmala : [COLOR yellow]Hindi Songs[/COLOR]',
+         '16aindia': 'Abroad India : [COLOR magenta]Various Live TV[/COLOR]',
+         '17apnav': 'Apna View : [COLOR magenta]Various[/COLOR]',
+         '18tvcd': 'Thiruttu VCD : [COLOR magenta]Various[/COLOR]',
+         '19mrulz': 'Movie Rulz : [COLOR magenta]Various[/COLOR]',
+         '20i4movie': 'India 4 Movie : [COLOR magenta]Various[/COLOR]',
+         '21moviefk': 'Movie FK : [COLOR magenta]Various[/COLOR]',
+         '22mfish': 'Movie Fisher : [COLOR magenta]Various[/COLOR]',
+         '23mersal': 'Mersalaayitten : [COLOR magenta]Various[/COLOR]',
+         '24ttwist': 'Tamil Twists : [COLOR magenta]Various[/COLOR]',
+         '25flinks': 'Film Links 4 U : [COLOR magenta]Various[/COLOR]',
+         '26redm': 'Red Movies : [COLOR magenta]Various[/COLOR]',
+         '27tvcds': 'Thiruttu VCDs : [COLOR magenta]Various[/COLOR]'}
 
 import resources.scrapers.tgun
 import resources.scrapers.rajt
@@ -301,6 +304,7 @@ import resources.scrapers.apnav
 import resources.scrapers.aindia
 import resources.scrapers.mserial
 import resources.scrapers.gmala
+import resources.scrapers.awatch
 
 def list_sites():
     """
@@ -494,7 +498,8 @@ def play_video(iurl):
     """
     streamer_list = ['tamilgun', 'mersalaayitten', 'mhdtvlive.',
                      'tamiltvsite.', 'cloudspro.', 'abroadindia.',
-                     'hindigeetmala.','.mp4', '.mp3', 'tamilhdtv.']
+                     'hindigeetmala.','.mp4', '.mp3',
+                     'tamilhdtv.', 'andhrawatch.']
     # Create a playable item with a path to play.
     play_item = xbmcgui.ListItem(path=iurl)
     vid_url = play_item.getfilename()
@@ -507,6 +512,13 @@ def play_video(iurl):
                 play_item.setSubtitles(['special://temp/mersal.srt', srtfile])
         elif 'hindigeetmala.' in vid_url:
             scraper = resources.scrapers.gmala.gmala()
+            stream_url = scraper.get_video(vid_url)
+            if stream_url:
+                if 'youtube.' in stream_url:
+                    stream_url = resolve_url(stream_url)
+                play_item.setPath(stream_url)
+        elif 'andhrawatch.' in vid_url:
+            scraper = resources.scrapers.awatch.awatch()
             stream_url = scraper.get_video(vid_url)
             if stream_url:
                 if 'youtube.' in stream_url:

@@ -8,6 +8,9 @@
         <setting id="tamiltv" type="bool" label="APK Land" default="true"/>
         <setting id="ttvs" type="bool" label="Tamil TV Shows" default="true"/>
     </category>
+    <category label="Telugu Scrapers">
+        <setting id="awatch" type="bool" label="Andhra Watch" default="true"/>
+    </category> 
     <category label="Malayalam Scrapers">
         <setting id="abcm" type="bool" label="ABC Malayalam" default="true"/>
         <setting id="olangal" type="bool" label="Olangal" default="true"/>
