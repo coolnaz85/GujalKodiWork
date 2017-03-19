@@ -62,6 +62,7 @@ class Scraper(object):
     def __init__(self):
         self.ipath = _ipath
         self.hdr = mozhdr
+        self.settings = _settings
         self.adult = _settings('adult')
         self.nicon = self.ipath + 'next.png'
         

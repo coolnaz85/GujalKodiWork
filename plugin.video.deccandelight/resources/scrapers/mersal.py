@@ -23,8 +23,9 @@ import HTMLParser
 class mersal(Scraper):
     def __init__(self):
         Scraper.__init__(self)
-        self.bu = 'http://mersalaayitten.us/videos?c='
+        self.bu = 'http://mersalaayitten.net/videos?c='
         self.icon = self.ipath + 'mersal.png'
+        self.hdstr = self.settings('mersalhd')
         self.list = {'01Tamil Movies': self.bu + '1&o=mr',
                      '02Telugu Movies': self.bu + '3&o=mr',
                      '03Hindi Movies': self.bu + '2&o=mr',
@@ -90,13 +91,16 @@ class mersal(Scraper):
 
         soup = BeautifulSoup(link)
 
-        try:
-            stream_url = soup.file.text + '|Cookie=AVS=%s'%avs
+        stream_url = soup.file.text + '|Cookie=AVS=%s'%avs
+        if self.hdstr == 'true':
             try:
-                srtfile = soup.captions.text
+                stream_url = soup.filehd.text + '|Cookie=AVS=%s'%avs
             except:
-                srtfile = None
+                pass
+        
+        try:
+            srtfile = soup.captions.text
         except:
-            pass
+            srtfile = None
             
         return (stream_url,srtfile)

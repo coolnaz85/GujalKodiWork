@@ -35,6 +35,7 @@
         <setting id="mfish" type="bool" label="Movie Fisher" default="true"/>
         <setting id="redm" type="bool" label="Red Movies" default="true"/>
         <setting id="mersal" type="bool" label="Mersalaayitten" default="true"/>
+		<setting id="mersalhd" type="bool" label="        Play HD if available" visible="eq(-1,true)" enable="!eq(-1,)" default="true"/>
         <setting id="tvcds" type="bool" label="Thiruttu VCDs" default="true"/>
     </category>
     <category label="Miscellaneous">
