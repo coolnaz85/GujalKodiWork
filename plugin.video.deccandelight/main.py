@@ -267,17 +267,18 @@ sites = {'01tgun': 'Tamil Gun : [COLOR yellow]Tamil[/COLOR]',
          '14yodesi': 'Yo Desi : [COLOR yellow]Hindi Catchup TV[/COLOR]',
          '15gmala': 'Hindi Geetmala : [COLOR yellow]Hindi Songs[/COLOR]',
          '16aindia': 'Abroad India : [COLOR magenta]Various Live TV[/COLOR]',
-         '17apnav': 'Apna View : [COLOR magenta]Various[/COLOR]',
-         '18tvcd': 'Thiruttu VCD : [COLOR magenta]Various[/COLOR]',
-         '19mrulz': 'Movie Rulz : [COLOR magenta]Various[/COLOR]',
-         '20i4movie': 'India 4 Movie : [COLOR magenta]Various[/COLOR]',
-         '21moviefk': 'Movie FK : [COLOR magenta]Various[/COLOR]',
-         '22mfish': 'Movie Fisher : [COLOR magenta]Various[/COLOR]',
-         '23mersal': 'Mersalaayitten : [COLOR magenta]Various[/COLOR]',
-         '24ttwist': 'Tamil Twists : [COLOR magenta]Various[/COLOR]',
-         '25flinks': 'Film Links 4 U : [COLOR magenta]Various[/COLOR]',
-         '26redm': 'Red Movies : [COLOR magenta]Various[/COLOR]',
-         '27tvcds': 'Thiruttu VCDs : [COLOR magenta]Various[/COLOR]'}
+         '17ozee': 'OZee : [COLOR magenta]Various Catchup TV[/COLOR]',
+         '18apnav': 'Apna View : [COLOR magenta]Various[/COLOR]',
+         '19tvcd': 'Thiruttu VCD : [COLOR magenta]Various[/COLOR]',
+         '20mrulz': 'Movie Rulz : [COLOR magenta]Various[/COLOR]',
+         '21i4movie': 'India 4 Movie : [COLOR magenta]Various[/COLOR]',
+         '22moviefk': 'Movie FK : [COLOR magenta]Various[/COLOR]',
+         '23mfish': 'Movie Fisher : [COLOR magenta]Various[/COLOR]',
+         '24mersal': 'Mersalaayitten : [COLOR magenta]Various[/COLOR]',
+         '25ttwist': 'Tamil Twists : [COLOR magenta]Various[/COLOR]',
+         '26flinks': 'Film Links 4 U : [COLOR magenta]Various[/COLOR]',
+         '27redm': 'Red Movies : [COLOR magenta]Various[/COLOR]',
+         '28tvcds': 'Thiruttu VCDs : [COLOR magenta]Various[/COLOR]'}
 
 import resources.scrapers.tgun
 import resources.scrapers.rajt
@@ -306,6 +307,7 @@ import resources.scrapers.aindia
 import resources.scrapers.mserial
 import resources.scrapers.gmala
 import resources.scrapers.awatch
+import resources.scrapers.ozee
 
 def list_sites():
     """
@@ -392,15 +394,20 @@ def list_second(site,iurl):
     menu,mode = cache.cacheFunction(scraper.get_second,iurl)
     listing = []
     for title,icon,iurl in menu:
-            list_item = xbmcgui.ListItem(label=title)
-            list_item.setArt({'thumb': icon,
-                              'icon': icon,
-                              'fanart': _fanart})
-            if 'Next Page' in title:
-                mode = 5
-            url = '{0}?action={1}&site={2}&iurl={3}'.format(_url, mode, site, urllib.quote(iurl))
-            is_folder = True
-            listing.append((url, list_item, is_folder))            
+        list_item = xbmcgui.ListItem(label=title)
+        list_item.setArt({'thumb': icon,
+                          'icon': icon,
+                          'fanart': _fanart})
+        nextmode = mode
+        if 'Next Page' in title:
+            nextmode = 5
+        url = '{0}?action={1}&site={2}&iurl={3}'.format(_url, nextmode, site, urllib.quote(iurl))
+        is_folder = True
+        if mode == 9 and 'Next Page' not in title:
+            is_folder = False
+            list_item.setProperty('IsPlayable', 'true')
+            list_item.addStreamInfo('video', { 'codec': 'h264'})
+        listing.append((url, list_item, is_folder))            
     xbmcplugin.addDirectoryItems(_handle, listing, len(listing))
     xbmcplugin.endOfDirectory(_handle)
 
@@ -499,7 +506,7 @@ def play_video(iurl):
     """
     streamer_list = ['tamilgun', 'mersalaayitten', 'mhdtvlive.',
                      'tamiltvsite.', 'cloudspro.', 'abroadindia.',
-                     'hindigeetmala.','.mp4', '.mp3',
+                     'hindigeetmala.','.mp4', '.mp3', 'ozee.',
                      'tamilhdtv.', 'andhrawatch.']
     # Create a playable item with a path to play.
     play_item = xbmcgui.ListItem(path=iurl)
@@ -517,6 +524,11 @@ def play_video(iurl):
             if stream_url:
                 if 'youtube.' in stream_url:
                     stream_url = resolve_url(stream_url)
+                play_item.setPath(stream_url)
+        elif 'ozee.' in vid_url:
+            scraper = resources.scrapers.ozee.ozee()
+            stream_url = scraper.get_video(vid_url)
+            if stream_url:
                 play_item.setPath(stream_url)
         elif 'andhrawatch.' in vid_url:
             scraper = resources.scrapers.awatch.awatch()
