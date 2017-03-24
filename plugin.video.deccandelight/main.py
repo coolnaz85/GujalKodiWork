@@ -23,7 +23,8 @@ import xbmcgui
 import xbmcplugin
 import xbmcaddon
 from BeautifulSoup import BeautifulSoup, SoupStrainer
-import abc, urllib, re, requests
+import abc, urllib, re, requests, json
+import resources.lib.jsunpack as jsunpack
 import urlresolver
 
 try:
@@ -93,12 +94,13 @@ class Scraper(object):
                         'imdb.', 'mgid.', 'atemda.', 'movierulz.', 'facebook.', 
                         'm2pub', 'abcmalayalam', 'india4movie.co', '.filmlinks4u',
                         'tamilraja.', 'multiup.', 'filesupload.', 'fileorbs.',
-                        'insurance-donate.', '.blogspot.']
+                        'insurance-donate.', '.blogspot.', 'yodesi.net', 
+                        'yomasti.co/ads', 'ads.yodesi.net']
 
         embed_list = ['cineview', 'bollyheaven', 'videolinkz', 'vidzcode',
                       'embedzone', 'embedsr', 'fullmovie-hd', 'adly.biz',
                       'embedscr', 'embedrip', 'movembed', 'power4link.us',
-                      'watchmoviesonline4u', 'nobuffer.info', 'yo-desi.com',
+                      'watchmoviesonline4u', 'nobuffer.info', 'yomasti.co',
                       'techking.me', 'onlinemoviesworld.xyz', 'cinebix.com',
                       'desihome.', 'loan-forex.', 'filmshowonline.', 'vids.xyz']
            
@@ -127,7 +129,20 @@ class Scraper(object):
                     videos.append((vidhost,strurl))
             except:
                 pass
-
+                
+        elif 'videohost.site' in url or 'videohost1.com' in url:
+            try:
+                html = requests.get(url, headers=mozhdr).text
+                linkcode = jsunpack.unpack(html).replace('\\','')
+                sources = json.loads(re.findall('sources:(.*?\}\])',linkcode)[0])
+                for source in sources:    
+                    strurl = source['file'] + '|Referer=%s'%url
+                    vidhost = self.get_vidhost(url) + ' | %s' % source['label']
+                    strurl = urllib.quote_plus(strurl)
+                    videos.append((vidhost,strurl))
+            except:
+                pass
+                
         elif 'tamildbox' in url:
             try:
                 link = requests.get(url, headers=mozhdr).text
@@ -162,6 +177,8 @@ class Scraper(object):
                             if not vidtxt == '':
                                 vidhost += ' | %s' % vidtxt
                             videos.append((vidhost,strurl))
+                        else:
+                            xbmc.log('-------> URLResolver cannot resolve : %s' % strurl)
             except:
                 pass
 
@@ -238,9 +255,9 @@ class Scraper(object):
                    'Tamil Full Movie', 'Tamil Horror Movie', 'Tamil Dubbed Movie', '|', '-', ' Full ', u'\u2019',
                    '/', 'Pre HDRip', '(DVDScr Audio)', 'PDVDRip', 'DVDSCR', '(HQ Audio)', 'HQ', ' Telugu',
                    'DVDScr', 'DVDscr', 'PreDVDRip', 'DVDRip', 'DVDRIP', 'WEBRip', 'WebRip', 'Movie', ' Punjabi',
-                   'TCRip', 'HDRip', 'HDTVRip', 'HD-TC', 'HDTV', 'TVRip', '720p', 'DVD', 'HD', ' Dubbed',
+                   'TCRip', 'HDRip', 'HDTVRip', 'HD-TC', 'HDTV', 'TVRip', '720p', 'DVD', 'HD', ' Dubbed', '( )',
                    '720p', '(UNCUT)', 'UNCUT', '(Clear Audio)', 'DTHRip', '(Line Audio)', ' Kannada', ' Hollywood',
-                   'TS', 'CAM', 'Online Full', '[+18]', 'Streaming Free', 'Permalink to ', 'And Download',
+                   'TS', 'CAM', 'Online Full', '[+18]', 'Streaming Free', 'Permalink to ', 'And Download', '()',
                    'Full English', ' English', 'Downlaod', 'Bluray', 'Online', ' Tamil', ' Bengali', ' Bhojpuri']
         
         for word in cleanup:
@@ -255,30 +272,31 @@ sites = {'01tgun': 'Tamil Gun : [COLOR yellow]Tamil[/COLOR]',
          '02rajt': 'Raj Tamil : [COLOR yellow]Tamil[/COLOR]',
          '03tyogi': 'Tamil Yogi : [COLOR yellow]Tamil[/COLOR]',
          '04runt': 'Run Tamil : [COLOR yellow]Tamil[/COLOR]',
-         '05tamiltv': 'APKLand TV : [COLOR yellow]Tamil Live TV and VOD[/COLOR]',
-         '06ttvs': 'Tamil TV Shows : [COLOR yellow]Tamil Catchup TV[/COLOR]',
-         '07awatch': 'Andhra Watch : [COLOR yellow]Telugu[/COLOR]',
-         '08abcm': 'ABC Malayalam : [COLOR yellow]Malayalam[/COLOR]',
-         '09olangal': 'Olangal : [COLOR yellow]Malayalam[/COLOR]',
-         '10lmtv': 'Live Malayalam : [COLOR yellow]Malayalam Live TV[/COLOR]',
-         '11mserial': 'Malayalam Serials : [COLOR yellow]Malayalam Catchup TV[/COLOR]',
-         '12hlinks': 'Hindi Links 4U : [COLOR yellow]Hindi[/COLOR]',
-         '13desit': 'Desi Tashan : [COLOR yellow]Hindi Catchup TV[/COLOR]',
-         '14yodesi': 'Yo Desi : [COLOR yellow]Hindi Catchup TV[/COLOR]',
-         '15gmala': 'Hindi Geetmala : [COLOR yellow]Hindi Songs[/COLOR]',
-         '16aindia': 'Abroad India : [COLOR magenta]Various Live TV[/COLOR]',
-         '17ozee': 'OZee : [COLOR magenta]Various Catchup TV[/COLOR]',
-         '18apnav': 'Apna View : [COLOR magenta]Various[/COLOR]',
-         '19tvcd': 'Thiruttu VCD : [COLOR magenta]Various[/COLOR]',
-         '20mrulz': 'Movie Rulz : [COLOR magenta]Various[/COLOR]',
-         '21i4movie': 'India 4 Movie : [COLOR magenta]Various[/COLOR]',
-         '22moviefk': 'Movie FK : [COLOR magenta]Various[/COLOR]',
-         '23mfish': 'Movie Fisher : [COLOR magenta]Various[/COLOR]',
-         '24mersal': 'Mersalaayitten : [COLOR magenta]Various[/COLOR]',
-         '25ttwist': 'Tamil Twists : [COLOR magenta]Various[/COLOR]',
-         '26flinks': 'Film Links 4 U : [COLOR magenta]Various[/COLOR]',
-         '27redm': 'Red Movies : [COLOR magenta]Various[/COLOR]',
-         '28tvcds': 'Thiruttu VCDs : [COLOR magenta]Various[/COLOR]'}
+         '05rasigan': 'Tamil Rasigan : [COLOR yellow]Tamil[/COLOR]',
+         '06tamiltv': 'APKLand TV : [COLOR yellow]Tamil Live TV and VOD[/COLOR]',
+         '07ttvs': 'Tamil TV Shows : [COLOR yellow]Tamil Catchup TV[/COLOR]',
+         '11awatch': 'Andhra Watch : [COLOR yellow]Telugu[/COLOR]',
+         '21abcm': 'ABC Malayalam : [COLOR yellow]Malayalam[/COLOR]',
+         '22olangal': 'Olangal : [COLOR yellow]Malayalam[/COLOR]',
+         '23lmtv': 'Live Malayalam : [COLOR yellow]Malayalam Live TV[/COLOR]',
+         '24mserial': 'Malayalam Serials : [COLOR yellow]Malayalam Catchup TV[/COLOR]',
+         '41hlinks': 'Hindi Links 4U : [COLOR yellow]Hindi[/COLOR]',
+         '42desit': 'Desi Tashan : [COLOR yellow]Hindi Catchup TV[/COLOR]',
+         '43yodesi': 'Yo Desi : [COLOR yellow]Hindi Catchup TV[/COLOR]',
+         '44gmala': 'Hindi Geetmala : [COLOR yellow]Hindi Songs[/COLOR]',
+         '51aindia': 'Abroad India : [COLOR magenta]Various Live TV[/COLOR]',
+         '52ozee': 'OZee : [COLOR magenta]Various Catchup TV[/COLOR]',
+         '53apnav': 'Apna View : [COLOR magenta]Various[/COLOR]',
+         '54tvcd': 'Thiruttu VCD : [COLOR magenta]Various[/COLOR]',
+         '55mrulz': 'Movie Rulz : [COLOR magenta]Various[/COLOR]',
+         '56i4movie': 'India 4 Movie : [COLOR magenta]Various[/COLOR]',
+         '57moviefk': 'Movie FK : [COLOR magenta]Various[/COLOR]',
+         '58mfish': 'Movie Fisher : [COLOR magenta]Various[/COLOR]',
+         '59mersal': 'Mersalaayitten : [COLOR magenta]Various[/COLOR]',
+         '60ttwist': 'Tamil Twists : [COLOR magenta]Various[/COLOR]',
+         '61flinks': 'Film Links 4 U : [COLOR magenta]Various[/COLOR]',
+         '62redm': 'Red Movies : [COLOR magenta]Various[/COLOR]',
+         '63tvcds': 'Thiruttu VCDs : [COLOR magenta]Various[/COLOR]'}
 
 import resources.scrapers.tgun
 import resources.scrapers.rajt
@@ -308,6 +326,7 @@ import resources.scrapers.mserial
 import resources.scrapers.gmala
 import resources.scrapers.awatch
 import resources.scrapers.ozee
+import resources.scrapers.rasigan
 
 def list_sites():
     """

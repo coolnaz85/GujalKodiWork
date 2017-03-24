@@ -124,8 +124,6 @@ class yodesi(Scraper):
                 vidurl = link.get('href')
                 vidtxt = h.unescape(link.text)
                 vidtxt = re.findall('(\d.*)',vidtxt)[0]
-                if 'yodesi.net/player.php' in vidurl:
-                    vidurl = vidurl.replace('yodesi.net','yo-desi.com')
                 self.resolve_media(vidurl,videos,vidtxt)
         except:
             pass

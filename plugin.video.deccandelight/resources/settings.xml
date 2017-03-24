@@ -5,6 +5,7 @@
 		<setting id="rajt" type="bool" label="Raj Tamil" default="true"/>
 		<setting id="runt" type="bool" label="Run Tamil" default="true"/>
 		<setting id="tgun" type="bool" label="Tamil Gun" default="true"/>
+		<setting id="rasigan" type="bool" label="Tamil Rasigan" default="true"/>
         <setting id="ttvs" type="bool" label="Tamil TV Shows" default="true"/>
 		<setting id="tyogi" type="bool" label="Tamil Yogi" default="true"/>
     </category>

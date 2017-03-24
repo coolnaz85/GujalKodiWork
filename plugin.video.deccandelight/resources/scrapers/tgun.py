@@ -18,14 +18,14 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 from main import Scraper
 from BeautifulSoup import BeautifulSoup, SoupStrainer
 import urllib, re, requests, json, HTMLParser
-import urlresolver.plugins.lib.jsunpack as jsunpack
+import resources.lib.jsunpack as jsunpack
 
 class tgun(Scraper):
     def __init__(self):
         Scraper.__init__(self)
         self.bu = 'http://tamilgun.pro/categories/'
         self.icon = self.ipath + 'tgun.png'
-        self.list = {'01New Movies': self.bu + 'new-movies-2017/',
+        self.list = {'01New Movies': self.bu + 'new-movies-a/',
                      '02HD Movies': self.bu + 'hd-movies/',
                      '03Dubbed Movies': self.bu + 'dubbed-movies/',
                      '04Trailers': self.bu + 'trailers/',
