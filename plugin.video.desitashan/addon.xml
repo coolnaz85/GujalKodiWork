@@ -16,5 +16,6 @@ provider-name="Gujal">
   <summary>Desi Tashan Hindi Catchup TV</summary>
   <description>Desitashan is a popular site to watch Hindi TV Shows on demand</description>
   <disclaimer>This addon provides access to Desi Tashan site and is not liable for any content hosted on that site</disclaimer>
+  <broken>Deprecated as the Hosting site went out of service</broken>
 </extension>
 </addon>

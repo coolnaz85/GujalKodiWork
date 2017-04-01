@@ -47,7 +47,9 @@ class mersal(Scraper):
             search_text = urllib.quote_plus(search_text)
             url = url + search_text
 
-        html = requests.get(url, headers=self.hdr).text
+        headers = self.hdr
+        headers['Accept-Encoding'] = 'deflate'
+        html = requests.get(url, headers=headers).text
         mlink = SoupStrainer('div', {'class':'col-md-9 col-sm-8'})
         mdiv = BeautifulSoup(html, parseOnlyThese=mlink)
         plink = SoupStrainer("ul", {"class":"pagination pagination-lg"})
@@ -79,6 +81,7 @@ class mersal(Scraper):
 
         url = self.bu[:-9] + 'embed/' + url.split('/')[4]
         headers = self.hdr
+        headers['Accept-Encoding'] = 'deflate'
         r = requests.get(url, headers=headers)
         link = r.text
         cookies = r.cookies

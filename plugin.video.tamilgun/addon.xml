@@ -16,5 +16,6 @@ provider-name="Gujal">
   <summary>TamilGun</summary>
   <description>TamilGun is a popular site to watch Tamil Movies on demand</description>
   <disclaimer>This addon provides access to TamilGun website and is not liable for any content hosted on that site</disclaimer>
+  <broken>Deprecated and Merged into Deccan Delight</broken>
 </extension>
 </addon>

@@ -20,7 +20,7 @@ provider-name="Gujal">
 </addon>
 
 <addon id="plugin.video.deccandelight"
-version="1.1.6"
+version="1.1.7"
 name="Deccan Delight"
 provider-name="Gujal">
 <requires>
@@ -39,7 +39,7 @@ provider-name="Gujal">
 	<platform>all</platform>
 	<website>https://forums.tvaddons.ag/addon-releases/49105-deccan-delight-indian-entertainment.html</website>
 	<disclaimer>This addon scrapes content from various websites around the Internet and is not liable for any content hosted on those sites</disclaimer>
-	<news>[B]Updated 24 Mar 2017[/B]</news>
+	<news>[B]Updated 1 Apr 2017[/B]</news>
 </extension>
 </addon>
 
@@ -60,6 +60,7 @@ provider-name="Gujal">
   <summary>Desi Tashan Hindi Catchup TV</summary>
   <description>Desitashan is a popular site to watch Hindi TV Shows on demand</description>
   <disclaimer>This addon provides access to Desi Tashan site and is not liable for any content hosted on that site</disclaimer>
+  <broken>Deprecated as the Hosting site went out of service</broken>
 </extension>
 </addon>
 
@@ -111,6 +112,7 @@ provider-name="Gujal">
   <summary>TamilGun</summary>
   <description>TamilGun is a popular site to watch Tamil Movies on demand</description>
   <disclaimer>This addon provides access to TamilGun website and is not liable for any content hosted on that site</disclaimer>
+  <broken>Deprecated and Merged into Deccan Delight</broken>
 </extension>
 </addon>
 
