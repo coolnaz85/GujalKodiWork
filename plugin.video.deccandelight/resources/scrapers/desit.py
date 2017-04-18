@@ -23,41 +23,24 @@ import HTMLParser
 class desit(Scraper):
     def __init__(self):
         Scraper.__init__(self)
-        self.bu = 'http://www.desitashan.me/'
+        self.bu = 'http://www.desi-tashan.ms/'
         self.icon = self.ipath + 'desit.png'
-        self.list = {'01Indian': self.bu,
-                     '02Pakistani': self.bu + 'pakistan-tv/'}
             
     def get_menu(self):
-        return (self.list,4,self.icon)
-
-    def get_top(self,url):
-        """
-        Get the list of channels.
-        :return: list
-        """
-        channels = []
-        h = HTMLParser.HTMLParser()
-        html = requests.get(url, headers=self.hdr).text
-        mlink = SoupStrainer('div', {'class':'nav fusion-mobile-tab-nav'})
+        html = requests.get(self.bu, headers=self.hdr).text
+        mlink = SoupStrainer('ul', {'class':'td-mobile-main-menu'})
         mdiv = BeautifulSoup(html, parseOnlyThese=mlink)
         items = mdiv.findAll('li')
+        self.list = {}
+        ino = 1
         for item in items:
-            title = h.unescape(item.text)
-            tref = item.a.get('href')[1:]
-            iurl = '%sZZZZ%s'%(url,tref)
-            try:
-                icon = item.find('img')['src']
-                if icon.startswith('/'):
-                    icon = self.bu[:-1] + icon
-                else:
-                    icon = self.bu + icon
-            except:
-                icon = self.icon
-            
-            channels.append((title,icon,iurl))
-
-        return (channels,5)
+            if ino < 10:
+                self.list['0%s%s'%(ino,item.text)]=item.find('a')['href']
+            else:
+                self.list['%s%s'%(ino,item.text)]=item.find('a')['href']
+            ino+=1
+        self.list['99[COLOR yellow]** Search **[/COLOR]']= self.bu + '?s='
+        return (self.list,5,self.icon)
 
     def get_second(self,iurl):
         """
@@ -66,116 +49,75 @@ class desit(Scraper):
         """
         shows = []
         h = HTMLParser.HTMLParser()
-        url = iurl.split('ZZZZ')[0]
-        channel = iurl.split('ZZZZ')[1]
-        html = requests.get(url, headers=self.hdr).text
-        mlink = SoupStrainer('div', {'id':channel})
+
+        html = requests.get(iurl, headers=self.hdr).text
+        mlink = SoupStrainer('div', {'class':re.compile('td-page-content')})
         mdiv = BeautifulSoup(html, parseOnlyThese=mlink)
-        items = mdiv.findAll('div', {'class':'fusion-column-wrapper'})
+        items = mdiv.findAll('li')
+        thumb = mdiv.find('img')['src']
         for item in items:
             title = h.unescape(item.text)
-            url = item.a.get('href')
-            if url.startswith('/'):
-                url = self.bu[:-1] + url
-            else:
-                url = self.bu + url
-            try:
-                icon = item.find('img')['src']
-                if icon.startswith('/'):
-                    icon = self.bu[:-1] + icon
-                else:
-                    icon = self.bu + icon
-            except:
-                icon = self.icon
-            
-            shows.append((title,icon,url))
-        
+            url = item.find('a')['href']
+            shows.append((title,thumb,url))
+
         return (shows,7)
         
     def get_items(self,iurl):
         episodes = []
         h = HTMLParser.HTMLParser()
         html = requests.get(iurl).text
-        mlink = SoupStrainer('div', {'id':'showList'})
+        mlink = SoupStrainer('div', {'class':'td-ss-main-content'})
         mdiv = BeautifulSoup(html, parseOnlyThese=mlink)
-        items = mdiv.findAll('div', {'class':'fusion-column-wrapper'})
+        items = mdiv.findAll('div', {'class':'td-block-span6'})
         for item in items:
-            title = h.unescape(item.h4.a.text)
+            title = h.unescape(item.h3.text)
             if 'written' not in title.lower():
-                url = item.a.get('href')
-                if url.startswith('/'):
-                    url = self.bu[:-1] + url
-                else:
-                    url = self.bu + url
+                title = self.clean_title(title)
+                url = item.find('a')['href']
                 try:
                     icon = item.find('img')['src']
-                    if icon.startswith('/'):
-                        icon = self.bu[:-1] + icon
-                    else:
-                        icon = self.bu + icon
                 except:
                     icon = self.icon           
                 episodes.append((title,icon,url))
-        plink = SoupStrainer('a', {'class':'pagination-next'})
+                
+        plink = SoupStrainer('div', {'class':re.compile('^page-nav')})
         Paginator = BeautifulSoup(html, parseOnlyThese=plink)
-        if 'Next' in str(Paginator):
-            ep_link = Paginator.a.get('href')
-            if 'category' in ep_link:
-                url = self.bu[:-1] + ep_link
-            else:
-                url = iurl + ep_link
-            title = 'Next Page: ' + url.split('page/')[1][:-1]
-            episodes.append((title, self.nicon, url))    
+
+        if 'menu-right' in str(Paginator):
+            currpg = Paginator.find('span', {'class':'current'}).text
+            nlinks = Paginator.findAll('a', {'class':None})
+            for nlink in nlinks:
+                if 'menu-right' in str(nlink):
+                    purl = nlink.get('href')
+            pgtxt = Paginator.find('span', {'class':'pages'}).text
+            title = 'Next Page.. (Currently in %s)' % pgtxt
+            episodes.append((title, self.nicon, purl))    
         return (episodes,8) 
 
     def get_videos(self,iurl):
         videos = []
         h = HTMLParser.HTMLParser()
         html = requests.get(iurl).text
-        mlink = SoupStrainer('p', {'class':'vidLinksContent'})
+        mlink = SoupStrainer('div', {'class':re.compile('^td-post-content')})
         videoclass = BeautifulSoup(html, parseOnlyThese=mlink)
         items = videoclass.findAll('a')
         for item in items:
             vid_link = item['href']
             vidtxt = h.unescape(item.text)
-            vidtxt = re.findall('(\d.*)',vidtxt)[0]
-            if '/coming/' in vid_link:
-                url = 'http://www.tashanplayer.com/upcoming.mp4'
-                videos.append(('Coming Soon',url))
-            elif 'tashanplayer' in vid_link:
+            try:
+                vidtxt = re.findall('(Part.*)',vidtxt)[0]
+            except:
+                vidtxt = ''
+            if 'youpdates.' in vid_link:
                 vhtml = requests.get(vid_link).text
+                vplink = SoupStrainer('div', {'class':'main'})
+                vsoup = BeautifulSoup(vhtml, parseOnlyThese=vplink)
                 try:
-                    vplink = SoupStrainer('iframe')
-                    vsoup = BeautifulSoup(vhtml, parseOnlyThese=vplink)
                     vid_url = vsoup.find('iframe')['src']
                 except:
-                    vplink = SoupStrainer('script', {'data-container':'myPlayer'})
-                    vsoup = BeautifulSoup(vhtml, parseOnlyThese=vplink)
-                    vid_url = vsoup.find('script')['data-config']
+                    vid_url = re.findall('class="main".*?src="(.*?)"',vhtml,re.DOTALL)[0]
                 self.resolve_media(vid_url,videos,vidtxt)
             else:
                 self.resolve_media(vid_link,videos,vidtxt)
-
-        mlink = SoupStrainer('div', {'class':'post-content'})
-        videoclass = BeautifulSoup(html, parseOnlyThese=mlink)
-        items = videoclass.findAll('iframe')
-        for item in items:
-            vid_link = item['src']
-            if '/coming/' in vid_link:
-                url = 'http://www.tashanplayer.com/upcoming.mp4'
-                videos.append(('DT Upcoming',url))
-            elif 'tashanplayer' in vid_link:
-                vhtml = requests.get(vid_link).text
-                try:
-                    vplink = SoupStrainer('iframe')
-                    vsoup = BeautifulSoup(vhtml, parseOnlyThese=vplink)
-                    vid_url = vsoup.find('iframe')['src']
-                except:
-                    vplink = SoupStrainer('script', {'data-container':'myPlayer'})
-                    vsoup = BeautifulSoup(vhtml, parseOnlyThese=vplink)
-                    vid_url = vsoup.find('script')['data-config']
-                self.resolve_media(vid_url,videos)
-            else:
-                self.resolve_media(vid_link,videos)
             
         return videos

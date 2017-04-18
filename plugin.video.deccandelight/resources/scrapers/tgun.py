@@ -23,7 +23,7 @@ import resources.lib.jsunpack as jsunpack
 class tgun(Scraper):
     def __init__(self):
         Scraper.__init__(self)
-        self.bu = 'http://tamilgun.pro/categories/'
+        self.bu = 'http://tamilgun.vip/categories/'
         self.icon = self.ipath + 'tgun.png'
         self.list = {'01New Movies': self.bu + 'new-movies-a/',
                      '02HD Movies': self.bu + 'hd-movies/',
@@ -84,9 +84,9 @@ class tgun(Scraper):
             linkcode = jsunpack.unpack(html).replace('\\','')
             sources = json.loads(re.findall('sources:(.*?)\}\)',linkcode)[0])
             for source in sources:    
-                url = source['file'] + '|Referer=http://tamilgun.pro'
+                url = source['file'] + '|Referer=http://tamilgun.vip'
                 url = urllib.quote_plus(url)
-                videos.append(('tamilgun.pro | %s'%source['label'],url))
+                videos.append(('tamilgun.vip | %s'%source['label'],url))
         except:
             pass
 
