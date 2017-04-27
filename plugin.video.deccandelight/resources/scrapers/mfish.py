@@ -27,8 +27,8 @@ class mfish(Scraper):
         self.icon = self.ipath + 'mfish.png'
         self.list = {'01Tamil Movies': self.bu + 'tamil',
                      '02Telugu Movies': self.bu + 'telugu-movie',
-                     '04Hindi Movies': self.bu + 'all-video',
-                     '05English Movies': self.bu + 'new-english',
+                     '04Hindi Movies': self.bu + 'bollywood',
+                     '05English Movies': self.bu + 'hollywood',
                      '06Hindi Dubbed Movies': self.bu + 'dubbed',
                      '07Hindi Dubbed South Movies': self.bu + 'south-in-hindi',
                      '08Punjabi Movies': self.bu + 'punjabi',

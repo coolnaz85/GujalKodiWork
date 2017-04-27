@@ -23,14 +23,14 @@ import HTMLParser
 class tvcds(Scraper):
     def __init__(self):
         Scraper.__init__(self)
-        self.bu = 'http://thiruttuvcds.com/thiruttuvcd/category/'
+        self.bu = 'http://thiruttuvcds.com/category/'
         self.icon = self.ipath + 'tvcds.png'
         self.list = {'01Tamil Movies': self.bu + 'new-tamil-movies/',
                      '02Telugu Movies': self.bu + 'telugu/',
                      '03Hindi Movies': self.bu + 'hindi/',
                      '04Tamil Dubbed Movies': self.bu + 'tamil-dubbed/',
-                     '05English Movies': self.bu + 'english/',
-                     '06[COLOR cyan]Adult Movies[/COLOR]': self.bu[:-21] + 'private/',
+                     '05HD Movies': self.bu + 'hd-movies/',
+                     '06[COLOR cyan]Adult Movies[/COLOR]': self.bu[:-9] + 'private/',
                      '07[COLOR yellow]** Search **[/COLOR]': self.bu[:-9] + '?s='}
                      
     def get_menu(self):

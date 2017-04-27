@@ -39,7 +39,7 @@ class desit(Scraper):
             else:
                 self.list['%s%s'%(ino,item.text)]=item.find('a')['href']
             ino+=1
-        self.list['99[COLOR yellow]** Search **[/COLOR]']= self.bu + '?s='
+        self.list['99[COLOR yellow]** Search **[/COLOR]']= self.bu + '?s=MMMM7'
         return (self.list,5,self.icon)
 
     def get_second(self,iurl):
@@ -65,6 +65,10 @@ class desit(Scraper):
     def get_items(self,iurl):
         episodes = []
         h = HTMLParser.HTMLParser()
+        if iurl[-3:] == '?s=':
+            search_text = self.get_SearchQuery('Desi Tashan')
+            search_text = urllib.quote_plus(search_text)
+            iurl += search_text
         html = requests.get(iurl).text
         mlink = SoupStrainer('div', {'class':'td-ss-main-content'})
         mdiv = BeautifulSoup(html, parseOnlyThese=mlink)

@@ -31,7 +31,8 @@ class apnav(Scraper):
                      '04Hindi Movies': self.bu + 'hindi',
                      '05Marathi Movies': self.bu + 'marathi',
                      '06Punjabi Movies': self.bu + 'punjabi',
-                     '07[COLOR yellow]** Search **[/COLOR]': self.bu[:-9] + '?q='}
+                     '07[COLOR cyan]Adult Movies[/COLOR]': self.bu+ '?genre=32',
+                     '08[COLOR yellow]** Search **[/COLOR]': self.bu[:-7] + '?q='}
 
     def get_menu(self):
         return (self.list,7,self.icon)
@@ -45,11 +46,11 @@ class apnav(Scraper):
             url = url + search_text
 
         html = requests.get(url, headers=self.hdr).text
-        mlink = SoupStrainer('div', {'class':'row movie-list'})
+        mlink = SoupStrainer('div', {'class':'row'})
         mdiv = BeautifulSoup(html, parseOnlyThese=mlink)
         plink = SoupStrainer('ul', {'class':re.compile('^pagination')})
         Paginator = BeautifulSoup(html, parseOnlyThese=plink)
-        items = mdiv.findAll('div', {'class':'movie'})
+        items = mdiv.findAll('div', {'class':re.compile('col-xl-2 mb-4$')})
         
         for item in items:
             title = h.unescape(item.text)

@@ -1,3 +1,11 @@
+[B]Version 1.1.9 - 27 Apr 2017[/B]
+- Tamilgun Fix
+- Runtamil Fix
+- Apnaview Fix
+- Thiruttuvcds fix
+- Desitashan Search fix
+- Moviefisher fix
+
 [B]Version 1.1.8 - 18 Apr 2017[/B]
 - Mersalaayitten Fix
 - Desitashan new source

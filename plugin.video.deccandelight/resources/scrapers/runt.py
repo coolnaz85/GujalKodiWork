@@ -89,6 +89,7 @@ class runt(Scraper):
                     strlinks = eval(srclist)
                     for strlink in strlinks:
                         elink = strlink['file']
+                        elink = urllib.quote_plus(elink)
                         try:
                             qual = strlink['label']
                         except:
