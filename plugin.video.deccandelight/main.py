@@ -284,19 +284,20 @@ sites = {'01tgun': 'Tamil Gun : [COLOR yellow]Tamil[/COLOR]',
          '42desit': 'Desi Tashan : [COLOR yellow]Hindi Catchup TV[/COLOR]',
          '43yodesi': 'Yo Desi : [COLOR yellow]Hindi Catchup TV[/COLOR]',
          '44gmala': 'Hindi Geetmala : [COLOR yellow]Hindi Songs[/COLOR]',
-         '51aindia': 'Abroad India : [COLOR magenta]Various Live TV[/COLOR]',
-         '52ozee': 'OZee : [COLOR magenta]Various Catchup TV[/COLOR]',
-         '53apnav': 'Apna View : [COLOR magenta]Various[/COLOR]',
-         '54tvcd': 'Thiruttu VCD : [COLOR magenta]Various[/COLOR]',
-         '55mrulz': 'Movie Rulz : [COLOR magenta]Various[/COLOR]',
-         '56i4movie': 'India 4 Movie : [COLOR magenta]Various[/COLOR]',
-         '57moviefk': 'Movie FK : [COLOR magenta]Various[/COLOR]',
-         '58mfish': 'Movie Fisher : [COLOR magenta]Various[/COLOR]',
-         '59mersal': 'Mersalaayitten : [COLOR magenta]Various[/COLOR]',
-         '60ttwist': 'Tamil Twists : [COLOR magenta]Various[/COLOR]',
-         '61flinks': 'Film Links 4 U : [COLOR magenta]Various[/COLOR]',
-         '62redm': 'Red Movies : [COLOR magenta]Various[/COLOR]',
-         '63tvcds': 'Thiruttu VCDs : [COLOR magenta]Various[/COLOR]'}
+         '51mhdtv': 'MHDTV Live : [COLOR magenta]Various Live TV[/COLOR]',
+         '52aindia': 'Abroad India : [COLOR magenta]Various Live TV[/COLOR]',
+         '53ozee': 'OZee : [COLOR magenta]Various Catchup TV[/COLOR]',
+         '61apnav': 'Apna View : [COLOR magenta]Various[/COLOR]',
+         '62tvcd': 'Thiruttu VCD : [COLOR magenta]Various[/COLOR]',
+         '63mrulz': 'Movie Rulz : [COLOR magenta]Various[/COLOR]',
+         '64i4movie': 'India 4 Movie : [COLOR magenta]Various[/COLOR]',
+         '65moviefk': 'Movie FK : [COLOR magenta]Various[/COLOR]',
+         '66mfish': 'Movie Fisher : [COLOR magenta]Various[/COLOR]',
+         '67mersal': 'Mersalaayitten : [COLOR magenta]Various[/COLOR]',
+         '68ttwist': 'Tamil Twists : [COLOR magenta]Various[/COLOR]',
+         '69flinks': 'Film Links 4 U : [COLOR magenta]Various[/COLOR]',
+         '70redm': 'Red Movies : [COLOR magenta]Various[/COLOR]',
+         '71tvcds': 'Thiruttu VCDs : [COLOR magenta]Various[/COLOR]'}
 
 import resources.scrapers.tgun
 import resources.scrapers.rajt
@@ -327,6 +328,7 @@ import resources.scrapers.gmala
 import resources.scrapers.awatch
 import resources.scrapers.ozee
 import resources.scrapers.rasigan
+import resources.scrapers.mhdtv
 
 def list_sites():
     """
@@ -566,6 +568,8 @@ def play_video(iurl):
         elif 'mhdtvlive.' in vid_url:
             scraper = resources.scrapers.lmtv.lmtv()
             stream_url = scraper.get_video(vid_url)
+            if 'youtube.' in stream_url:
+                stream_url = resolve_url(stream_url)
             play_item.setPath(stream_url)
         elif 'abroadindia.' in vid_url:
             scraper = resources.scrapers.aindia.aindia()
@@ -584,10 +588,7 @@ def play_video(iurl):
         stream_url = resolve_url(vid_url)
         if stream_url:
             play_item.setPath(stream_url)    
-    # Pass the item to the Kodi player.
-    # if 'radionomy' in vid_url:
-        # xbmc.Player().play(vid_url)
-    # else:
+
     xbmcplugin.setResolvedUrl(_handle, True, listitem=play_item)
 
 def router(paramstring):

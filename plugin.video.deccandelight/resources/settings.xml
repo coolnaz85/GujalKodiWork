@@ -25,6 +25,7 @@
 		<setting id="yodesi" type="bool" label="Yo Desi" default="true"/>
     </category>
     <category label="Multi Language Scrapers">
+		<setting id="mhdtv" type="bool" label="MHDTV Live" default="true"/>
 		<setting id="aindia" type="bool" label="Abroad India" default="true"/>
 		<setting id="apnav" type="bool" label="Apna View" default="true"/>
 		<setting id="flinks" type="bool" label="Film Links 4 U" default="true"/>

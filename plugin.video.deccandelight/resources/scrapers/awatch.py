@@ -37,29 +37,30 @@ class awatch(Scraper):
         movies = []
 
         html = requests.get(url, headers=self.hdr).text
-        mlink = SoupStrainer('div', {'class':'cat-box-content'})
-        itemclass = BeautifulSoup(html, parseOnlyThese=mlink)
-        items = itemclass.findAll('div', {'class':'recent-item'})
+        mlink = SoupStrainer('div', {'class':re.compile('^row ')})
+        plink = SoupStrainer('nav', {'class':'herald-pagination'})
+        
+        mdiv = BeautifulSoup(html, parseOnlyThese=mlink)
+        items = mdiv.findAll('article')
 
         for item in items:
-            title = h.unescape(item.h3.text)
+            title = h.unescape(item.text)
             title = self.clean_title(title)
             url = item.find('a')['href']
             try:
-                thumb = item.find('img')['src']
+                thumb = item.find('img')['src'].split('?')[0]
             except:
                 thumb = self.icon
             movies.append((title, thumb, url))
  
-        plink = SoupStrainer('div', {'class':'pagination'})
-        Paginator = BeautifulSoup(html, parseOnlyThese=plink) 
-        nextdivs = Paginator.findAll('a', {'class':None})
-        for nexts in nextdivs:
-            if nexts.text == '&raquo;':
-                pgtxt = Paginator.find('span', {'class':'pages'}).text
-                purl = nexts.get('href')
-                title = 'Next Page.. (Currently in %s)' % pgtxt
-                movies.append((title, self.nicon, purl))
+        Paginator = BeautifulSoup(html, parseOnlyThese=plink)
+        if 'Next' in str(Paginator):
+            currpg = Paginator.find('span', {'class':re.compile('current')}).text
+            purl = Paginator.find('a', {'class':re.compile('next')}).get('href')
+            pages = Paginator.findAll('a', {'class':'page-numbers'})
+            lastpg = pages[len(pages)-1].text
+            title = 'Next Page.. (Currently in %s of %s)'%(currpg,lastpg)
+            movies.append((title, self.nicon, purl))
         
         return (movies,9)
 
@@ -72,6 +73,6 @@ class awatch(Scraper):
         try:
             vidurl = videoclass.find('iframe')['src'].split('?')[0]
         except:
-            pass
+            vidurl = None
       
         return vidurl

@@ -116,11 +116,17 @@ class desit(Scraper):
                 vhtml = requests.get(vid_link).text
                 vplink = SoupStrainer('div', {'class':'main'})
                 vsoup = BeautifulSoup(vhtml, parseOnlyThese=vplink)
+                vid_url=None
                 try:
                     vid_url = vsoup.find('iframe')['src']
                 except:
+                    pass
+                try:
                     vid_url = re.findall('class="main".*?src="(.*?)"',vhtml,re.DOTALL)[0]
-                self.resolve_media(vid_url,videos,vidtxt)
+                except:
+                    pass
+                if vid_url:
+                    self.resolve_media(vid_url,videos,vidtxt)
             else:
                 self.resolve_media(vid_link,videos,vidtxt)
             

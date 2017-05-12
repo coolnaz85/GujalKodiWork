@@ -1,3 +1,9 @@
+[B]Version 1.2.0 - 12 May 2017[/B]
+- Desitashan Fix
+- Andhrawatch Fix
+- Remove pagination in APKLand
+- MHDTV New Scraper
+
 [B]Version 1.1.9 - 27 Apr 2017[/B]
 - Tamilgun Fix
 - Runtamil Fix

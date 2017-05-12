@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <addon id="plugin.video.deccandelight"
-version="1.1.9"
+version="1.2.0"
 name="Deccan Delight"
 provider-name="Gujal">
 <requires>
@@ -9,6 +9,8 @@ provider-name="Gujal">
   <import addon="script.module.beautifulsoup" version="3.2.1"/>
   <import addon="script.common.plugin.cache" version="2.5.5"/>
   <import addon="script.module.urlresolver" version="3.0.0"/>
+  <import addon="script.module.urlresolver" version="3.0.0"/>
+  <import addon="plugin.video.f4mTester" version="2.2.3"/>
 </requires>
 <extension point="xbmc.python.pluginsource" library="main.py">
   <provides>video</provides>
@@ -19,6 +21,6 @@ provider-name="Gujal">
 	<platform>all</platform>
 	<website>https://forums.tvaddons.ag/addon-releases/49105-deccan-delight-indian-entertainment.html</website>
 	<disclaimer>This addon scrapes content from various websites around the Internet and is not liable for any content hosted on those sites</disclaimer>
-	<news>[B]Updated 27 Apr 2017[/B]</news>
+	<news>[B]Updated 12 May 2017[/B]</news>
 </extension>
 </addon>
