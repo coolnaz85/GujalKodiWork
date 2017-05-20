@@ -31,7 +31,7 @@
 		<setting id="flinks" type="bool" label="Film Links 4 U" default="true"/>
 		<setting id="i4movie" type="bool" label="India 4 Movie" default="true"/>
 		<setting id="mersal" type="bool" label="Mersalaayitten" default="true"/>
-		<setting id="mersalhd" type="bool" label="		Play HD if available" visible="eq(-1,true)" enable="!eq(-1,)" default="true"/>
+		<setting id="mersalhd" type="bool" label="        Play HD if available" visible="eq(-1,true)" enable="!eq(-1,)" default="true"/>
 		<setting id="mfish" type="bool" label="Movie Fisher" default="true"/>
 		<setting id="moviefk" type="bool" label="Movie FK" default="true"/>
 		<setting id="mrulz" type="bool" label="Movie Rulez" default="true"/>

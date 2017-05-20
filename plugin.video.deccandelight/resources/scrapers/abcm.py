@@ -76,6 +76,15 @@ class abcm(Scraper):
             pass
 
         try:
+            table = videoclass.find('div', {'class':'divTable'})
+            links = table.findAll('a')
+            for link in links:
+                vidurl = link.get('href')
+                self.resolve_media(vidurl,videos)
+        except:
+            pass
+
+        try:
             table = videoclass.find('table')
             links = table.findAll('a')
             for link in links:
