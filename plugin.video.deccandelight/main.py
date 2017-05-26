@@ -95,14 +95,15 @@ class Scraper(object):
                         'm2pub', 'abcmalayalam', 'india4movie.co', '.filmlinks4u',
                         'tamilraja.', 'multiup.', 'filesupload.', 'fileorbs.',
                         'insurance-donate.', '.blogspot.', 'yodesi.net', 
-                        'yomasti.co/ads', 'ads.yodesi.net']
+                        'yomasti.co/ads', 'ads.yodesi.net', 'business-tv.me/ads']
 
         embed_list = ['cineview', 'bollyheaven', 'videolinkz', 'vidzcode',
                       'embedzone', 'embedsr', 'fullmovie-hd', 'adly.biz',
                       'embedscr', 'embedrip', 'movembed', 'power4link.us',
                       'watchmoviesonline4u', 'nobuffer.info', 'yomasti.co',
                       'techking.me', 'onlinemoviesworld.xyz', 'cinebix.com',
-                      'desihome.', 'loan-forex.', 'filmshowonline.', 'vids.xyz']
+                      'desihome.', 'loan-forex.', 'filmshowonline.',
+                      'vids.xyz', 'business-tv.me']
            
         if 'filmshowonline.net/media/' in url:
             try:

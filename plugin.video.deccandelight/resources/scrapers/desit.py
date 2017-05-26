@@ -104,7 +104,7 @@ class desit(Scraper):
         html = requests.get(iurl).text
         mlink = SoupStrainer('div', {'class':re.compile('^td-post-content')})
         videoclass = BeautifulSoup(html, parseOnlyThese=mlink)
-        items = videoclass.findAll('a')
+        items = videoclass.findAll('a', {'class':None})
         for item in items:
             vid_link = item['href']
             vidtxt = h.unescape(item.text)
