@@ -37,7 +37,7 @@ class rasigan(Scraper):
         h = HTMLParser.HTMLParser()
         movies = []
         if url[-3:] == '?s=':
-            search_text = self.get_SearchQuery('Tamil Gun')
+            search_text = self.get_SearchQuery('Tamil Rasigan')
             search_text = urllib.quote_plus(search_text)
             url = url + search_text
 

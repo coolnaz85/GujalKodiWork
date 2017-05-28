@@ -130,15 +130,27 @@ class Scraper(object):
                     videos.append((vidhost,strurl))
             except:
                 pass
-                
+
+        elif 'justmoviesonline.com' in url:
+            try:
+                html = requests.get(url, headers=mozhdr).text
+                src = re.findall("atob\('(.*?)'",html)[0]
+                strurl = re.findall('file":"(.*?)"',src.decode('base64'))[0]
+                vidhost = self.get_vidhost(url) + ' | GVideo'
+                strurl = urllib.quote_plus(strurl)
+                videos.append((vidhost,strurl))
+            except:
+                pass
+            
         elif 'videohost.site' in url or 'videohost1.com' in url:
             try:
                 html = requests.get(url, headers=mozhdr).text
-                linkcode = jsunpack.unpack(html).replace('\\','')
+                pdata = eval(re.findall('Run\((.*?)\)',html)[0]).decode('base64')
+                linkcode = jsunpack.unpack(pdata).replace('\\','')
                 sources = json.loads(re.findall('sources:(.*?\}\])',linkcode)[0])
                 for source in sources:    
                     strurl = source['file'] + '|Referer=%s'%url
-                    vidhost = self.get_vidhost(url) + ' | %s' % source['label']
+                    vidhost = self.get_vidhost(url) + ' | GVideo | %s' % source['label']
                     strurl = urllib.quote_plus(strurl)
                     videos.append((vidhost,strurl))
             except:
@@ -528,8 +540,9 @@ def play_video(iurl):
     """
     streamer_list = ['tamilgun', 'mersalaayitten', 'mhdtvlive.',
                      'tamiltvsite.', 'cloudspro.', 'abroadindia.',
-                     'hindigeetmala.','.mp4', '.mp3', 'ozee.',
-                     'tamilhdtv.', 'andhrawatch.']
+                     'hindigeetmala.','.mp4', 'googlevideo.' ,
+                     'tamilhdtv.', 'andhrawatch.','justmoviesonline.',
+                     '.mp3', 'ozee.']
     # Create a playable item with a path to play.
     play_item = xbmcgui.ListItem(path=iurl)
     vid_url = play_item.getfilename()

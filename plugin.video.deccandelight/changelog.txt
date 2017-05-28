@@ -1,3 +1,7 @@
+[B]Version 1.2.3 - 28 May 2017[/B]
+- Tamilgun Domain change
+- Tamilrasigan Fix
+
 [B]Version 1.2.2 - 26 May 2017[/B]
 - Desi Tashan Fix
 - Yodesi Fix

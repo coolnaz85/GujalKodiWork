@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <addon id="plugin.video.deccandelight"
-version="1.2.2"
+version="1.2.3"
 name="Deccan Delight"
 provider-name="Gujal">
 <requires>
@@ -21,6 +21,16 @@ provider-name="Gujal">
 	<platform>all</platform>
 	<website>https://forums.tvaddons.ag/addon-releases/49105-deccan-delight-indian-entertainment.html</website>
 	<disclaimer>This addon scrapes content from various websites around the Internet and is not liable for any content hosted on those sites</disclaimer>
-	<news>[B]Updated 26 May 2017[/B]</news>
+	<news>[B]Updated 28 May 2017[/B]
+- Tamilgun Domain change
+- Tamilrasigan Fix
+	</news>
+	<assets>
+		<icon>icon.png</icon>
+		<fanart>fanart.jpg</fanart>
+		<screenshot>resources/images/screenshot-01.jpg</screenshot>
+		<screenshot>resources/images/screenshot-02.jpg</screenshot>
+		<screenshot>resources/images/screenshot-03.jpg</screenshot>
+	</assets>
 </extension>
 </addon>
