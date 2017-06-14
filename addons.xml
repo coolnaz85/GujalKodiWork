@@ -78,7 +78,7 @@ provider-name="Gujal">
 
 <addon
   id="plugin.video.imdb.trailers"
-  version="2.1.0"
+  version="2.1.1"
   name="IMDb Trailers"
   provider-name="queeup, gujal">
   <requires>
@@ -128,20 +128,20 @@ provider-name="Gujal">
 </extension>
 </addon>
 
-<addon id="repository.gujal" name="Gujal's Addon Repository" version="1.2" provider-name="Gujal">
-	<extension point="xbmc.addon.repository" name="Gujal's Addon Repository">
+<addon id="repository.gujal" name="Gujal Addon Repository" version="1.3" provider-name="Gujal">
+	<extension point="xbmc.addon.repository" name="Gujal Addons Repository">
 	<dir>
-		<info compressed="false">https://offshoregit.com/tvaresolvers/tva-common-repository/raw/master/addons.xml</info>
-		<checksum>https://offshoregit.com/tvaresolvers/tva-common-repository/raw/master/addons.xml.md5</checksum>
-		<datadir zip="true">https://offshoregit.com/tvaresolvers/tva-common-repository/raw/master/zips/</datadir>
+		<info compressed="false">https://github.com/zqfaen/tva-common/raw/master/addons.xml</info>
+		<checksum>https://github.com/zqfaen/tva-common/raw/master/addons.xml.md5</checksum>
+		<datadir zip="true">https://github.com/zqfaen/tva-common/raw/master/zips/</datadir>
 	</dir>
-        <info compressed="false">https://offshoregit.com/gujal/main/addons.xml</info>
-        <checksum>https://offshoregit.com/gujal/main/addons.xml.md5</checksum>
-        <datadir zip="true">https://offshoregit.com/gujal/main/zips</datadir>
+        <info compressed="false">https://raw.github.com/Gujal00/GujalKodiWork/master/addons.xml</info>
+        <checksum>https://raw.github.com/Gujal00/GujalKodiWork/master/addons.xml.md5</checksum>
+        <datadir zip="true">https://raw.github.com/Gujal00/GujalKodiWork/master/zips</datadir>
 	</extension>
 	<extension point="xbmc.addon.metadata">
-		<summary>Addons for Kodi related to Entertainment from India</summary>
-		<description>Deccan Delight Addon Repository</description>
+		<summary>Third party Addons for Kodi</summary>
+		<description>Gujal Addons Repository</description>
 		<platform>all</platform>
 	</extension>
 </addon>
