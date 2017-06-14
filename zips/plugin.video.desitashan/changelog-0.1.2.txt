@@ -1,0 +1,9 @@
+[B]Version 0.1.2 - 18 Nov 2016[/B]
+- Add Country menu
+- rewrite using BeautifulSoup3
+
+[B]Version 0.1.1 - 12 Nov 2016[/B]
+- Add Pagination on episode list
+
+[B]Version 0.1.0 - 10 Nov 2016[/B]
+- First release

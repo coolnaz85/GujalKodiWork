@@ -89,6 +89,6 @@ ENV/
 .ropeproject
 
 # Kodi
-zips/
+#zips/
 addons*
 repository*/
