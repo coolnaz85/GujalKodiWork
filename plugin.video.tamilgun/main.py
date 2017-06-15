@@ -1,5 +1,5 @@
 """
-    Desi Tashan Kodi Addon
+    Tamilgun Kodi Addon
     Copyright (C) 2016 gujal
 
     This program is free software: you can redistribute it and/or modify
@@ -18,12 +18,10 @@
 
 import sys
 from urlparse import parse_qsl
-import xbmc
-import xbmcgui
-import xbmcplugin
-import xbmcaddon
+import xbmc, xbmcgui, xbmcplugin, xbmcaddon
 from BeautifulSoup import BeautifulSoup, SoupStrainer
-import re, requests
+import re, requests, urllib, json
+import jsunpack
 import urlresolver
 
 # Get the plugin url in plugin:// notation.
@@ -35,13 +33,6 @@ _addonname = _addon.getAddonInfo('name')
 _icon = _addon.getAddonInfo('icon')
 _fanart = _addon.getAddonInfo('fanart')
 mozhdr = {'User-Agent': 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3'}
-
-MAINLIST = {'New Movies': 'http://tamilgun.us/categories/new-movies/',
-            'HD Movies': 'http://tamilgun.us/categories/hd-movies/',
-            'Dubbed Movies': 'http://tamilgun.us/categories/dubbed-movies/',
-            'Trailers': 'http://tamilgun.us/categories/trailers/',
-            'Comedy': 'http://tamilgun.us/categories/hd-comedys/',
-            'Search': 'http://tamilgun.us/?s='}
 
 def GetSearchQuery(sitename):
     keyboard = xbmc.Keyboard()
@@ -63,55 +54,17 @@ def get_vidhost(url):
 
 def resolve_media(url,videos):
 
-    non_str_list = ['olangal.', '#', 'magnet:', 'desihome.co', 'thiruttuvcd',
-                    'cineview', 'bollyheaven', 'videolinkz', 'moviefk.co',
-                    'imdb.', 'mgid.', 'desihome', 'movierulz.', 'facebook.', 
-                    'm2pub', 'abcmalayalam', 'india4movie.co', '.filmlinks4u',
+    non_str_list = ['#', 'magnet:', 'desihome.co', 'thiruttuvcd',
+                    'cineview', 'bollyheaven', 'videolinkz',
+                    'imdb.', 'mgid.', 'facebook.', 'm2pub', 
                     'tamilraja.org']
 
     embed_list = ['cineview', 'bollyheaven', 'videolinkz', 'vidzcode',
                   'embedzone', 'embedsr', 'fullmovie-hd', 'adly.biz',
                   'embedscr', 'embedrip', 'movembed', 'power4link.us',
-                  'watchmoviesonline4u', 'nobuffer.info', 'yo-desi.com',
                   'techking.me', 'onlinemoviesworld.xyz', 'cinebix.com']
 
-    if 'pongomovies' in url:
-        link = requests.get(url, headers=mozhdr).text
-        mlink = SoupStrainer(class_='tabs-catch-all')
-        links = BeautifulSoup(link, 'html.parser', parse_only=mlink)
-        xbmc.log(msg='========== links: ' + str(links), level=xbmc.LOGNOTICE)
-        for linksSection in links:
-            if 'iframe' in str(linksSection.contents):
-                strurl = str(linksSection.find('iframe')['src'])
-                resolve_vidurl(strurl,sources)
-       
-    elif 'filmshowonline.net/media/' in url:
-        r = requests.get(url, headers=mozhdr)
-        clink = r.text
-        cookies = r.cookies
-        eurl = re.findall("url: '([^']*)[\d\D]*nonce :", clink)[0]
-        enonce = re.findall("nonce : '([^']*)", clink)[0]
-        evid = re.findall("nonce : [\d\D]*?link_id: ([\d]*)", clink)[0]
-        values = {'echo' : 'true',
-                  'nonce' : enonce,
-                  'width' : '848',
-                  'height' : '480',
-                  'link_id' : evid }
-        headers = {'User-Agent': mozagent,
-                   'Referer': vidurl,
-                  'X-Requested-With': 'XMLHttpRequest'}
-        emurl = requests.post(eurl, data=values, headers=headers, cookies=cookies).text
-        strurl = (re.findall('(http[^"]*)', emurl)[0]).replace('\\', '')
-        resolve_vidurl(strurl, sources)
-
-    elif 'filmshowonline.net/videos/' in url:
-        clink = requests.get(url, headers=mozhdr).text
-        csoup = BeautifulSoup(clink)
-        strurl = csoup.find('iframe')['src']
-        if 'http' in strurl:
-            resolve_vidurl(strurl, sources)
-                    
-    elif 'tamildbox' in url:
+    if 'tamildbox' in url:
         try:
             link = requests.get(url, headers=mozhdr).text
             mlink = SoupStrainer('div', {'id':'player-embed'})
@@ -190,57 +143,83 @@ def get_categories():
     Get the list of categories.
     :return: list
     """
-    return MAINLIST.keys()
+    bu = 'http://tamilgun.pro'
+    r = requests.get(bu, headers=mozhdr)
+    if r.url != bu:
+        bu = r.url
+    items = {}
+    cats = re.findall('id="menu-item-.*?href="((?=.*categories).*?)">((?!HD Videos|User).*?)<',r.text)
+    sno = 1
+    for cat in cats:
+        items[str(sno)+cat[1]] = cat[0]
+        sno+=1
+    items[str(sno)+'[COLOR yellow]** Search **[/COLOR]'] = bu + '/?s='
+    return items
     
-def get_movies(category):
+def get_movies(iurl):
     """
     Get the list of movies.
     :return: list
     """
     movies = []
-    if 'http' not in category:
-        if category == 'Search':
-            search_text = GetSearchQuery('TamilGun')
-            search_text = search_text.replace(' ', '+')
-            category = MAINLIST[category] + search_text
-        else:
-            category = MAINLIST[category]
-    html = requests.get(category, headers=mozhdr).text
-    mlink = SoupStrainer("div", {"class":"col-sm-4 col-xs-6 item"})
+    
+    if iurl[-3:] == '?s=':
+        search_text = GetSearchQuery('TamilGun')
+        search_text = urllib.quote_plus(search_text)
+        iurl += search_text
+
+    html = requests.get(iurl, headers=mozhdr).text
+    mlink = SoupStrainer('article', {'class':re.compile('video')})
     items = BeautifulSoup(html, parseOnlyThese=mlink)
-    plink = SoupStrainer("ul", {"class":"pagination"})
+    plink = SoupStrainer('ul', {'class':'page-numbers'})
     Paginator = BeautifulSoup(html, parseOnlyThese=plink)
 
     for item in items:
         title = item.h3.text
-        url = item.find('a')['href']
-        thumb = item.find('img')['src']
+        url = item.h3.find('a')['href']
+        try:
+            thumb = item.find('img')['src'].strip()
+        except:
+            thumb = _icon
         movies.append((title, thumb, url))
     
     if 'next' in str(Paginator):
-        nextli = Paginator.find('li', {'class':'next'})
-        lastli = Paginator.find('li', {'class':'last'})
-        url = nextli.a.get('href')
-        lastpg = lastli.a.get('href').split('page/')[1]
-        lastpg = lastpg.split('/')[0]
-        currpg = Paginator.find('li', {'class':'active'}).text
-        title = 'Next Page (Currently in Page %s of %s)' % (currpg,lastpg)
-        movies.append((title, _icon, url))
+        nextli = Paginator.find('a', {'class':re.compile('next')})
+        purl = nextli.get('href')
+        if 'http' not in purl:
+            purl = self.bu[:-12] + purl
+        currpg = Paginator.find('span', {'class':re.compile('current')}).text
+        pages = Paginator.findAll('a', {'class':re.compile('^page')})
+        lastpg = pages[len(pages)-1].text
+        title = 'Next Page.. (Currently in Page %s of %s)' % (currpg,lastpg)
+        movies.append((title, _icon, purl))
    
     return movies
 
 
-def get_videos(movie):
+def get_videos(url):
     """
     Get the list of videos.
     :return: list
     """
     videos = []
-    if 'cinebix.com' in movie:
-        resolve_media(movie,videos)
+    if 'cinebix.com' in url:
+        resolve_media(url,videos)
+        return videos
         
-    html = requests.get(movie, headers=mozhdr).text
-    mlink = SoupStrainer('div', {'class':'videoWrapper player'})
+    html = requests.get(url, headers=mozhdr).text
+
+    try:
+        linkcode = jsunpack.unpack(html).replace('\\','')
+        sources = json.loads(re.findall('sources:(.*?)\}\)',linkcode)[0])
+        for source in sources:    
+            url = source['file'] + '|Referer=http://%s/'%get_vidhost(source['file'])
+            url = urllib.quote_plus(url)
+            videos.append(('tamilgun | %s'%source['label'],url))
+    except:
+        pass
+
+    mlink = SoupStrainer('div', {'id':'videoframe'})
     videoclass = BeautifulSoup(html, parseOnlyThese=mlink)
 
     try:
@@ -248,31 +227,28 @@ def get_videos(movie):
         for link in links:
             url = link.get('src')
             resolve_media(url,videos)
-
     except:
         pass
 
-    mlink = SoupStrainer('div', {'class':'post-entry'})
+    mlink = SoupStrainer('div', {'class':'entry-excerpt'})
     videoclass = BeautifulSoup(html, parseOnlyThese=mlink)
 
     try:
         links = videoclass.findAll('iframe')
         for link in links:
-            url = link.get('src')
-            resolve_media(url,videos)
-
+            if 'http' in str(link):
+                url = link.get('src')
+                resolve_media(url,videos)
     except:
         pass
 
     try:
-        links = videoclass.findAll('a')
-        for link in links:
-            url = link.get('href')
-            resolve_media(url,videos)
-                        
+        sources = json.loads(re.findall('vdf-data-json">(.*?)<',html)[0])
+        url = 'https://www.youtube.com/watch?v=%s'%sources['videos'][0]['youtubeID']
+        resolve_media(url,videos)
     except:
         pass
-    
+        
     return videos
 
 
@@ -282,13 +258,12 @@ def list_categories():
     """
     categories = get_categories()
     listing = []
-    for category in categories:
-        list_item = xbmcgui.ListItem(label=category)
-        list_item.setInfo('video', {'title': category})
+    for title,iurl in sorted(categories.iteritems()):
+        list_item = xbmcgui.ListItem(label=title[1:])
         list_item.setArt({'thumb': _icon,
                           'icon': _icon,
                           'fanart': _fanart})
-        url = '{0}?action=list_category&category={1}'.format(_url, category)
+        url = '{0}?action=list_category&category={1}'.format(_url, urllib.quote(iurl))
         is_folder = True
         listing.append((url, list_item, is_folder))
     xbmcplugin.addDirectoryItems(_handle, listing, len(listing))
@@ -368,8 +343,10 @@ def play_video(path):
     # Create a playable item with a path to play.
     play_item = xbmcgui.ListItem(path=path)
     vid_url = play_item.getfilename()
-    stream_url = resolve_url(vid_url)
-    play_item.setPath(stream_url)
+    if 'tamilgun' not in vid_url:
+        stream_url = resolve_url(vid_url)
+        if stream_url:
+            play_item.setPath(stream_url)
     # Pass the item to the Kodi player.
     xbmcplugin.setResolvedUrl(_handle, True, listitem=play_item)
 
