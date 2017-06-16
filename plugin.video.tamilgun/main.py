@@ -65,8 +65,8 @@ def resolve_media(url,videos):
                   'techking.me', 'onlinemoviesworld.xyz', 'cinebix.com']
 
     if 'tamildbox' in url:
+        link = requests.get(url, headers=mozhdr).text
         try:
-            link = requests.get(url, headers=mozhdr).text
             mlink = SoupStrainer('div', {'id':'player-embed'})
             dclass = BeautifulSoup(link, parseOnlyThese=mlink)       
             if 'unescape' in str(dclass):
@@ -81,6 +81,20 @@ def resolve_media(url,videos):
             glink = dclass.p.iframe.get('src')
             vidhost = get_vidhost(glink)
             videos.append((vidhost,glink))
+        except:
+            pass
+        
+        try:
+            codes = re.findall('"return loadEP.([^,]*),(\d*)',link)
+            for ep_id, server_id in codes:
+                burl = 'http://www.tamildbox.com/actions.php?case=loadEP&ep_id=%s&server_id=%s'%(ep_id,server_id)
+                bhtml = requests.get(burl,headers=mozhdr).text
+                blink = re.findall('(?i)iframe\s*src="(.*?)"',bhtml)[0]
+                vidhost = get_vidhost(blink)
+                if 'googleapis' in blink:
+                    blink = 'https://drive.google.com/open?id=' + re.findall('docid=([^&]*)',blink)[0]
+                    vidhost = 'GVideo'
+                videos.append((vidhost,blink))   
         except:
             pass
 
@@ -148,7 +162,7 @@ def get_categories():
     if r.url != bu:
         bu = r.url
     items = {}
-    cats = re.findall('id="menu-item-.*?href="((?=.*categories).*?)">((?!HD Videos|User).*?)<',r.text)
+    cats = re.findall('id="menu-item-[^4].*?href="((?=.*categories).*?)">((?!User).*?)<',r.text)
     sno = 1
     for cat in cats:
         items[str(sno)+cat[1]] = cat[0]
@@ -221,7 +235,6 @@ def get_videos(url):
 
     mlink = SoupStrainer('div', {'id':'videoframe'})
     videoclass = BeautifulSoup(html, parseOnlyThese=mlink)
-
     try:
         links = videoclass.findAll('iframe')
         for link in links:
@@ -232,7 +245,6 @@ def get_videos(url):
 
     mlink = SoupStrainer('div', {'class':'entry-excerpt'})
     videoclass = BeautifulSoup(html, parseOnlyThese=mlink)
-
     try:
         links = videoclass.findAll('iframe')
         for link in links:
@@ -242,6 +254,12 @@ def get_videos(url):
     except:
         pass
 
+    try:
+        url = videoclass.p.a.get('href')
+        resolve_media(url,videos)
+    except:
+        pass    
+    
     try:
         sources = json.loads(re.findall('vdf-data-json">(.*?)<',html)[0])
         url = 'https://www.youtube.com/watch?v=%s'%sources['videos'][0]['youtubeID']

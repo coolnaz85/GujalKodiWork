@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <addon id="plugin.video.tamilgun"
-version="0.2.0"
+version="0.3.0"
 name="Tamil Gun"
 provider-name="Gujal">
 <requires>
@@ -15,6 +15,6 @@ provider-name="Gujal">
 <extension point="xbmc.addon.metadata">
   <summary>TamilGun</summary>
   <description>TamilGun is a popular site to watch Tamil Movies on demand</description>
-  <disclaimer>This addon provides access to TamilGun website and is not liable for any content hosted on that site</disclaimer>
+  <disclaimer>This addon simply scrapes TamilGun website and is not liable for any content hosted on that site</disclaimer>
 </extension>
 </addon>
