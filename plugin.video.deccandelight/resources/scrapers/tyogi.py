@@ -17,22 +17,27 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 '''
 from main import Scraper
 from BeautifulSoup import BeautifulSoup, SoupStrainer
-import urllib, requests
+import urllib, re, requests
 import HTMLParser
 
 class tyogi(Scraper):
     def __init__(self):
         Scraper.__init__(self)
-        self.bu = 'http://tamilyogi.cc/category/'
+        self.bu = 'http://tamilyogi.fm/home/'
         self.icon = self.ipath + 'tyogi.png'
-        self.list = {'01New Movies': self.bu + 'tamilyogi-full-movie-online/',
-                     '02HD Movies': self.bu + 'tamilyogi-bluray-movies/',
-                     '03DVD Movies': self.bu + 'tamilyogi-dvdrip-movies/',
-                     '04Dubbed Movies': self.bu + 'tamilyogi-dubbed-movies-online/',
-                     '07[COLOR yellow]** Search **[/COLOR]': self.bu[:-9] + '?s='}
     
     def get_menu(self):
-        return (self.list,7,self.icon)
+        r = requests.get(self.bu, headers=self.hdr)
+        if r.url != self.bu:
+            self.bu = r.url
+        items = {}
+        cats = re.findall('class="menu-item.*?href="(\/category.*?)">(.*?)<',r.text)
+        sno = 1
+        for cat in cats:
+            items['0%s'%sno+cat[1]] = self.bu[:-6] + cat[0]
+            sno+=1
+        items['0%s'%sno+'[COLOR yellow]** Search **[/COLOR]'] = self.bu[:-6] + '/?s='
+        return (items,7,self.icon)
     
     def get_items(self,url):
         h = HTMLParser.HTMLParser()

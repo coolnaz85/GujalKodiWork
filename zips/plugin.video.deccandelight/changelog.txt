@@ -1,3 +1,7 @@
+[B]Version 1.2.4 - 25 Jun 2017[/B]
+- Tamilgun Domain change
+- TamilYogi Fix
+
 [B]Version 1.2.3 - 28 May 2017[/B]
 - Tamilgun Domain change
 - Tamilrasigan Fix

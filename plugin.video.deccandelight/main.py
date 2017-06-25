@@ -94,7 +94,7 @@ class Scraper(object):
                         'imdb.', 'mgid.', 'atemda.', 'movierulz.', 'facebook.', 
                         'm2pub', 'abcmalayalam', 'india4movie.co', '.filmlinks4u',
                         'tamilraja.', 'multiup.', 'filesupload.', 'fileorbs.',
-                        'insurance-donate.', '.blogspot.', 'yodesi.net', 
+                        'insurance-donate.', '.blogspot.', 'yodesi.net', 'desi-tashan.',
                         'yomasti.co/ads', 'ads.yodesi.net', 'business-tv.me/ads']
 
         embed_list = ['cineview', 'bollyheaven', 'videolinkz', 'vidzcode',
@@ -103,7 +103,7 @@ class Scraper(object):
                       'watchmoviesonline4u', 'nobuffer.info', 'yomasti.co',
                       'techking.me', 'onlinemoviesworld.xyz', 'cinebix.com',
                       'desihome.', 'loan-forex.', 'filmshowonline.',
-                      'vids.xyz', 'business-tv.me']
+                      'vids.xyz', 'business-tv.me', 'telly-news.com']
            
         if 'filmshowonline.net/media/' in url:
             try:
@@ -132,12 +132,18 @@ class Scraper(object):
                 pass
 
         elif 'justmoviesonline.com' in url:
+            html = requests.get(url, headers=mozhdr).text
+            src = re.findall("atob\('(.*?)'",html)[0]
             try:
-                html = requests.get(url, headers=mozhdr).text
-                src = re.findall("atob\('(.*?)'",html)[0]
                 strurl = re.findall('file":"(.*?)"',src.decode('base64'))[0]
-                vidhost = self.get_vidhost(url) + ' | GVideo'
+                vidhost = 'GVideo'
                 strurl = urllib.quote_plus(strurl)
+                videos.append((vidhost,strurl))
+            except:
+                pass
+            try:
+                strurl = re.findall('src="(.*?)"',src.decode('base64'))[0]
+                vidhost = self.get_vidhost(strurl)
                 videos.append((vidhost,strurl))
             except:
                 pass
@@ -157,8 +163,8 @@ class Scraper(object):
                 pass
                 
         elif 'tamildbox' in url:
+            link = requests.get(url, headers=mozhdr).text
             try:
-                link = requests.get(url, headers=mozhdr).text
                 mlink = SoupStrainer('div', {'id':'player-embed'})
                 dclass = BeautifulSoup(link, parseOnlyThese=mlink)       
                 if 'unescape' in str(dclass):
@@ -169,6 +175,10 @@ class Scraper(object):
                 if urlresolver.HostedMediaFile(glink):
                     vidhost = self.get_vidhost(glink)
                     videos.append((vidhost,glink))
+            except:
+                pass    
+            
+            try:
                 mlink = SoupStrainer('div', {'class':re.compile('^item-content')})
                 dclass = BeautifulSoup(link, parseOnlyThese=mlink)
                 glink = dclass.p.iframe.get('src')
@@ -177,7 +187,33 @@ class Scraper(object):
                     videos.append((vidhost,glink))
             except:
                 pass
+                
+            try:
+                if 'p,a,c,k,e,d' in link:
+                    linkcode = jsunpack.unpack(link).replace('\\','')
+                    glink = re.findall("file\s*:\s*'(.*?)'",linkcode)[0]
+                if 'youtu.be' in glink:
+                    glink = 'https://docs.google.com/vt?id=' + glink[16:]
+                if urlresolver.HostedMediaFile(glink):
+                    vidhost = self.get_vidhost(glink)
+                    videos.append((vidhost,glink))
+            except:
+                pass
 
+            try:
+                codes = re.findall('"return loadEP.([^,]*),(\d*)',link)
+                for ep_id, server_id in codes:
+                    burl = 'http://www.tamildbox.com/actions.php?case=loadEP&ep_id=%s&server_id=%s'%(ep_id,server_id)
+                    bhtml = requests.get(burl,headers=mozhdr).text
+                    blink = re.findall('(?i)iframe\s*src="(.*?)"',bhtml)[0]
+                    vidhost = self.get_vidhost(blink)
+                    if 'googleapis' in blink:
+                        blink = 'https://drive.google.com/open?id=' + re.findall('docid=([^&]*)',blink)[0]
+                        vidhost = 'GVideo'
+                    videos.append((vidhost,blink))   
+            except:
+                pass
+            
         elif any([x in url for x in embed_list]):
             clink = requests.get(url, headers=mozhdr).text
             csoup = BeautifulSoup(clink)

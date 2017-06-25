@@ -20,7 +20,7 @@ provider-name="Gujal">
 </addon>
 
 <addon id="plugin.video.deccandelight"
-version="1.2.3"
+version="1.2.4"
 name="Deccan Delight"
 provider-name="Gujal">
 <requires>
@@ -40,10 +40,12 @@ provider-name="Gujal">
 	<description>This addon provides access to entertainment in various Deccan languages such as Tamil, Telugu, Malayalam, Kannada, and Hindi</description>
 	<platform>all</platform>
 	<website>https://forums.tvaddons.ag/addon-releases/49105-deccan-delight-indian-entertainment.html</website>
-	<disclaimer>This addon scrapes content from various websites around the Internet and is not liable for any content hosted on those sites</disclaimer>
-	<news>[B]Updated 28 May 2017[/B]
+	<disclaimer>DeccanDelight and its developers are not in any way affiliated with Kodi or any of the sites and providers used in the addon.
+DeccanDelight is and always will be free and open-source. None of its code and resources may be sold or redistributed for any commercial purposes.
+DeccanDelight and its developers do not host, create, or distribute any of the content displayed in the addon, it simply scrapes public websites.</disclaimer>
+	<news>[B]Version 1.2.4 - 25 Jun 2017[/B]
 - Tamilgun Domain change
-- Tamilrasigan Fix
+- TamilYogi Fix
 	</news>
 	<assets>
 		<icon>icon.png</icon>

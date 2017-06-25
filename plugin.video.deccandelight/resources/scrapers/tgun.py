@@ -23,17 +23,21 @@ import resources.lib.jsunpack as jsunpack
 class tgun(Scraper):
     def __init__(self):
         Scraper.__init__(self)
-        self.bu = 'http://tamilgun.ooo/categories/'
+        self.bu = 'http://tamilgun.ooo'
         self.icon = self.ipath + 'tgun.png'
-        self.list = {'01New Movies': self.bu + 'new-movies-a/',
-                     '02HD Movies': self.bu + 'hd-movies/',
-                     '03Dubbed Movies': self.bu + 'dubbed-movies/',
-                     '04Trailers': self.bu + 'trailers/',
-                     '05Special Shows': self.bu + 'special-tv-shows/',
-                     '06[COLOR yellow]** Search **[/COLOR]': self.bu[:-11] + '?s='}
     
     def get_menu(self):
-        return (self.list,7,self.icon)
+        r = requests.get(self.bu, headers=self.hdr)
+        if r.url != self.bu:
+            self.bu = r.url
+        items = {}
+        cats = re.findall('id="menu-item-[^4].*?href="((?=.*categories).*?)">((?!User).*?)<',r.text)
+        sno = 1
+        for cat in cats:
+            items['0%s'%sno+cat[1]] = cat[0]
+            sno+=1
+        items['0%s'%sno+'[COLOR yellow]** Search **[/COLOR]'] = self.bu + '/?s='
+        return (items,7,self.icon)
     
     def get_items(self,url):
         h = HTMLParser.HTMLParser()
@@ -84,7 +88,7 @@ class tgun(Scraper):
             linkcode = jsunpack.unpack(html).replace('\\','')
             sources = json.loads(re.findall('sources:(.*?)\}\)',linkcode)[0])
             for source in sources:    
-                url = source['file'] + '|Referer=%s'%self.bu[:-11]
+                url = source['file'] + '|Referer=http://%s/'%self.get_vidhost(source['file'])
                 url = urllib.quote_plus(url)
                 videos.append(('tamilgun | %s'%source['label'],url))
         except:
@@ -113,6 +117,15 @@ class tgun(Scraper):
         except:
             pass
 
+        try:
+            links = videoclass.findAll('p')
+            for link in links:
+                if 'http' in str(link):
+                    url = link.a.get('href')
+                    self.resolve_media(url,videos)
+        except:
+            pass
+        
         try:
             sources = json.loads(re.findall('vdf-data-json">(.*?)<',html)[0])
             url = 'https://www.youtube.com/watch?v=%s'%sources['videos'][0]['youtubeID']
